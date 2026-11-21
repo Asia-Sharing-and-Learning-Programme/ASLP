@@ -20,6 +20,7 @@
 <link rel="preload" href="fonts/archivo-latin-wdth-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="vendor/leaflet.css">
 <script src="vendor/leaflet.js"></script>
+<script src="vendor/topojson-client.min.js"></script>
 <script src="vendor/supabase.js"></script>
 <style>
   /* Archivo (variable weight + width), hosted with the site. SIL Open Font License. */
@@ -29,16 +30,20 @@
   @font-face { font-family: "Archivo"; font-style: normal; font-display: swap; font-weight: 100 900; font-stretch: 62% 125%;
     src: url(fonts/archivo-latin-ext-wdth-normal.woff2) format("woff2-variations"), url(fonts/archivo-latin-ext-wdth-normal.woff2) format("woff2");
     unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF; }
+
   /* ---------- tokens ---------- */
   :root {
     color-scheme: light;
     --paper: #ffffff; --paper-2: #f5f5f3; --line: #e4e3df; --ink: #000000; --ink-2: #45443f; --ink-3: #75746e;
-    --orange: #e14b1e; --navy: #24215f; --blue: #005fc0; --listen: #0a84ff; --yellow: #f5c400; --rust: #c0391e; --lead: #dc5200;
+    --orange: #e14b1e; --navy: #24215f; --blue: #005fc0; --listen: #0a84ff; --yellow: #f5c400; --lead: #dc5200;
     --spea: #1a5cba; --sasia: #e24a1b; --spea1: #188afd; --spea2: #2e6be0; --sasia1: #fe6809; --sasia2: #ff8228;
     --s0: #24215f; --s1: #0a84ff; --s2: #f5c400; --s3: #c0391e; --s4: #005fc0; --s5: #e04c1e; --s6: #6f6e69;
     --font: "Archivo", "Helvetica Neue", Arial, sans-serif;
+    /* spacing scale: every gap on the site comes from here */
+    --g1: 8px; --g2: 12px; --g3: 16px; --g4: 24px; --g5: 32px; --g6: 48px; --g7: 72px; --g8: 104px;
     --wrap: 1200px;
   }
+  @media (max-width: 700px) { :root { --g6: 36px; --g7: 52px; --g8: 68px; } }
   @media (prefers-color-scheme: dark) { :root:where(:not([data-theme="light"])) {
     color-scheme: dark; --paper: #121212; --paper-2: #1c1c1c; --line: #2e2e2c; --ink: #f4f4f2; --ink-2: #c8c7c0; --ink-3: #93928b;
     --navy: #4a46a8; --blue: #3d86dc; --spea: #5b93e6; --sasia: #f0703f; --spea2: #5a8ef0; --s0: #4a46a8; --s4: #2f7fd6; --s6: #9a9993; } }
@@ -52,286 +57,320 @@
   body { margin: 0; font: 400 16.5px/1.6 var(--font); background: var(--paper); color: var(--ink); }
   a { color: inherit; }
   img { max-width: 100%; }
+  h1, h2, h3, p { margin: 0; }
   :focus-visible { outline: 3px solid var(--listen); outline-offset: 2px; border-radius: 4px; }
-  .wrap { max-width: var(--wrap); margin: 0 auto; padding: 0 24px; }
-  /* light/dark artwork pairs */
+  .wrap { max-width: var(--wrap); margin: 0 auto; padding: 0 24px; position: relative; z-index: 1; }
   .on-dark { display: none !important; }
   @media (prefers-color-scheme: dark) { :root:where(:not([data-theme="light"])) .on-light { display: none !important; } :root:where(:not([data-theme="light"])) .on-dark { display: block !important; } }
   :root[data-theme="dark"] .on-light { display: none !important; } :root[data-theme="dark"] .on-dark { display: block !important; }
 
   /* ---------- type ---------- */
-  .h1 { font-size: clamp(34px, 5vw, 60px); font-weight: 820; font-stretch: 108%; letter-spacing: -.025em; line-height: 1; margin: 0 0 18px; }
+  .h1 { font-size: clamp(36px, 5vw, 60px); font-weight: 820; font-stretch: 108%; letter-spacing: -.025em; line-height: 1.02; }
   .h1 .lt { font-weight: 300; }
-  .h2 { font-size: clamp(24px, 3vw, 34px); font-weight: 800; font-stretch: 106%; letter-spacing: -.02em; line-height: 1.08; margin: 0 0 14px; }
-  .h3 { font-size: 19px; font-weight: 750; letter-spacing: -.01em; line-height: 1.25; margin: 0 0 6px; }
-  .lede { font-size: clamp(18px, 1.6vw, 21px); line-height: 1.5; color: var(--ink-2); max-width: 58ch; margin: 0 0 24px; font-weight: 350; }
-  .small { font-size: 14px; color: var(--ink-3); }
+  .h2 { font-size: clamp(26px, 3vw, 36px); font-weight: 800; font-stretch: 106%; letter-spacing: -.02em; line-height: 1.1; }
+  .h3 { font-size: 19px; font-weight: 750; letter-spacing: -.01em; line-height: 1.3; }
+  .lede { font-size: clamp(17.5px, 1.5vw, 20px); line-height: 1.55; color: var(--ink-2); max-width: 56ch; font-weight: 380; }
+  .small { font-size: 14px; color: var(--ink-3); line-height: 1.5; }
   p { max-width: 68ch; }
+  /* stacks give even spacing between text blocks */
+  .stack > * + * { margin-top: var(--gap, var(--g3)); }
+  .stack-lg { --gap: var(--g4); }
+
+  /* ---------- decoration layer: each cut-out shape is its own element ---------- */
+  .decor { position: absolute; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; }
+  .el { position: absolute; display: block; height: auto; pointer-events: none; user-select: none; }
+  .white .el, .el.white { filter: brightness(0) invert(1); }
+  @media (max-width: 760px) { .el.hm { display: none; } .el { scale: .7; } }
+  @media (prefers-reduced-motion: no-preference) {
+    .float { animation: float 9s ease-in-out infinite alternate; }
+    @keyframes float { from { translate: 0 0; } to { translate: 0 -8px; } }
+  }
+  /* small arranged groups of shapes (inner pages, cards) */
+  .cluster { position: relative; width: 100%; }
+  .cluster .el { transform-origin: center; }
 
   /* ---------- top bar ---------- */
   .topbar { position: sticky; top: 0; z-index: 1100; background: color-mix(in srgb, var(--paper) 94%, transparent); backdrop-filter: blur(10px); border-bottom: 1px solid var(--line); }
-  .topbar .wrap { display: flex; align-items: center; gap: 18px; height: 68px; }
-  .brand img { height: 40px; width: auto; display: block; }
-  nav.menu { display: flex; gap: 4px; margin-left: auto; align-items: center; }
-  nav.menu a { padding: 8px 12px; text-decoration: none; font-weight: 600; font-size: 15px; border-bottom: 3px solid transparent; }
-  nav.menu a:hover { border-bottom-color: var(--line); }
-  nav.menu a.on { border-bottom-color: var(--orange); }
-  /* drop-down menus */
+  .topbar .wrap { display: flex; align-items: center; gap: var(--g3); height: 68px; }
+  .brand img { height: 38px; width: auto; display: block; }
+  nav.menu { display: flex; gap: 2px; margin-left: auto; align-items: center; }
+  nav.menu > a, .dd-top { display: block; padding: 8px 12px; text-decoration: none; font-weight: 600; font-size: 15px; border-bottom: 3px solid transparent; }
+  nav.menu > a:hover, .dd-top:hover { border-bottom-color: var(--line); }
+  nav.menu .on { border-bottom-color: var(--orange); }
   .dd { position: relative; }
   .dd-top::after { content: ""; display: inline-block; width: 7px; height: 7px; border-right: 2px solid currentColor; border-bottom: 2px solid currentColor; transform: rotate(45deg) translateY(-3px); margin-left: 8px; opacity: .55; }
-  .dd-menu { position: absolute; left: 0; top: 100%; min-width: 280px; background: var(--paper); border: 1px solid var(--line); border-radius: 16px; box-shadow: 0 12px 34px rgba(0,0,0,.12); padding: 12px; display: none; z-index: 60; }
+  .dd-menu { position: absolute; left: 0; top: 100%; min-width: 300px; background: var(--paper); border: 1px solid var(--line); border-radius: 16px; box-shadow: 0 14px 36px rgba(0,0,0,.13); padding: var(--g2); display: none; z-index: 60; }
+  #dd-cwgs { min-width: 470px; }
   .dd:hover .dd-menu, .dd:focus-within .dd-menu { display: block; }
-  .dd-menu .dd-h { font-size: 13px; font-weight: 700; color: var(--ink-3); padding: 8px 10px 4px; }
-  .dd-menu a { display: flex; align-items: center; gap: 12px; padding: 8px 10px; border-radius: 10px; text-decoration: none; font-weight: 600; font-size: 15px; border: 0 !important; }
+  .dd-menu .dd-h { font-size: 13px; font-weight: 700; color: var(--ink-3); padding: var(--g1) 10px 2px; }
+  .dd-menu a { display: flex; align-items: center; gap: var(--g2); padding: var(--g1) 10px; border-radius: 10px; text-decoration: none; font-weight: 600; font-size: 15px; line-height: 1.35; }
   .dd-menu a:hover { background: var(--paper-2); }
   .dd-menu a img { height: 22px; width: auto; flex: none; }
-  #dd-cwgs { min-width: 470px; }
   .dd-menu a b { font-weight: 900; font-stretch: 112%; letter-spacing: -.02em; min-width: 3.4em; font-size: 17px; }
   .dd-menu a span { color: var(--ink-2); font-weight: 500; font-size: 14px; }
-  /* on the home page every section is already on the page, so the menu stays out of the way */
-  body.is-home nav.menu, body.is-home .menu-btn { display: none !important; }
-  body.is-home .topbar > .wrap > .theme { display: inline-flex !important; margin-left: auto; }
-  .seg { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+  .seg { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; flex: none; }
   .seg button { border: 0; background: none; padding: 5px 9px; font: inherit; font-size: 12.5px; color: var(--ink-3); cursor: pointer; }
   .seg button.on { background: var(--paper-2); color: var(--ink); font-weight: 700; }
   .menu-btn { display: none; margin-left: auto; border: 2px solid var(--ink); background: none; border-radius: 999px; padding: 6px 16px; font: inherit; font-weight: 700; color: var(--ink); cursor: pointer; }
   .theme-in-menu { display: none !important; }
-  @media (max-width: 1020px) {
+  /* the home page already shows every section, so the menu stays out of the way there */
+  body.is-home nav.menu, body.is-home .menu-btn { display: none !important; }
+  body.is-home .topbar > .wrap > .theme { display: inline-flex !important; margin-left: auto; }
+  @media (max-width: 1060px) {
     .menu-btn { display: inline-flex; }
-    nav.menu { display: none; position: absolute; top: 68px; left: 0; right: 0; flex-direction: column; align-items: stretch; background: var(--paper); border-bottom: 1px solid var(--line); padding: 8px 20px 18px; gap: 0; }
+    nav.menu { display: none; position: absolute; top: 68px; left: 0; right: 0; flex-direction: column; align-items: stretch; background: var(--paper); border-bottom: 1px solid var(--line); padding: var(--g1) 20px var(--g4); gap: 0; max-height: calc(100vh - 68px); overflow: auto; }
     nav.menu.open { display: flex; }
-    nav.menu a { padding: 13px 4px; font-size: 18px; border-bottom: 1px solid var(--line); }
-    nav.menu a.on { color: var(--orange); border-bottom-color: var(--line); }
+    nav.menu > a, .dd-top { padding: 13px 4px; font-size: 18px; border-bottom: 1px solid var(--line); }
+    nav.menu .on { color: var(--orange); border-bottom-color: var(--line); }
     .topbar > .wrap > .theme { display: none; }
-    nav.menu .theme-in-menu { display: flex !important; margin-top: 14px; }
+    nav.menu .theme-in-menu { display: flex !important; margin-top: var(--g3); }
     .dd-top::after { display: none; }
-    #dd-cwgs { min-width: 0; }
-    .dd-menu { display: block; position: static; box-shadow: none; border: 0; padding: 0 0 6px 12px; min-width: 0; background: none; }
-    .dd-menu .dd-h { padding: 8px 4px 2px; }
+    .dd-menu, #dd-cwgs { display: block; position: static; box-shadow: none; border: 0; padding: 0 0 var(--g1) var(--g2); min-width: 0; background: none; }
     .dd-menu a { padding: 9px 4px; font-size: 16px; }
   }
 
   /* ---------- buttons, chips ---------- */
-  .btn { display: inline-flex; align-items: center; gap: 8px; border-radius: 999px; padding: 12px 24px; font-weight: 700; text-decoration: none; border: 2px solid var(--ink); font-size: 16px; margin: 0 6px 8px 0; }
+  .actions { display: flex; flex-wrap: wrap; gap: var(--g2); }
+  .btn { display: inline-flex; align-items: center; border-radius: 999px; padding: 12px 24px; font-weight: 700; text-decoration: none; border: 2px solid var(--ink); font-size: 16px; line-height: 1.2; }
   .btn.fill { background: var(--ink); color: var(--paper); }
+  .btn.blue { background: #005fc0; border-color: #005fc0; color: #fff; }
   .btn:hover { background: var(--orange); border-color: var(--orange); color: #fff; }
-  .chips { display: flex; flex-wrap: wrap; gap: 8px; }
-  .chip { display: inline-block; padding: 7px 14px; border-radius: 999px; border: 1.5px solid var(--line); text-decoration: none; font-size: 14.5px; font-weight: 600; background: var(--paper); }
-  .tag { display: inline-block; padding: 4px 11px; border-radius: 999px; font-size: 13.5px; font-weight: 600; background: color-mix(in srgb, var(--cwg-a, var(--blue)) 12%, transparent); margin: 0 6px 6px 0; }
-  .cut { pointer-events: none; }
+  .chips { display: flex; flex-wrap: wrap; gap: var(--g1); }
+  .chip { display: inline-block; padding: 6px 14px; border-radius: 999px; border: 1.5px solid var(--line); font-size: 14.5px; font-weight: 600; background: var(--paper); }
+  .tags { display: flex; flex-wrap: wrap; gap: 6px; }
+  .tag { display: inline-block; padding: 4px 11px; border-radius: 999px; font-size: 13.5px; font-weight: 600; background: color-mix(in srgb, var(--cwg-a, var(--blue)) 12%, transparent); }
+  .textlink { color: var(--blue); font-weight: 650; }
 
-  /* ---------- HOME ---------- */
-  .hero { position: relative; overflow: hidden; padding: 54px 0 46px; }
-  .hero .wrap { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 56px; align-items: center; min-height: 500px; }
-  .hero-logo { position: relative; }
-  .hero-logo .lk { width: 100%; max-width: 560px; display: block; position: relative; z-index: 1; }
-  .hero-copy { position: relative; }
-  .hero-copy .big { font-size: clamp(30px, 3.6vw, 46px); font-weight: 300; letter-spacing: -.02em; line-height: 1.1; margin: 0 0 20px; max-width: 18ch; }
-  .hero-copy .big b { font-weight: 850; font-stretch: 108%; }
-  .hero .cut { position: absolute; z-index: 0; }
-  .hero .cut.c1 { width: 190px; top: -112px; right: -20px; transform: rotate(7deg); }
-  .hero-copy > :not(.cut) { position: relative; z-index: 1; }
-  .hero .cut.c2 { width: 230px; bottom: -70px; left: -40px; transform: rotate(-5deg); opacity: .95; }
+  /* ---------- sections ---------- */
+  .sec { position: relative; padding: var(--g8) 0; }
+  .sec.tight { padding: var(--g7) 0; }
+  .sec-head { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: var(--g5); align-items: end; margin-bottom: var(--g6); }
+  @media (max-width: 760px) { .sec-head { grid-template-columns: 1fr; } }
+
+  /* HOME: hero */
+  .hero { position: relative; padding: var(--g8) 0; overflow: hidden; }
+  .hero .wrap { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: var(--g7); align-items: center; }
+  .hero .lk { width: 100%; max-width: 540px; display: block; }
+  .hero .big { font-size: clamp(32px, 3.6vw, 48px); font-weight: 300; letter-spacing: -.02em; line-height: 1.08; max-width: 16ch; }
+  .hero .big b { font-weight: 850; font-stretch: 108%; }
+  .hero .stack { --gap: var(--g4); }
   @media (prefers-reduced-motion: no-preference) {
-    .hero-logo .lk { animation: settle .8s cubic-bezier(.2,.7,.2,1) both; }
-    @keyframes settle { from { opacity: 0; transform: translateY(14px) scale(.98); } to { opacity: 1; transform: none; } }
+    .hero .lk { animation: settle .8s cubic-bezier(.2,.7,.2,1) both; }
+    @keyframes settle { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
   }
-  @media (max-width: 860px) {
-    .hero { padding: 28px 0 20px; } .hero .wrap { grid-template-columns: 1fr; min-height: 0; gap: 28px; }
-    .hero-logo .lk { max-width: 420px; } .hero .cut.c1, .hero .cut.c2 { display: none; }
-  }
+  @media (max-width: 860px) { .hero .wrap { grid-template-columns: 1fr; gap: var(--g6); } .hero .lk { max-width: 400px; } }
 
-  /* zone split: full-bleed colour */
+  /* HOME: zones */
   .zones { display: grid; grid-template-columns: 1fr 1fr; }
-  .zone-tile { position: relative; overflow: hidden; color: #fff; padding: 46px clamp(24px, 4vw, 56px) 40px; min-height: 440px; display: flex; flex-direction: column; }
+  .zone-tile { position: relative; overflow: hidden; color: #fff; padding: var(--g7) clamp(24px, 4vw, 56px) var(--g6); min-height: 460px; display: flex; flex-direction: column; }
   .zone-tile.SPEA { background: #1a5cba; } .zone-tile.SASIA { background: #e24a1b; }
-  .zone-tile .zname { font-size: clamp(64px, 9vw, 120px); font-weight: 900; font-stretch: 110%; letter-spacing: -.04em; line-height: .85; margin: 0; }
-  .zone-tile .zsub { font-size: 15px; letter-spacing: .28em; margin: 10px 0 22px; font-weight: 500; }
-  .zone-tile .zmap { position: absolute; right: -10%; bottom: -6%; width: 85%; opacity: .22; filter: brightness(0) invert(1); pointer-events: none; }
-  .zone-tile .zlist { position: relative; display: grid; gap: 10px; margin-top: auto; }
-  .zone-tile .zcwg { display: flex; align-items: baseline; gap: 14px; text-decoration: none; color: #fff; border-top: 1.5px solid rgba(255,255,255,.45); padding-top: 10px; }
-  .zone-tile .zcwg b { font-size: 26px; font-weight: 850; font-stretch: 110%; letter-spacing: -.02em; min-width: 3.6em; }
-  .zone-tile .zcwg span { font-size: 15px; opacity: .92; }
+  .zone-tile > :not(.decor) { position: relative; z-index: 1; }
+  .zone-tile .zname { display: block; text-decoration: none; }
+  .zone-tile .zname b { display: block; font-size: clamp(64px, 9vw, 116px); font-weight: 900; font-stretch: 110%; letter-spacing: -.04em; line-height: .86; }
+  .zone-tile .zname span { display: block; font-size: 14.5px; letter-spacing: .26em; margin-top: var(--g2); font-weight: 500; }
+  .zone-tile .zcount { font-size: 16px; margin-top: var(--g4); max-width: 34ch; line-height: 1.5; }
+  .zone-tile .zlist { display: grid; gap: var(--g2); margin-top: auto; padding-top: var(--g5); }
+  .zone-tile .zcwg { display: grid; grid-template-columns: 8.2rem minmax(0, 1fr); gap: var(--g3); align-items: baseline; text-decoration: none; color: #fff; border-top: 1.5px solid rgba(255,255,255,.45); padding-top: var(--g2); }
+  .zone-tile .zcwg b { font-size: 24px; font-weight: 850; font-stretch: 110%; letter-spacing: -.02em; }
+  .zone-tile .zcwg span { font-size: 15px; line-height: 1.45; opacity: .95; }
   .zone-tile .zcwg:hover span { text-decoration: underline; }
-  .zone-tile .zcount { position: relative; font-size: 15.5px; margin: 0 0 18px; max-width: 40ch; }
-  @media (max-width: 760px) { .zones { grid-template-columns: 1fr; } .zone-tile { min-height: 380px; } }
+  .zone-tile .zmap { position: absolute; right: -4%; bottom: 0; width: 78%; opacity: .26; pointer-events: none; }
+  @media (max-width: 760px) { .zones { grid-template-columns: 1fr; } .zone-tile { min-height: 400px; } .zone-tile .zcwg { grid-template-columns: 1fr; gap: 2px; } }
 
-  /* CD Strategies on the home page */
-  .cds { padding: 64px 0 20px; }
-  .cds-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 40px; margin-top: 26px; }
-  @media (max-width: 900px) { .cds-grid { grid-template-columns: 1fr; } }
-  .chart-title { font-size: 19px; font-weight: 750; margin: 0 0 4px; letter-spacing: -.01em; }
-  .chart-note { font-size: 14px; color: var(--ink-3); margin: 0 0 14px; }
-  .legend { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 13.5px; color: var(--ink-2); margin-bottom: 14px; }
+  /* HOME: finder */
+  .finder-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--g5) var(--g4); }
+  .fcol .fl img { height: 30px; width: auto; display: block; margin-bottom: var(--g2); }
+  .fcol ul { list-style: none; padding: 0; margin: 0; border-top: 2px solid var(--cwg-a); }
+  .fcol li a { display: block; padding: 10px 0; border-bottom: 1px solid var(--line); text-decoration: none; font-weight: 560; font-size: 15.5px; line-height: 1.35; }
+  .fcol li a:hover { color: var(--cwg-a); }
+  @media (max-width: 960px) { .finder-grid { grid-template-columns: 1fr 1fr; } }
+  @media (max-width: 520px) { .finder-grid { grid-template-columns: 1fr; } }
+
+  /* HOME: CD Strategies */
+  .cds-band { background: var(--paper-2); }
+  .cds-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: var(--g6); }
+  @media (max-width: 960px) { .cds-grid { grid-template-columns: 1fr; } }
+  .panel { background: var(--paper); border-radius: 22px; padding: var(--g5); }
+  .panel .h3 + .small { margin-top: 4px; }
+  .legend { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 13.5px; color: var(--ink-2); margin: var(--g3) 0; line-height: 1.4; }
   .legend i { display: inline-block; width: 11px; height: 11px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; }
-  .sbar-row { display: grid; grid-template-columns: 112px minmax(0, 1fr) 34px; gap: 14px; align-items: center; padding: 10px 0; border-top: 1px solid var(--line); }
-  .sbar-row img { height: 24px; width: auto; display: block; }
+  .sbar-row { display: grid; grid-template-columns: 104px minmax(0, 1fr) 30px; gap: var(--g3); align-items: center; padding: var(--g2) 0; border-top: 1px solid var(--line); }
+  .sbar-row img { height: 22px; width: auto; display: block; }
   .sbar { display: flex; height: 30px; border-radius: 6px; overflow: hidden; gap: 2px; background: var(--paper-2); }
   .sbar span { display: grid; place-items: center; font-size: 13px; font-weight: 700; color: #fff; min-width: 0; }
   .sbar span.dk { color: #000; }
   .sbar-row .tot { font-weight: 800; text-align: right; }
-  .yrs { display: grid; grid-template-columns: 26px repeat(10, minmax(0, 1fr)); align-items: end; gap: 0 6px; height: 220px; border-bottom: 2px solid var(--ink); padding-top: 18px; position: relative; }
-  .yrs .ax { align-self: stretch; display: flex; flex-direction: column; justify-content: space-between; font-size: 12px; color: var(--ink-3); text-align: right; padding-right: 4px; }
+  .yrs { display: grid; grid-template-columns: 30px repeat(10, minmax(0, 1fr)); align-items: end; gap: 0 6px; height: 200px; border-bottom: 2px solid var(--ink); padding-top: 22px; }
+  .yrs .ax { align-self: stretch; display: flex; flex-direction: column; justify-content: space-between; font-size: 12px; color: var(--ink-3); text-align: right; padding-right: 6px; }
   .yr { display: flex; align-items: flex-end; justify-content: center; gap: 3px; height: 100%; }
-  .yr .b { width: min(16px, 40%); border-radius: 4px 4px 0 0; position: relative; }
-  .yr .b em { position: absolute; top: -18px; left: 50%; transform: translateX(-50%); font-style: normal; font-size: 12px; font-weight: 700; color: var(--ink); }
+  .yr .b { width: min(14px, 40%); border-radius: 4px 4px 0 0; position: relative; }
+  .yr .b em { position: absolute; top: -19px; left: 50%; transform: translateX(-50%); font-style: normal; font-size: 12px; font-weight: 700; color: var(--ink); }
   .yr .b.s { background: #005fc0; } .yr .b.e { background: #e04c1e; }
-  .yr-lab { display: grid; grid-template-columns: 26px repeat(10, minmax(0, 1fr)); gap: 0 6px; font-size: 12.5px; color: var(--ink-2); text-align: center; margin-top: 6px; }
+  .yr-lab { display: grid; grid-template-columns: 30px repeat(10, minmax(0, 1fr)); gap: 0 6px; font-size: 12px; color: var(--ink-2); text-align: center; margin-top: var(--g1); }
   .yr-lab.act { color: var(--ink); font-weight: 700; margin-top: 2px; }
-  .yr-lab .ax { text-align: right; color: var(--ink-3); font-weight: 400; font-size: 11.5px; padding-right: 4px; }
-  .cds-cta { margin-top: 30px; }
-  .cds-cta .btn { background: #005fc0; border-color: #005fc0; color: #fff; }
-  .cds-cta .btn:hover { background: var(--orange); border-color: var(--orange); }
+  .yr-lab .ax { text-align: right; color: var(--ink-3); font-weight: 400; font-size: 11px; padding-right: 6px; }
+  .cds-cta { margin-top: var(--g6); }
+
+  /* HOME: groups band */
+  .band-navy { background: #24215f; color: #fff; }
+  .grp-row { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--g4); }
+  .grp-row a { text-decoration: none; padding-top: var(--g3); border-top: 2px solid rgba(255,255,255,.4); }
+  .grp-row b { display: block; font-size: clamp(42px, 5vw, 66px); font-weight: 900; font-stretch: 112%; letter-spacing: -.035em; line-height: 1; }
+  .grp-row span { display: block; margin-top: var(--g2); font-size: 15.5px; line-height: 1.4; opacity: .92; }
+  .grp-row a:hover b { color: var(--yellow); }
+  .band-navy .lede { color: rgba(255,255,255,.88); }
+  @media (max-width: 760px) { .grp-row { grid-template-columns: 1fr 1fr; gap: var(--g5) var(--g4); } }
+
+  /* HOME: doors */
+  .doors { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--g4); }
+  .door { position: relative; overflow: hidden; display: grid; grid-template-columns: minmax(0, 1fr) 190px; gap: var(--g4); align-items: center; text-decoration: none; padding: var(--g5); border-radius: 24px; min-height: 230px; }
+  .door .stack { --gap: var(--g1); }
+  .door p { color: var(--ink-2); font-size: 15.5px; max-width: 32ch; }
+  .door.d1 { background: color-mix(in srgb, var(--yellow) 26%, var(--paper)); }
+  .door.d3 { background: color-mix(in srgb, var(--orange) 14%, var(--paper)); }
+  .door:hover .h3 { text-decoration: underline; }
+  .door .cluster { height: 160px; }
+  @media (max-width: 860px) { .doors { grid-template-columns: 1fr; } .door { grid-template-columns: minmax(0, 1fr) 120px; min-height: 0; } .door .cluster { height: 110px; } }
+
+  /* ---------- inner pages ---------- */
+  .crumbs { font-size: 14px; color: var(--ink-3); padding-top: var(--g5); line-height: 1.5; }
+  .crumbs a { color: var(--ink-2); text-decoration: none; } .crumbs a:hover { text-decoration: underline; }
+  .crumbs .sep { margin: 0 7px; opacity: .5; }
+  .page-hero { display: grid; grid-template-columns: minmax(0, 1fr) minmax(240px, 380px); gap: var(--g6); align-items: center; padding-top: var(--g5); padding-bottom: var(--g7); }
+  .page-hero .stack { --gap: var(--g3); }
+  .page-hero .cluster { height: 230px; }
+  @media (max-width: 760px) { .page-hero { grid-template-columns: 1fr; gap: var(--g4); padding-bottom: var(--g6); } .page-hero .cluster { height: 150px; order: -1; max-width: 300px; } }
+  .page-body { padding-bottom: var(--g8); }
+
   /* maps */
   .aslp-map { position: relative; z-index: 0; isolation: isolate; height: 460px; border-radius: 22px; overflow: hidden; border: 1px solid var(--line); background: var(--paper-2); }
+  .aslp-map.sm { height: 380px; }
   .aslp-map .leaflet-tile-pane { filter: grayscale(.85) brightness(1.06) contrast(.9); }
   .aslp-map.map-dark .leaflet-tile-pane { filter: grayscale(.9) invert(1) hue-rotate(180deg) brightness(.85) contrast(.9); }
   .aslp-map .leaflet-tooltip { font: 13px/1.45 var(--font); padding: 8px 11px; border-radius: 10px; }
-  .map-block { margin: 0 0 40px; }
-  .map-block .legend { margin: 12px 0 0; }
-  .pin-dot { display: inline-block; width: 12px; height: 12px; border-radius: 50%; margin-right: 6px; vertical-align: -1px; }
-  @media (max-width: 700px) { .aslp-map { height: 340px; } }
-  /* territory finder */
-  .finder { padding: 60px 24px 34px; }
-  .finder-head { display: grid; grid-template-columns: minmax(0, 1fr) 280px; gap: 30px; align-items: end; margin-bottom: 26px; }
-  .finder-head .cut { width: 100%; }
-  .finder-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 26px 24px; }
-  .fcol h3 { margin: 0 0 10px; }
-  .fcol h3 img { height: 30px; width: auto; display: block; }
-  .fcol ul { list-style: none; padding: 0; margin: 0; }
-  .fcol li a { display: block; padding: 9px 0; border-bottom: 1px solid var(--line); text-decoration: none; font-weight: 550; font-size: 15.5px; }
-  .fcol li a:hover { color: var(--cwg-a); }
-  @media (max-width: 900px) { .finder-grid { grid-template-columns: 1fr 1fr; } .finder-head { grid-template-columns: 1fr; } .finder-head .cut { max-width: 240px; } }
-  @media (max-width: 520px) { .finder-grid { grid-template-columns: 1fr; } }
+  .map-legend { display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: 13.5px; color: var(--ink-2); margin-top: var(--g2); line-height: 1.4; }
+  .map-legend svg { vertical-align: -2px; margin-right: 6px; }
+  .dot { display: inline-block; width: 12px; height: 12px; border-radius: 50%; margin-right: 6px; vertical-align: -1px; }
+  @media (max-width: 700px) { .aslp-map { height: 340px; } .aslp-map.sm { height: 300px; } }
 
-  /* groups band */
-  .band-navy { background: #24215f; color: #fff; padding: 58px 0; position: relative; overflow: hidden; }
-  .grp-row { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); margin-top: 24px; position: relative; }
-  .grp-row a { text-decoration: none; padding: 18px 20px 20px 0; border-top: 2px solid rgba(255,255,255,.35); margin-right: 20px; }
-  .grp-row b { display: block; font-size: clamp(40px, 5vw, 64px); font-weight: 900; font-stretch: 112%; letter-spacing: -.035em; line-height: 1; }
-  .grp-row span { display: block; margin-top: 8px; font-size: 15.5px; opacity: .9; }
-  .grp-row a:hover b { color: var(--yellow); }
-  .band-navy .cut { position: absolute; right: -10px; top: -46px; width: 250px; }
-  .band-navy .intro { position: relative; max-width: 56ch; }
-  @media (max-width: 760px) { .grp-row { grid-template-columns: 1fr 1fr; gap: 10px 0; } .band-navy .cut { display: none; } }
-
-  /* three doors */
-  .doors { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 22px; padding: 60px 24px 76px; }
-  .door { display: block; text-decoration: none; padding: 26px 24px 26px; border-radius: 22px; min-height: 260px; }
-  .door .cut { height: 100px; width: auto; max-width: 100%; display: block; margin-bottom: 18px; }
-  .door p { margin: 0; color: var(--ink-2); font-size: 15.5px; }
-  .door.d1 { background: color-mix(in srgb, var(--yellow) 24%, var(--paper)); }
-  .door.d2 { background: color-mix(in srgb, var(--listen) 14%, var(--paper)); }
-  .door.d3 { background: color-mix(in srgb, var(--orange) 14%, var(--paper)); }
-  .door:hover .h3 { text-decoration: underline; }
-  @media (max-width: 860px) { .doors { grid-template-columns: 1fr; } .door { min-height: 0; } }
-
-  /* ---------- inner pages ---------- */
-  .page { padding: 32px 24px 76px; }
-  .crumbs { font-size: 14px; color: var(--ink-3); margin-bottom: 16px; }
-  .crumbs a { color: var(--ink-2); text-decoration: none; } .crumbs a:hover { text-decoration: underline; }
-  .crumbs .sep { margin: 0 7px; opacity: .5; }
-  .page-hero { display: grid; grid-template-columns: minmax(0, 1fr) minmax(220px, 360px); gap: 30px; align-items: center; margin-bottom: 34px; }
-  .page-hero .cut { width: 100%; }
-  @media (max-width: 760px) { .page-hero { grid-template-columns: 1fr; gap: 6px; } .page-hero .cut { max-width: 230px; order: -1; } }
-
-  /* CWGs page */
-  .zone-sec { position: relative; margin: 0 0 34px; border-radius: 26px; overflow: hidden; padding: 34px clamp(20px, 3vw, 40px) 36px; background: color-mix(in srgb, var(--cwg-b) 8%, var(--paper)); }
-  .zone-sec .zmap { position: absolute; right: -4%; top: 0; width: 62%; opacity: .75; pointer-events: none; }
-  .zone-sec > * { position: relative; }
-  .zone-sec-head { display: flex; justify-content: space-between; gap: 20px; align-items: flex-start; flex-wrap: wrap; margin-bottom: 26px; }
-  .zone-sec-head .zl { width: min(380px, 80vw); display: block; }
+  /* CWGs overview */
+  .zone-sec { position: relative; margin-top: var(--g6); border-radius: 28px; overflow: hidden; padding: var(--g6) clamp(20px, 3.4vw, 44px); background: color-mix(in srgb, var(--cwg-b) 8%, var(--paper)); }
+  .zone-sec > :not(.decor):not(.zmap) { position: relative; z-index: 1; }
+  .zone-sec .zmap { position: absolute; right: 0; top: 0; width: 46%; opacity: .5; pointer-events: none; }
+  .zone-sec-head { display: flex; justify-content: space-between; gap: var(--g4); align-items: center; min-height: 210px; margin-bottom: var(--g4); }
+  @media (max-width: 760px) { .zone-sec-head { min-height: 150px; align-items: flex-start; } }
+  .zone-sec-head .zl { width: min(360px, 78vw); display: block; }
   .zone-sec-head .zl img { width: 100%; display: block; }
-  .zone-sec-head .zdood { width: 250px; max-width: 45%; }
-  .cwg-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-  .cwg-panel { background: var(--paper); border-radius: 18px; padding: 24px; text-decoration: none; display: block; border-top: 6px solid var(--cwg-a); }
-  .cwg-panel img.lh { height: 48px; width: auto; display: block; margin-bottom: 14px; }
-  .cwg-panel .ld { font-size: 15px; color: var(--ink-2); margin-bottom: 14px; }
+  .cwg-pair { display: grid; grid-template-columns: 1fr 1fr; gap: var(--g4); }
+  .cwg-panel { background: var(--paper); border-radius: 20px; padding: var(--g5); text-decoration: none; display: block; border-top: 6px solid var(--cwg-a); }
+  .cwg-panel img.lh { height: 46px; width: auto; display: block; }
+  .cwg-panel .ld { font-size: 15px; color: var(--ink-2); margin-top: var(--g3); line-height: 1.5; }
   .cwg-panel .ld b { color: var(--ink); }
-  .cwg-panel .tl { font-size: 15px; color: var(--ink-2); line-height: 1.8; }
-  @media (max-width: 760px) { .cwg-pair { grid-template-columns: 1fr; } .zone-sec .zmap { width: 120%; right: -40%; opacity: .5; } .zone-sec-head .zdood { display: none; } }
+  .cwg-panel ul { list-style: none; padding: 0; margin: var(--g3) 0 0; font-size: 15px; }
+  .cwg-panel li { padding: 7px 0; border-top: 1px solid var(--line); line-height: 1.4; }
+  @media (max-width: 760px) { .cwg-pair { grid-template-columns: 1fr; } .zone-sec .zmap { width: 120%; right: -40%; opacity: .45; } }
   .paper-panel { display: inline-block; }
-  @media (prefers-color-scheme: dark) { :root:where(:not([data-theme="light"])) .paper-panel { background: #fff; border-radius: 12px; padding: 10px 14px; } :root:where(:not([data-theme="light"])) .zmap:not(.keep), :root:where(:not([data-theme="light"])) .map-bg { filter: invert(1); opacity: .18 !important; } }
+  @media (prefers-color-scheme: dark) { :root:where(:not([data-theme="light"])) .paper-panel { background: #fff; border-radius: 12px; padding: 10px 14px; } :root:where(:not([data-theme="light"])) .zone-sec .zmap, :root:where(:not([data-theme="light"])) .map-bg { opacity: .22 !important; } }
   :root[data-theme="dark"] .paper-panel { background: #fff; border-radius: 12px; padding: 10px 14px; }
-  :root[data-theme="dark"] .zone-sec .zmap, :root[data-theme="dark"] .map-bg { filter: invert(1); opacity: .18 !important; }
+  :root[data-theme="dark"] .zone-sec .zmap, :root[data-theme="dark"] .map-bg { opacity: .22 !important; }
 
+  /* CWG explainer */
+  .explain { margin-bottom: var(--g7); }
+  .ex-intro .lede { max-width: 62ch; }
+  .ex-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--g4); margin-top: var(--g5); }
+  .ex-card { background: var(--paper-2); border-radius: 22px; padding: var(--g5) var(--g4) var(--g4); }
+  .ex-card .cluster { width: 56px; height: 56px; margin-bottom: var(--g3); }
+  .ex-card .h3 + p { margin-top: var(--g1); color: var(--ink-2); font-size: 15.5px; }
+  .ex-how { margin-top: var(--g5); max-width: 78ch; }
+  .ex-how ul { margin: var(--g2) 0 0; padding-left: 1.2em; display: grid; gap: var(--g2); }
+  .ex-how li { padding-left: 4px; line-height: 1.55; }
+  .ex-how li::marker { color: var(--orange); }
+  @media (max-width: 860px) { .ex-grid { grid-template-columns: 1fr; } }
   /* CWG page */
-  .cwg-hero { position: relative; overflow: hidden; background: color-mix(in srgb, var(--cwg-a) 9%, var(--paper)); padding: 40px 0 46px; }
-  .cwg-hero .map-bg { position: absolute; right: -6%; top: 50%; transform: translateY(-50%); width: 72%; max-width: 1000px; pointer-events: none; }
-  .cwg-hero .wrap { position: relative; display: grid; grid-template-columns: minmax(0, 360px) minmax(0, 1fr); gap: 36px; align-items: end; }
+  .cwg-hero { position: relative; overflow: hidden; background: color-mix(in srgb, var(--cwg-a) 9%, var(--paper)); padding: var(--g6) 0; margin-top: var(--g4); }
+  .cwg-hero .map-bg { position: absolute; right: 0; top: 50%; transform: translateY(-50%); width: 56%; max-width: 820px; opacity: .45; pointer-events: none; }
+  .cwg-hero .wrap { display: grid; grid-template-columns: minmax(0, 340px) minmax(0, 1fr); gap: var(--g6); align-items: center; }
   .cwg-hero .lv { width: 100%; display: block; }
-  .cwg-hero .side { display: flex; flex-direction: column; gap: 18px; align-items: flex-end; }
-  .cwg-hero .side .dd { width: min(360px, 100%); }
-  .lead-card { background: var(--paper); border-radius: 18px; padding: 18px 22px; width: min(440px, 100%); border-left: 6px solid var(--cwg-a); }
-  .lead-card .who { font-size: 14px; color: var(--ink-3); margin-bottom: 2px; }
-  @media (max-width: 820px) { .cwg-hero .wrap { grid-template-columns: 1fr; } .cwg-hero .lv { max-width: 240px; } .cwg-hero .side { align-items: stretch; } .cwg-hero .side .dd { width: 200px; } .cwg-hero .map-bg { width: 140%; right: -50%; opacity: .5; } }
-  .terr-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(270px, 1fr)); column-gap: 28px; border-top: 2px solid var(--ink); margin-top: 8px; }
-  .terr-row { display: block; text-decoration: none; padding: 20px 0 22px; border-bottom: 1px solid var(--line); }
-  .terr-row .nm { font-size: 20px; font-weight: 750; letter-spacing: -.01em; line-height: 1.2; }
+  .cwg-hero .side { display: grid; gap: var(--g4); justify-items: end; align-self: end; }
+  
+  .lead-card { background: var(--paper); border-radius: 20px; padding: var(--g4); width: min(440px, 100%); border-left: 6px solid var(--cwg-a); }
+  .lead-card .who { font-size: 14px; color: var(--ink-3); }
+  @media (max-width: 820px) { .cwg-hero .wrap { grid-template-columns: 1fr; gap: var(--g5); } .cwg-hero .lv { max-width: 230px; } .cwg-hero .side { justify-items: stretch; } .cwg-hero .map-bg { width: 150%; right: -60%; opacity: .5; } }
+  .terr-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); column-gap: var(--g5); border-top: 2px solid var(--ink); margin-top: var(--g4); }
+  .terr-row { display: block; text-decoration: none; padding: var(--g4) 0; border-bottom: 1px solid var(--line); }
+  .terr-row .nm { font-size: 20px; font-weight: 750; letter-spacing: -.01em; line-height: 1.25; }
   .terr-row:hover .nm { color: var(--cwg-a); }
-  .terr-row .where { font-size: 14.5px; color: var(--ink-3); margin: 4px 0 8px; }
-  .countries { margin-top: 36px; }
+  .terr-row .where { font-size: 14.5px; color: var(--ink-3); margin: 6px 0 var(--g2); line-height: 1.45; }
 
   /* territory page */
-  .t-hero { border-bottom: 1px solid var(--line); padding: 30px 0; position: relative; overflow: hidden; background: color-mix(in srgb, var(--cwg-a) 5%, var(--paper)); }
+  .t-hero { position: relative; overflow: hidden; margin-top: var(--g4); padding: var(--g6) 0; background: color-mix(in srgb, var(--cwg-a) 6%, var(--paper)); }
   .t-hero::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 10px; background: var(--cwg-a); }
-  .t-hero .wrap { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 30px; align-items: center; }
-  .t-hero .lockup img { height: 40px; width: auto; display: block; margin-bottom: 14px; }
-  .t-hero .cut { width: 100%; }
-  .facts-row { display: flex; flex-wrap: wrap; gap: 14px 40px; margin-top: 6px; }
-  .facts-row .k { font-size: 13.5px; color: var(--ink-3); }
-  .facts-row .v { font-weight: 650; }
-  @media (max-width: 760px) { .t-hero .wrap { grid-template-columns: 1fr; } .t-hero .cut { display: none; } }
-  .t-body { display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr); gap: 46px; padding: 38px 24px 76px; }
-  @media (max-width: 860px) { .t-body { grid-template-columns: 1fr; gap: 30px; } }
-  .t-sec { padding: 0 0 26px; margin-bottom: 26px; border-bottom: 1px solid var(--line); }
-  .t-sec:last-child { border-bottom: 0; }
-  .t-sec p { margin: 6px 0 0; white-space: pre-line; }
-  .aside-box { border-radius: 20px; padding: 22px; background: var(--paper-2); margin-bottom: 18px; }
-  .contact { padding: 12px 0; border-top: 1px solid var(--line); }
-  .contact:first-of-type { border-top: 0; padding-top: 2px; }
-  .contact .nm { font-weight: 750; } .contact .rl { color: var(--ink-2); font-size: 14.5px; }
+  .t-hero .wrap { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: var(--g6); align-items: center; }
+  .t-hero .lockup img { height: 38px; width: auto; display: block; }
+  .t-hero .stack { --gap: var(--g4); }
+  .t-hero .cluster { height: 190px; }
+  .facts-row { display: flex; flex-wrap: wrap; gap: var(--g3) var(--g6); }
+  .facts-row .k { font-size: 13.5px; color: var(--ink-3); line-height: 1.4; }
+  .facts-row .v { font-weight: 650; line-height: 1.45; margin-top: 2px; }
+  @media (max-width: 760px) { .t-hero .wrap { grid-template-columns: 1fr; } .t-hero .cluster { display: none; } }
+  .t-body { display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr); gap: var(--g6); padding-top: var(--g6); padding-bottom: var(--g8); }
+  @media (max-width: 900px) { .t-body { grid-template-columns: 1fr; gap: var(--g5); } }
+  .t-sec { padding-bottom: var(--g5); margin-bottom: var(--g5); border-bottom: 1px solid var(--line); }
+  .t-sec:last-child { border-bottom: 0; margin-bottom: 0; }
+  .t-sec .h3 + * { margin-top: var(--g2); }
+  .t-sec p { white-space: pre-line; }
+  .office-list { list-style: none; padding: 0; margin: var(--g3) 0 0; display: grid; gap: 6px; font-size: 15px; }
+  .office-list li { display: flex; gap: 10px; align-items: baseline; line-height: 1.45; }
+  .office-list svg { flex: none; transform: translateY(2px); }
+  .aside-box { border-radius: 20px; padding: var(--g4); background: var(--paper-2); }
+  .aside-box + .aside-box { margin-top: var(--g3); }
+  .aside-box .h3 + * { margin-top: var(--g2); }
+  .contact + .contact { margin-top: var(--g2); padding-top: var(--g2); border-top: 1px solid var(--line); }
+  .contact .nm { font-weight: 750; line-height: 1.35; } .contact .rl { color: var(--ink-2); font-size: 14.5px; line-height: 1.45; margin-top: 2px; }
+  .contact .em { margin-top: 4px; display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; }
   .contact a { font-size: 14.5px; word-break: break-all; color: var(--blue); }
-  .copy { border: 1px solid var(--line); background: var(--paper); border-radius: 999px; font: inherit; font-size: 12.5px; padding: 2px 10px; margin-left: 8px; cursor: pointer; color: var(--ink-2); }
+  .copy { border: 1px solid var(--line); background: var(--paper); border-radius: 999px; font: inherit; font-size: 12.5px; padding: 2px 10px; cursor: pointer; color: var(--ink-2); }
   .status-chip { display: inline-flex; align-items: center; gap: 8px; font-weight: 700; }
   .status-chip i { width: 12px; height: 12px; border-radius: 3px; display: inline-block; }
   .empty { color: var(--ink-3); }
-  .textlink { color: var(--blue); font-weight: 650; }
 
   /* groups */
-  .grp-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; }
-  .grp-card { position: relative; overflow: hidden; display: block; text-decoration: none; border-radius: 26px; padding: 30px 30px 28px; min-height: 270px; color: #fff; }
+  .grp-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--g4); }
+  .grp-card { position: relative; overflow: hidden; display: block; text-decoration: none; border-radius: 28px; padding: var(--g5); min-height: 280px; color: #fff; }
+  .grp-card > :not(.decor) { position: relative; z-index: 1; }
   .grp-card.g0 { background: #e14b1e; } .grp-card.g1 { background: #005fc0; } .grp-card.g2 { background: #f5c400; color: #000; } .grp-card.g3 { background: #24215f; }
-  .grp-card b { display: block; font-size: clamp(60px, 8vw, 104px); font-weight: 900; font-stretch: 115%; letter-spacing: -.04em; line-height: .9; }
-  .grp-card .gn { font-size: 20px; font-weight: 650; margin-top: 12px; max-width: 22ch; line-height: 1.25; }
-  .grp-card .gd { font-size: 15px; margin-top: 10px; opacity: .9; max-width: 40ch; }
+  .grp-card b { display: block; font-size: clamp(60px, 8vw, 100px); font-weight: 900; font-stretch: 115%; letter-spacing: -.04em; line-height: .9; }
+  .grp-card .gn { font-size: 20px; font-weight: 650; margin-top: var(--g3); max-width: 20ch; line-height: 1.25; }
+  .grp-card .gd { font-size: 15px; margin-top: var(--g2); opacity: .92; max-width: 40ch; line-height: 1.5; }
   .grp-card:hover .gn { text-decoration: underline; }
-  @media (max-width: 760px) { .grp-grid { grid-template-columns: 1fr; } .grp-card { min-height: 200px; } }
-  .grp-hero { border-radius: 28px; padding: 40px clamp(22px, 4vw, 48px); color: #fff; margin-bottom: 34px; }
-  .grp-hero b { display: block; font-size: clamp(80px, 13vw, 180px); font-weight: 900; font-stretch: 115%; letter-spacing: -.045em; line-height: .85; }
-  .grp-hero .gn { font-size: clamp(22px, 2.6vw, 30px); font-weight: 650; margin-top: 14px; }
-  .two-col { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); gap: 40px; align-items: start; }
-  @media (max-width: 820px) { .two-col { grid-template-columns: 1fr; } }
+  @media (max-width: 760px) { .grp-grid { grid-template-columns: 1fr; } .grp-card { min-height: 220px; } }
+  .grp-hero { position: relative; overflow: hidden; border-radius: 30px; padding: var(--g6) clamp(22px, 4vw, 52px); color: #fff; margin: var(--g5) 0 var(--g6); }
+  .grp-hero > :not(.decor) { position: relative; z-index: 1; }
+  .grp-hero b { display: block; font-size: clamp(80px, 13vw, 176px); font-weight: 900; font-stretch: 115%; letter-spacing: -.045em; line-height: .85; }
+  .grp-hero .gn { font-size: clamp(22px, 2.6vw, 30px); font-weight: 650; margin-top: var(--g3); line-height: 1.2; }
+  .two-col { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); gap: var(--g6); align-items: start; }
+  @media (max-width: 820px) { .two-col { grid-template-columns: 1fr; gap: var(--g5); } }
 
   /* about + newsletter */
-  .statement { font-size: clamp(28px, 4vw, 46px); font-weight: 300; letter-spacing: -.02em; line-height: 1.1; max-width: 18ch; margin: 0 0 24px; }
+  .statement { font-size: clamp(26px, 3.4vw, 40px); font-weight: 300; letter-spacing: -.02em; line-height: 1.12; max-width: 20ch; }
   .statement b { font-weight: 850; }
-  .soon { border: 2px dashed var(--line); border-radius: 22px; padding: 32px; color: var(--ink-2); }
+  .soon { border: 2px dashed var(--line); border-radius: 22px; padding: var(--g5); color: var(--ink-2); }
   .soon .h3 { color: var(--ink); }
-  .shelf { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 22px; margin-top: 26px; }
-  .shelf .spine { aspect-ratio: 3 / 4; border-radius: 6px 16px 16px 6px; background: var(--paper-2); border: 1.5px dashed var(--line); display: grid; place-items: center; color: var(--ink-3); font-size: 14px; text-align: center; padding: 12px; }
+  .soon .h3 + p { margin-top: var(--g1); }
+  .shelf { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: var(--g4); margin-top: var(--g5); }
+  .shelf .spine { aspect-ratio: 3 / 4; border-radius: 6px 16px 16px 6px; background: var(--paper-2); border: 1.5px dashed var(--line); display: grid; place-items: center; color: var(--ink-3); font-size: 14px; text-align: center; padding: var(--g2); }
 
-  footer { background: #000; color: #fff; padding: 46px 0 50px; }
-  footer .wrap { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 30px; align-items: end; }
-  footer .fname { font-size: clamp(26px, 3.6vw, 42px); line-height: 1.02; letter-spacing: -.02em; margin: 0 0 18px; }
+  footer { background: #000; color: #fff; padding: var(--g7) 0 var(--g6); }
+  footer .wrap { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: var(--g5); align-items: end; }
+  footer .fname { font-size: clamp(26px, 3.4vw, 40px); line-height: 1.04; letter-spacing: -.02em; }
   footer .fname b { font-weight: 850; } footer .fname span { font-weight: 300; }
-  footer .tagline { font-weight: 900; font-stretch: 115%; letter-spacing: -.02em; font-size: 20px; }
+  footer .tagline { font-weight: 900; font-stretch: 115%; letter-spacing: -.02em; font-size: 20px; margin-top: var(--g4); }
   footer .tagline .a { color: #0a84ff; } footer .tagline .b { color: #f5c400; } footer .tagline .c { color: #ff6a1a; }
-  footer nav { display: flex; flex-direction: column; gap: 8px; text-align: right; font-size: 15px; }
+  footer nav { display: grid; gap: var(--g1); text-align: right; font-size: 15px; }
   footer nav a { text-decoration: none; opacity: .85; } footer nav a:hover { opacity: 1; text-decoration: underline; }
-  footer .copy-line { grid-column: 1 / -1; font-size: 13px; opacity: .6; border-top: 1px solid rgba(255,255,255,.2); padding-top: 18px; }
+  footer .copy-line { grid-column: 1 / -1; font-size: 13px; opacity: .6; border-top: 1px solid rgba(255,255,255,.2); padding-top: var(--g4); margin-top: var(--g3); }
   @media (max-width: 700px) { footer .wrap { grid-template-columns: 1fr; } footer nav { text-align: left; } }
-  .loading { padding: 80px 24px; color: var(--ink-3); }
+  .loading { padding: var(--g8) 24px; color: var(--ink-3); }
 </style>
 </head>
 <body>
@@ -372,17 +411,18 @@ const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": 
 const slug = s => String(s || "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
 
 // ---- theme (shared with the other ASLP sites) ----
+const mapDark = () => { const a = document.documentElement.getAttribute("data-theme"); return a ? a === "dark" : matchMedia("(prefers-color-scheme: dark)").matches; };
 function applyTheme(t) {
   if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t); else document.documentElement.removeAttribute("data-theme");
   document.querySelectorAll("[data-theme-set]").forEach(b => b.classList.toggle("on", b.dataset.themeSet === (t || "auto")));
+  document.querySelectorAll(".aslp-map").forEach(el => el.classList.toggle("map-dark", mapDark()));
 }
 let theme = "auto"; try { theme = localStorage.getItem("cds-theme") || "auto"; } catch (e) {}
 applyTheme(theme);
-document.querySelectorAll("[data-theme-set]").forEach(b => b.addEventListener("click", () => { theme = b.dataset.themeSet; try { localStorage.setItem("cds-theme", theme); } catch (e) {} applyTheme(theme);
-  document.querySelectorAll(".aslp-map").forEach(el => el.classList.toggle("map-dark", typeof mapDark === "function" && mapDark())); }));
+document.querySelectorAll("[data-theme-set]").forEach(b => b.addEventListener("click", () => { theme = b.dataset.themeSet; try { localStorage.setItem("cds-theme", theme); } catch (e) {} applyTheme(theme); }));
 $("menu-btn").addEventListener("click", () => { const o = $("menu").classList.toggle("open"); $("menu-btn").setAttribute("aria-expanded", o); });
 
-// ---- structure + brand artwork (brand/ comes from the ASLP presentation template and logo pack) ----
+// ---- structure + brand artwork ----
 const ZONES = [
   { key: "SPEA", label: "South Pacific and East Asia", sub: "South Pacific East Asia Zones", test: c => /^spea/i.test(c) },
   { key: "SASIA", label: "South Asia", sub: "South Asia Zones", test: c => /^(sasia|south asia)/i.test(c) },
@@ -392,12 +432,33 @@ const cwgParts = c => { const m = String(c || "").trim().match(/^(SPEA|SASIA)\s*
 const cwgVars = c => { const p = cwgParts(c); return p ? `--cwg-b: var(--${p.zone.toLowerCase()}); --cwg-a: var(--${p.zone.toLowerCase()}${p.num});` : "--cwg-b: var(--blue); --cwg-a: var(--blue);"; };
 const zoneVars = z => `--cwg-b: var(--${z.toLowerCase()}); --cwg-a: var(--${z.toLowerCase()});`;
 const cwgSlug = c => slug(c);
-const ART = c => { const p = cwgParts(c); if (!p) return null; const k = `${p.zone.toLowerCase()}-${p.num}`;
-  return { h: `brand/cwg-${k}-h.webp`, v: `brand/cwg-${k}-v.webp`, map: `brand/map-${k}.webp`, doodles: `brand/doodles-${k}.webp` }; };
-const ZMAP = { SPEA: "brand/map-spea-2.webp", SASIA: "brand/map-sasia-1.webp" };
-const cut = (n, cls) => `<img class="cut ${cls || ""}" src="brand/doodles-${n}.webp" alt="" aria-hidden="true" loading="lazy">`;
+const cwgKey = c => { const p = cwgParts(c); return p ? `${p.zone.toLowerCase()}-${p.num}` : ""; };
+const ART = c => { const k = cwgKey(c); return k ? { h: `brand/cwg-${k}-h.webp`, v: `brand/cwg-${k}-v.webp`, map: `brand/zmap-${k}-color.webp` } : null; };
+const ZMAP = { SPEA: "brand/zmap-spea-white.webp", SASIA: "brand/zmap-sasia-white.webp" };
+const ZMAPC = { SPEA: "brand/zmap-spea-color.webp", SASIA: "brand/zmap-sasia-color.webp" };
+const ZCOL = { SPEA: "#1a5cba", SASIA: "#e24a1b" };
+
+/* Decoration: each cut-out shape from the template is its own element.
+   el(name, css position, width px, rotation deg, extra classes)  */
+const el = (n, pos, w, r = 0, cls = "") => `<img class="el ${cls}" src="brand/el/${n}.webp" alt="" aria-hidden="true" loading="lazy" style="${pos};width:${w}px;${r ? `transform:rotate(${r}deg);` : ""}">`;
+const decor = (items, cls = "") => `<div class="decor ${cls}" aria-hidden="true">${items.join("")}</div>`;
+/* clusters: shapes placed by % inside a box, so the arrangement scales with the box */
+const cl = (n, x, y, w, r = 0, cls = "") => `<img class="el ${cls}" src="brand/el/${n}.webp" alt="" aria-hidden="true" loading="lazy" style="left:${x}%;top:${y}%;width:${w}%;${r ? `transform:rotate(${r}deg);` : ""}">`;
+const cluster = items => `<div class="cluster" aria-hidden="true">${items.join("")}</div>`;
+// each CWG's own shapes, from its slides in the template
+const CWG_SET = {
+  "spea-1": [["spe1-02", 0, 18, 26], ["spe1-10", 30, 0, 22, -6], ["spe1-06", 58, 26, 18, 10], ["spe1-16", 22, 66, 40], ["spe1-12", 80, 56, 18, 8]],
+  "spea-2": [["spe2-04", 0, 8, 26], ["spe2-17", 30, 30, 22], ["spe2-19", 56, 0, 22, 8], ["spe2-03", 80, 44, 18, -8], ["spe2-12", 6, 78, 30]],
+  "sasia-1": [["sas1-14", 0, 10, 22], ["sas1-17", 26, 34, 28], ["sas1-13", 60, 0, 20, 8], ["sas1-02", 20, 76, 36], ["sas1-18", 80, 46, 18]],
+  "sasia-2": [["sas2-03", 0, 16, 24], ["sas2-02", 28, 0, 30], ["sas2-14", 62, 22, 22], ["sas2-09", 30, 58, 18, 12], ["sas2-13", 84, 6, 14, -6]],
+};
+const cwgDecor = c => { const s = CWG_SET[cwgKey(c)]; if (!s) return "";
+  return decor([el(s[0][0], "top:36px;left:34%", 70, 0, "hm"), el(s[2][0], "bottom:36px;left:40%", 56, 8, "hm"), el(s[3][0], "top:44%;left:40%", 40, -8, "hm")]); };
+const cwgCluster = c => { const s = CWG_SET[cwgKey(c)]; return s ? cluster(s.map(a => cl(...a))) : ""; };
+
 const STATUS = { not_started: ["Not started", "var(--s0)"], workshop: ["Consultation scheduled", "var(--s1)"], drafting: ["Drafting", "var(--s2)"], submitted: ["Submitted for approval", "var(--s3)"],
   approved: ["Approved", "var(--s4)"], implementing: ["In implementation", "var(--s5)"], ended: ["Period ended", "var(--s6)"] };
+const SKEYS = Object.keys(STATUS);
 const isRegion = t => /\bregion$/i.test(String(t.name || "").trim());
 
 // ---- data ----
@@ -414,13 +475,13 @@ const terrsOf = c => terrs().filter(t => (t.cwg || "").trim() === c);
 const leadOf = c => (data.cwgLeads || []).find(l => l.cwg === c);
 const terrName = id => (terrs().find(t => t.id === id) || {}).name || "";
 const shortName = n => String(n || "").replace(/\s+(Territory|Region)$/i, "");
-const crumbs = list => `<nav class="crumbs" aria-label="Breadcrumb">${list.map(([t, h], i) => (i ? `<span class="sep">/</span>` : "") + (h ? `<a href="${h}">${esc(t)}</a>` : `<span>${esc(t)}</span>`)).join("")}</nav>`;
-const tags = list => (list || []).map(x => `<span class="tag">${esc(x)}</span>`).join("");
+const crumbs = list => `<nav class="crumbs wrap" aria-label="Breadcrumb">${list.map(([t, h], i) => (i ? `<span class="sep">/</span>` : "") + (h ? `<a href="${h}">${esc(t)}</a>` : `<span>${esc(t)}</span>`)).join("")}</nav>`;
+const tags = list => `<div class="tags">${(list || []).map(x => `<span class="tag">${esc(x)}</span>`).join("")}</div>`;
 const statusChip = t => { const s = STATUS[t.status]; return s ? `<span class="status-chip"><i style="background:${s[1]}"></i>${s[0]}</span>` : "Not recorded"; };
 function contactHtml(c) {
   const name = [c.rank, c.name].filter(Boolean).join(" ");
   return `<div class="contact"><div class="nm">${esc(name)}</div>${c.role ? `<div class="rl">${esc(c.role)}</div>` : ""}
-    ${c.email ? `<div><a href="mailto:${esc(c.email)}">${esc(c.email)}</a><button class="copy" data-copy="${esc(c.email)}">Copy</button></div>` : ""}</div>`;
+    ${c.email ? `<div class="em"><a href="mailto:${esc(c.email)}">${esc(c.email)}</a><button class="copy" data-copy="${esc(c.email)}">Copy</button></div>` : ""}</div>`;
 }
 document.addEventListener("click", async e => {
   const b = e.target.closest("[data-copy]"); if (!b) return;
@@ -428,143 +489,206 @@ document.addEventListener("click", async e => {
 });
 const aboutFirst = () => { const b = (data.content && data.content.about && data.content.about.body) || ""; return b ? b.split(/\n\s*\n/)[0].slice(0, 300) : ""; };
 
+// ---- maps ----
+let maps = [], pendingMaps = [];
+const pinSvg = (color, w = 26) => `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${Math.round(w * 36 / 26)}" viewBox="0 0 26 36" aria-hidden="true"><path d="M13 1C6.4 1 1 6.3 1 12.9c0 8.6 10.4 20.6 11.2 21.5a1 1 0 0 0 1.6 0C14.6 33.5 25 21.5 25 12.9 25 6.3 19.6 1 13 1z" fill="${color}" stroke="#fff" stroke-width="2"/><circle cx="13" cy="13" r="4.6" fill="#fff"/></svg>`;
+const officeSvg = (w = 20) => `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${w}" viewBox="0 0 22 22" aria-hidden="true"><rect x="3" y="3" width="16" height="16" rx="3" transform="rotate(45 11 11)" fill="#24215f" stroke="#fff" stroke-width="2"/><circle cx="11" cy="11" r="3" fill="#fff"/></svg>`;
+function baseMap(el) {
+  const m = L.map(el, { scrollWheelZoom: false, worldCopyJump: false, minZoom: 2, zoomSnap: 0.25 });
+  L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 18, attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> contributors' }).addTo(m);
+  el.classList.toggle("map-dark", mapDark());
+  m.on("focus click", () => m.scrollWheelZoom.enable()); m.on("mouseout", () => m.scrollWheelZoom.disable());
+  maps.push(m); return m;
+}
+// overview maps: one pin per HQ, coloured by zone
+function mountPins(id, list) {
+  const el = $(id); if (!el || !window.L) return;
+  const m = baseMap(el), pts = [];
+  list.forEach(t => {
+    if (typeof t.lat !== "number" || typeof t.lng !== "number") return;
+    const mk = L.marker([t.lat, t.lng], { icon: L.divIcon({ className: "", html: pinSvg(ZCOL[zoneOf(t.cwg)] || "#6f6e69"), iconSize: [26, 36], iconAnchor: [13, 35] }), title: t.name, keyboard: true }).addTo(m);
+    mk.bindTooltip(`<strong>${esc(t.name)}</strong><br>${esc(t.cwg || "")}${t.location ? `<br><span style="opacity:.75">${isRegion(t) ? "RHQ" : "THQ"}: ${esc(t.location)}</span>` : ""}`, { direction: "top", offset: [0, -30] });
+    mk.on("click", () => { location.hash = `#/territory/${t.id}`; });
+    pts.push([t.lat, t.lng]);
+  });
+  if (pts.length > 1) m.fitBounds(pts, { padding: [44, 44], maxZoom: 6 }); else if (pts.length) m.setView(pts[0], 5); else m.setView([10, 100], 3);
+}
+// territory map: its countries shaded, its HQ pin and its office pins
+let worldGeo = null, worldP = null;
+const loadWorld = () => worldGeo ? Promise.resolve(worldGeo) : (worldP = worldP || fetch("vendor/countries-50m.json").then(r => r.json()).then(t => (worldGeo = topojson.feature(t, t.objects.countries))));
+const ALIAS = { "south korea": ["south korea", "korea"], "hong kong": ["hong kong"], "macao": ["macao", "macau"], "solomon is.": ["solomon is.", "solomon islands"], "united arab emirates": ["united arab emirates"] };
+const shiftLng = (g, s) => { const f = c => typeof c[0] === "number" ? [c[0] < 0 && s ? c[0] + 360 : c[0], c[1]] : c.map(f); return { ...g, coordinates: f(g.coordinates) }; };
+async function mountTerritory(id, t) {
+  const el = $(id); if (!el || !window.L) return;
+  const m = baseMap(el).setView(typeof t.lat === "number" ? [t.lat, t.lng] : [10, 100], 4), color = ZCOL[zoneOf(t.cwg)] || "#6f6e69", names = (t.countries || []).map(x => x.toLowerCase());
+  let feats = [];
+  try { await loadWorld(); feats = worldGeo.features.filter(f => { const n = String(f.properties.name || "").toLowerCase(); return names.some(c => c === n || (ALIAS[c] || []).includes(n)); }); } catch (e) {}
+  if (!maps.includes(m)) return;          // page changed while loading
+  const lngs = []; feats.forEach(f => JSON.stringify(f.geometry.coordinates).replace(/\[(-?[\d.]+),/g, (mm, x) => { lngs.push(+x); return mm; }));
+  const shift = lngs.some(x => x > 150) && lngs.some(x => x < -150), sh = x => (shift && x < 0 ? x + 360 : x);
+  const pts = [];
+  if (feats.length) {
+    const gj = L.geoJSON({ type: "FeatureCollection", features: feats.map(f => ({ ...f, geometry: shiftLng(f.geometry, shift) })) },
+      { style: { color, weight: 1.5, fillColor: color, fillOpacity: .28 }, onEachFeature: (f, ly) => ly.bindTooltip(esc(f.properties.name), { sticky: true }) }).addTo(m);
+    const b = gj.getBounds(); if (b.isValid()) pts.push(b.getSouthWest(), b.getNorthEast());
+    gj.eachLayer(ly => { const lb = ly.getBounds(); if (lb.isValid() && (lb.getNorth() - lb.getSouth()) * (lb.getEast() - lb.getWest()) < 2) L.circleMarker(lb.getCenter(), { radius: 7, color, weight: 2, fillColor: color, fillOpacity: .45 }).bindTooltip(esc(ly.feature.properties.name)).addTo(m); });
+  }
+  if (typeof t.lat === "number" && typeof t.lng === "number") {
+    L.marker([t.lat, sh(t.lng)], { icon: L.divIcon({ className: "", html: pinSvg(color), iconSize: [26, 36], iconAnchor: [13, 35] }), zIndexOffset: 1000, title: t.name })
+      .bindTooltip(`<strong>${isRegion(t) ? "Regional" : "Territorial"} Headquarters</strong>${t.location ? `<br>${esc(t.location)}` : ""}`, { direction: "top", offset: [0, -32] }).addTo(m);
+    pts.push(L.latLng(t.lat, sh(t.lng)));
+  }
+  (t.offices || []).forEach(o => {
+    if (typeof o.lat !== "number" || typeof o.lng !== "number") return;
+    L.marker([o.lat, sh(o.lng)], { icon: L.divIcon({ className: "", html: officeSvg(22), iconSize: [22, 22], iconAnchor: [11, 11] }), zIndexOffset: 900, title: o.name })
+      .bindTooltip(`<strong>${esc(o.name || "Office")}</strong>`, { direction: "top", offset: [0, -10] }).addTo(m);
+    pts.push(L.latLng(o.lat, sh(o.lng)));
+  });
+  if (pts.length) m.fitBounds(L.latLngBounds(pts), { padding: [36, 36], maxZoom: 7 }); else m.setView([10, 100], 3);
+}
+const zoneLegend = zs => `<div class="map-legend">${zs.map(z => `<span><span class="dot" style="background:${ZCOL[z]}"></span>${z} territories and regions</span>`).join("")}<span>Select a pin to open the territory.</span></div>`;
+
 // ---- CD Strategies charts (same rules as the CD Strategies site) ----
-const SKEYS = Object.keys(STATUS);
-const DARK_INK = { drafting: true };
 const periodYears = v => { const m = String(v || "").match(/(\d{4})\D+(\d{4})/); if (m) { const a = +m[1], b = +m[2]; return a <= b ? [a, b] : [b, a]; } const o = String(v || "").match(/^\s*(\d{4})\s*$/); return o ? [+o[1], +o[1]] : null; };
 function statusByCwg() {
-  const cl = cwgList();
   return `<div class="legend">${SKEYS.map(k => `<span><i style="background:${STATUS[k][1]}"></i>${STATUS[k][0]}</span>`).join("")}</div>
-    ${cl.map(c => { const ts = terrsOf(c);
+    ${cwgList().map(c => { const ts = terrsOf(c);
       return `<div class="sbar-row"><a href="#/cwg/${cwgSlug(c)}">${ART(c) ? `<img src="${ART(c).h}" alt="${esc(c)}">` : esc(c)}</a>
         <div class="sbar" role="img" aria-label="${esc(c)}: ${SKEYS.map(k => `${STATUS[k][0]} ${ts.filter(t => t.status === k).length}`).join(", ")}">${SKEYS.map(k => { const n = ts.filter(t => t.status === k).length;
-          return n ? `<span class="${DARK_INK[k] ? "dk" : ""}" style="flex:${n};background:${STATUS[k][1]}" title="${STATUS[k][0]}: ${n}">${n}</span>` : ""; }).join("")}</div>
+          return n ? `<span class="${k === "drafting" ? "dk" : ""}" style="flex:${n};background:${STATUS[k][1]}" title="${STATUS[k][0]}: ${n}">${n}</span>` : ""; }).join("")}</div>
         <div class="tot">${ts.length}</div></div>`; }).join("")}`;
 }
 function implTimeline() {
   const Y0 = new Date().getFullYear(), years = Array.from({ length: 10 }, (_, k) => Y0 + k);
   const cyc = terrs().flatMap(t => [periodYears(t.strategyPeriod), ...(t.pastCycles || []).map(c => periodYears(c.period))]).filter(Boolean);
   const st = years.map(y => cyc.filter(p => p[0] === y).length), en = years.map(y => cyc.filter(p => p[1] === y).length);
-  const act = years.map(y => cyc.filter(p => p[0] <= y && y <= p[1]).length);
-  const mx = Math.max(3, ...st, ...en);
+  const act = years.map(y => cyc.filter(p => p[0] <= y && y <= p[1]).length), mx = Math.max(3, ...st, ...en);
   const withP = terrs().filter(t => periodYears(t.strategyPeriod) || (t.pastCycles || []).some(c => periodYears(c.period))).length;
+  const bar = (n, k) => `<div class="b ${k}" style="height:${n / mx * 100}%">${n ? `<em>${n}</em>` : ""}</div>`;
   return `<div class="legend"><span><i style="background:#005fc0"></i>Starting implementation</span><span><i style="background:#e04c1e"></i>Ending</span></div>
     <div class="yrs" role="img" aria-label="${years.map((y, i) => `${y}: ${st[i]} starting, ${en[i]} ending`).join("; ")}"><div class="ax"><span>${mx}</span><span>0</span></div>
-      ${years.map((y, i) => `<div class="yr">${st[i] ? `<div class="b s" style="height:${st[i] / mx * 100}%"><em>${st[i]}</em></div>` : `<div class="b s" style="height:0"></div>`}${en[i] ? `<div class="b e" style="height:${en[i] / mx * 100}%"><em>${en[i]}</em></div>` : `<div class="b e" style="height:0"></div>`}</div>`).join("")}</div>
+      ${years.map((y, i) => `<div class="yr">${bar(st[i], "s")}${bar(en[i], "e")}</div>`).join("")}</div>
     <div class="yr-lab"><span></span>${years.map(y => `<span>${y}</span>`).join("")}</div>
     <div class="yr-lab act"><span class="ax">Active</span>${act.map(a => `<span>${a}</span>`).join("")}</div>
-    <p class="chart-note" style="margin-top:12px">${withP} of ${terrs().length} territories have a strategy period so far. Active means strategies being implemented that year.</p>`;
+    <p class="small" style="margin-top:var(--g3)">${withP} of ${terrs().length} territories have a strategy period so far. Active means strategies being implemented that year.</p>`;
 }
-// map with HQ pins, coloured by zone (SPEA blue, SASIA orange)
-const ZCOL = { SPEA: "#1a5cba", SASIA: "#e24a1b" };
-let maps = [];
-function pinSvg(color) {
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="26" height="36" viewBox="0 0 26 36" aria-hidden="true"><path d="M13 1C6.4 1 1 6.3 1 12.9c0 8.6 10.4 20.6 11.2 21.5a1 1 0 0 0 1.6 0C14.6 33.5 25 21.5 25 12.9 25 6.3 19.6 1 13 1z" fill="${color}" stroke="#fff" stroke-width="2"/><circle cx="13" cy="13" r="4.6" fill="#fff"/></svg>`;
-}
-const mapDark = () => { const a = document.documentElement.getAttribute("data-theme"); return a ? a === "dark" : matchMedia("(prefers-color-scheme: dark)").matches; };
-function mountMap(elId, list) {
-  const el = $(elId); if (!el || !window.L) return;
-  const m = L.map(el, { scrollWheelZoom: false, worldCopyJump: true, minZoom: 2, zoomSnap: 0.5 });
-  L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 18, attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> contributors' }).addTo(m);
-  el.classList.toggle("map-dark", mapDark());
-  const pts = [];
-  list.forEach(t => {
-    if (typeof t.lat !== "number" || typeof t.lng !== "number") return;
-    const col = ZCOL[zoneOf(t.cwg)] || "#6f6e69";
-    const mk = L.marker([t.lat, t.lng], { icon: L.divIcon({ className: "", html: pinSvg(col), iconSize: [26, 36], iconAnchor: [13, 35] }), title: t.name, keyboard: true }).addTo(m);
-    mk.bindTooltip(`<strong>${esc(t.name)}</strong><br>${esc(t.cwg || "")}${t.location ? `<br><span style="opacity:.75">${isRegion(t) ? "RHQ" : "THQ"}: ${esc(t.location)}</span>` : ""}`, { direction: "top", offset: [0, -30] });
-    mk.on("click", () => { location.hash = `#/territory/${t.id}`; });
-    pts.push([t.lat, t.lng]);
-  });
-  if (pts.length > 1) m.fitBounds(pts, { padding: [40, 40], maxZoom: 6 }); else if (pts.length) m.setView(pts[0], 5); else m.setView([10, 100], 3);
-  m.on("focus click", () => m.scrollWheelZoom.enable()); m.on("mouseout", () => m.scrollWheelZoom.disable());
-  maps.push(m);
-}
-const mapLegend = zs => `<div class="legend">${zs.map(z => `<span><span class="pin-dot" style="background:${ZCOL[z]}"></span>${z} territories and regions</span>`).join("")}<span>Click a pin to open the territory.</span></div>`;
-let pendingMaps = [];
 
 // ---- HOME ----
 function pageHome() {
-  const ts = terrs(), cl = cwgList();
+  const ts = terrs(), cls = cwgList();
   const zoneTile = z => {
-    const zc = cl.filter(c => zoneOf(c) === z.key), n = ts.filter(t => zoneOf(t.cwg) === z.key).length;
-    return `<div class="zone-tile ${z.key}"><img class="zmap keep" src="${ZMAP[z.key]}" alt="" aria-hidden="true">
-      <a href="#/zone/${z.key.toLowerCase()}" style="text-decoration:none;color:inherit;position:relative"><p class="zname">${z.key}</p><div class="zsub">${z.sub}</div></a>
+    const zc = cls.filter(c => zoneOf(c) === z.key), n = ts.filter(t => zoneOf(t.cwg) === z.key).length;
+    const shapes = z.key === "SPEA"
+      ? [el("spe1-01", "top:40px;right:5%", 110, 0, "float hm"), el("spe1-06", "top:176px;right:20%", 40, 12, "hm")]
+      : [el("sas2-02", "top:48px;right:4%", 130, 0, "float"), el("sas1-04", "top:186px;right:22%", 44, -14, "hm")];
+    return `<div class="zone-tile ${z.key}"><img class="zmap" src="${ZMAP[z.key]}" alt="" aria-hidden="true">${decor(shapes, "white")}
+      <a class="zname" href="#/zone/${z.key.toLowerCase()}"><b>${z.key}</b><span>${z.sub}</span></a>
       <p class="zcount">${n} territories and regions working together in ${zc.length} Cluster Working Groups.</p>
       <div class="zlist">${zc.map(c => `<a class="zcwg" href="#/cwg/${cwgSlug(c)}"><b>${esc(c.replace(/\s+/, ""))}</b><span>${terrsOf(c).map(t => esc(shortName(t.name))).join(", ")}</span></a>`).join("")}</div></div>`;
   };
-  return `<section class="hero"><div class="wrap">
-      <div class="hero-logo"><img class="lk on-light" src="brand/lockup-v1.webp" alt="ASLP: Asia-Pacific Sharing & Learning Programme. Listen. Learn. Lead."><img class="lk on-dark" src="brand/lockup-v1-dark.webp" alt="ASLP: Asia-Pacific Sharing & Learning Programme. Listen. Learn. Lead.">${cut("3", "c2")}</div>
-      <div class="hero-copy">${cut("1", "c1")}
-        <h1 class="big"><b>Sharing</b> what works. <b>Learning</b> from each other.</h1>
-        <p class="lede">${esc(aboutFirst() || `${ts.length} Salvation Army territories and regions across South Pacific and East Asia and South Asia, listening to communities and leading change together.`)}</p>
-        <a class="btn fill" href="#/cwgs">Meet our Cluster Working Groups</a><a class="btn" href="#/about">About ASLP</a>
-      </div>
-    </div></section>
+  return `<section class="hero">${decor([
+        el("g7-01", "top:28px;left:3%", 92, -10, "float hm"), el("g11-02", "top:-34px;right:5%", 128, 0, ""),
+        el("g6-02", "top:44px;left:30%", 22, 10, "hm"), el("g6-03", "top:36px;left:32%", 22, 4, "hm"), el("g6-04", "top:44px;left:34%", 22, 14, "hm"),
+        el("g7-06", "bottom:22px;left:38%", 118, -4, "hm"), el("g11-01", "bottom:18px;right:4%", 84, 14, "float"), el("g2-05", "bottom:26px;left:3%", 86, 0, "hm"),
+        el("g6-08", "top:44%;left:1%", 46, 0, "hm")])}
+      <div class="wrap">
+        <div><img class="lk on-light" src="brand/lockup-v1.webp" alt="ASLP: Asia-Pacific Sharing & Learning Programme. Listen. Learn. Lead."><img class="lk on-dark" src="brand/lockup-v1-dark.webp" alt="ASLP: Asia-Pacific Sharing & Learning Programme. Listen. Learn. Lead."></div>
+        <div class="stack">
+          <h1 class="big"><b>Sharing</b> what works. <b>Learning</b> from each other.</h1>
+          <p class="lede">${esc(aboutFirst() || `${ts.length} Salvation Army territories and regions across South Pacific and East Asia and South Asia, listening to communities and leading change together.`)}</p>
+          <div class="actions"><a class="btn fill" href="#/cwgs">Meet our Cluster Working Groups</a><a class="btn" href="#/about">About ASLP</a></div>
+        </div>
+      </div></section>
     <section class="zones" aria-label="Zones">${ZONES.map(zoneTile).join("")}</section>
-    <section class="finder wrap" aria-labelledby="finder-h">
-      <div class="finder-head"><div><h2 class="h2" id="finder-h">Find a territory</h2><p class="lede" style="margin:0">See where each territory works, what it's strong in, the support it can offer others and who to contact.</p></div>${cut("5")}</div>
-      <div class="finder-grid">${cl.map(c => `<div class="fcol" style="${cwgVars(c)}"><h3>${ART(c) ? `<a href="#/cwg/${cwgSlug(c)}"><img src="${ART(c).h}" alt="${esc(c)} Cluster Working Group"></a>` : esc(c)}</h3>
-        <ul>${terrsOf(c).map(t => `<li><a href="#/territory/${esc(t.id)}">${esc(t.name)}</a></li>`).join("")}</ul></div>`).join("")}</div>
-    </section>
-    <section class="cds wrap" aria-labelledby="cds-h">
-      <h2 class="h2" id="cds-h">Community Development Strategies</h2>
-      <p class="lede" style="margin:0">Where each Cluster Working Group's territories are with their CD Strategies, and when strategies start and end.</p>
-      <div class="cds-grid">
-        <div><h3 class="chart-title">Status by CWG</h3><p class="chart-note">Number of territories at each stage.</p>${statusByCwg()}</div>
-        <div><h3 class="chart-title">Strategy implementation by year, ${new Date().getFullYear()}–${new Date().getFullYear() + 9}</h3><p class="chart-note">Strategies starting and ending each year.</p>${implTimeline()}</div>
-      </div>
-      <div class="cds-cta"><a class="btn" href="/cd-strategy/">View details of Asia-Pacific's Community Development Strategies</a></div>
-    </section>
-    <section class="band-navy" aria-labelledby="grp-h"><div class="wrap" style="position:relative">${cut("4")}
-      <div class="intro"><h2 class="h2" id="grp-h">ASLP Groups</h2><p style="margin:0;opacity:.9">The groups that steer, shape and support the programme alongside the Cluster Working Groups.</p></div>
-      <div class="grp-row">${(data.groups || []).map(g => `<a href="#/group/${esc(g.key)}"><b>${esc(g.short)}</b><span>${esc(g.name)}</span></a>`).join("")}</div>
-    </div></section>
-    <section class="doors wrap" aria-label="More from ASLP">
-      <a class="door d1" href="#/newsletter">${cut("2")}<div class="h3">Newsletter</div><p>Read each ASLP newsletter as a digital book.</p></a>
-      <a class="door d3" href="/Calendar-2027-2028/"><img class="cut" src="brand/doodles-sasia-1.webp" alt="" aria-hidden="true" loading="lazy"><div class="h3">Calendar</div><p>ASLP dates and events for 2027 and 2028. Sign-in needed.</p></a>
-    </section>`;
+    <section class="sec" aria-labelledby="finder-h">${decor([el("g11-05", "top:56px;right:5%", 70, 0, "hm"), el("g11-03", "top:120px;right:12%", 84, 0, "hm"), el("g11-06", "bottom:40px;left:2%", 110, 0, "hm")])}
+      <div class="wrap">
+        <div class="sec-head"><div class="stack"><h2 class="h2" id="finder-h">Find a territory</h2><p class="lede">See where each territory works, what it's strong in, the support it can offer others and who to contact.</p></div></div>
+        <div class="finder-grid">${cls.map(c => `<div class="fcol" style="${cwgVars(c)}"><a class="fl" href="#/cwg/${cwgSlug(c)}">${ART(c) ? `<img src="${ART(c).h}" alt="${esc(c)} Cluster Working Group">` : esc(c)}</a>
+          <ul>${terrsOf(c).map(t => `<li><a href="#/territory/${esc(t.id)}">${esc(t.name)}</a></li>`).join("")}</ul></div>`).join("")}</div>
+      </div></section>
+    <section class="sec cds-band" aria-labelledby="cds-h">${decor([el("g8-05", "top:64px;right:6%", 112, 0, "hm"), el("g2-03", "top:46%;right:1.5%", 40, 0, "hm")])}
+      <div class="wrap">
+        <div class="sec-head"><div class="stack"><h2 class="h2" id="cds-h">Community Development Strategies</h2><p class="lede">Where each Cluster Working Group's territories are with their CD Strategies, and when strategies start and end.</p></div></div>
+        <div class="cds-grid">
+          <div class="panel"><h3 class="h3">Status by CWG</h3><p class="small">Number of territories at each stage.</p>${statusByCwg()}</div>
+          <div class="panel"><h3 class="h3">Strategy implementation by year, ${new Date().getFullYear()}–${new Date().getFullYear() + 9}</h3><p class="small">Strategies starting and ending each year.</p>${implTimeline()}</div>
+        </div>
+        <div class="cds-cta"><a class="btn blue" href="/cd-strategy/">View details of Asia-Pacific's Community Development Strategies</a></div>
+      </div></section>
+    <section class="sec band-navy" aria-labelledby="grp-h">${decor([el("g11-02", "top:-46px;right:5%", 150, 0, "float"), el("g8-02", "bottom:-24px;right:30%", 130, 0, "hm"), el("g2-03", "top:28px;left:-14px", 44, 0, "hm"), el("g7-05", "top:58px;right:22%", 64, 10, "hm")])}
+      <div class="wrap">
+        <div class="sec-head"><div class="stack"><h2 class="h2" id="grp-h">ASLP Groups</h2><p class="lede">The groups that steer, shape and support the programme alongside the Cluster Working Groups.</p></div></div>
+        <div class="grp-row">${(data.groups || []).map(g => `<a href="#/group/${esc(g.key)}"><b>${esc(g.short)}</b><span>${esc(g.name)}</span></a>`).join("")}</div>
+      </div></section>
+    <section class="sec tight"><div class="wrap doors">
+      <a class="door d1" href="#/newsletter"><div class="stack"><div class="h3">Newsletter</div><p>Read each ASLP newsletter as a digital book.</p></div>
+        ${cluster([cl("g6-09", 0, 50, 62), cl("g8-03", 66, 0, 18, 8), cl("g6-08", 30, 4, 30), cl("g6-06", 78, 46, 18, -14)])}</a>
+      <a class="door d3" href="/Calendar-2027-2028/"><div class="stack"><div class="h3">Calendar</div><p>ASLP dates and events for 2027 and 2028. Sign-in needed.</p></div>
+        ${cluster([cl("sas1-18", 0, 10, 36), cl("sas1-14", 44, 0, 28), cl("sas1-17", 36, 56, 40), cl("sas-05", 82, 30, 16)])}</a>
+    </div></section>`;
 }
 
 // ---- ABOUT ----
 function pageAbout() {
   const a = (data.content && data.content.about) || {};
-  return `<div class="page wrap">${crumbs([["Home", "#/"], ["About ASLP"]])}
-    <div class="page-hero"><div><h1 class="h1"><span class="lt">About</span> ASLP</h1>
+  return `${crumbs([["Home", "#/"], ["About ASLP"]])}
+    <div class="wrap page-hero"><div class="stack"><h1 class="h1"><span class="lt">About</span> ASLP</h1>
       <p class="statement"><b>Asia-Pacific</b> Sharing &amp; Learning <b>Programme</b></p></div>
-      <img class="cut on-light" src="brand/acronym-h.webp" alt="" aria-hidden="true"><img class="cut on-dark" src="brand/acronym-h-dark.webp" alt="" aria-hidden="true"></div>
-    <div class="two-col">${a.body ? `<div>${a.body.split(/\n\s*\n/).map(p => `<p>${esc(p)}</p>`).join("")}</div>`
-      : `<div class="soon"><div class="h3">The story of ASLP is being written</div><p style="margin:6px 0 0">This page will explain what ASLP is, why it exists and how territories, Cluster Working Groups and the ASLP Groups work together.</p></div>`}
-      <div>${cut("1")}</div></div>
-  </div>`;
+      ${cluster([cl("g7-01", 0, 4, 30, -8), cl("g11-02", 40, 0, 30), cl("g6-08", 74, 30, 18), cl("g2-01", 24, 54, 26, 8), cl("g8-08", 58, 66, 30)])}</div>
+    <div class="wrap page-body">${a.body ? `<div class="stack" style="max-width:68ch">${a.body.split(/\n\s*\n/).map(p => `<p>${esc(p)}</p>`).join("")}</div>`
+      : `<div class="soon" style="max-width:720px"><h2 class="h3">The story of ASLP is being written</h2><p>This page will explain what ASLP is, why it exists and how territories, Cluster Working Groups and the ASLP Groups work together.</p></div>`}</div>`;
 }
 
 // ---- CWGs ----
+function cwgExplainer() {
+  const card = (n, r, title, body) => `<div class="ex-card">${cluster([cl(n, 0, 0, 100, r)])}<h3 class="h3">${title}</h3><p>${body}</p></div>`;
+  return `<section class="explain" aria-labelledby="ex-h">
+    <div class="ex-intro stack"><h2 class="h2" id="ex-h">What Cluster Working Groups are</h2>
+      <p class="lede">Cluster Working Groups (CWGs) are small groups of neighbouring territories. Their members meet to share what works in community development, learn from each other and plan together, so every territory benefits from the experience of the others.</p></div>
+    <div class="ex-grid">
+      ${card("g11-02", 0, "Share and learn", "Territories swap experience and good practice from their projects and talk through the gaps and challenges they face in managing them.")}
+      ${card("sas1-14", 0, "Build skills", "Each territory names what its development team needs to grow, and the group recommends the training, workshops and exchange visits to get there.")}
+      ${card("spe1-02", 0, "Shape strategy", "Members lead their territory's Community Development Strategy and bring it together with others into the Asia-Pacific CD Strategy.")}
+    </div>
+    <div class="ex-how"><h3 class="h3">How they work</h3>
+      <ul>
+        <li>Each territory nominates someone from its development office, usually for two years. A CWG lead, endorsed by the territories and the zone, facilitates.</li>
+        <li>Members meet online regularly, taking turns with the minutes. Every two years they meet in person for a three to five day cluster meeting they plan themselves, from host country and topics to learning visits.</li>
+        <li>Back home, each member gathers ideas from departments, project sites, corps and the training college, and makes sure their territory's work is coordinated and supported.</li>
+        <li>The four CWG leads sit on the ASLP Steering Committee, so what the clusters learn shapes how the programme is run.</li>
+      </ul></div>
+  </section>`;
+}
+const ZSET = { SPEA: [["spe-20", "top:150px;left:41%", 96]], SASIA: [["sas-03", "top:140px;left:41%", 84]] };
 function zoneSection(z) {
   const zc = cwgList().filter(c => zoneOf(c) === z.key);
-  return `<section class="zone-sec" style="${zoneVars(z.key)}" aria-label="${esc(z.label)}"><img class="zmap" src="${ZMAP[z.key]}" alt="" aria-hidden="true">
-    <div class="zone-sec-head"><a class="zl" href="#/zone/${z.key.toLowerCase()}"><span class="paper-panel"><img src="brand/zone-${z.key.toLowerCase()}.webp" alt="${esc(z.label)}"></span></a>
-      <img class="zdood cut" src="brand/doodles-${z.key.toLowerCase()}.webp" alt="" aria-hidden="true" loading="lazy"></div>
+  return `<section class="zone-sec" style="${zoneVars(z.key)}" aria-label="${esc(z.label)}"><img class="zmap" src="${ZMAPC[z.key]}" alt="" aria-hidden="true">
+    ${decor(ZSET[z.key].map(a => el(a[0], a[1], a[2], 0, "hm")))}
+    <div class="zone-sec-head"><a class="zl" href="#/zone/${z.key.toLowerCase()}"><span class="paper-panel"><img src="brand/zone-${z.key.toLowerCase()}.webp" alt="${esc(z.label)}"></span></a></div>
     <div class="cwg-pair">${zc.map(c => { const l = leadOf(c);
       return `<a class="cwg-panel" style="${cwgVars(c)}" href="#/cwg/${cwgSlug(c)}">${ART(c) ? `<img class="lh" src="${ART(c).h}" alt="${esc(c)} Cluster Working Group">` : `<div class="h2">${esc(c)}</div>`}
-        ${l ? `<div class="ld">Led by <b>${esc(l.name || "")}</b>${l.role ? `, ${esc(l.role)}` : ""}${l.territory && terrName(l.territory) ? `, ${esc(shortName(terrName(l.territory)))}` : ""}</div>` : ""}
-        <div class="tl">${terrsOf(c).map(t => esc(t.name)).join("<br>")}</div></a>`; }).join("")}</div>
+        ${l ? `<p class="ld">Led by <b>${esc(l.name || "")}</b>${l.role ? `, ${esc(l.role)}` : ""}${l.territory && terrName(l.territory) ? `, ${esc(shortName(terrName(l.territory)))}` : ""}</p>` : ""}
+        <ul>${terrsOf(c).map(t => `<li>${esc(t.name)}</li>`).join("")}</ul></a>`; }).join("")}</div>
   </section>`;
 }
 function pageCwgs() {
-  return `<div class="page wrap">${crumbs([["Home", "#/"], ["Cluster Working Groups"]])}
-    <div class="page-hero"><div><h1 class="h1"><span class="lt">Meet our</span><br>Cluster Working Groups</h1>
-      <p class="lede">Territories share and learn in four Cluster Working Groups across two zones. Open a group to see its territories, what they focus on and the support they offer each other.</p></div>${cut("5")}</div>
-    <div class="map-block"><div class="aslp-map" id="map-all" role="region" aria-label="Map of ASLP territorial and regional headquarters"></div>${mapLegend(["SPEA", "SASIA"])}</div>
-    ${ZONES.map(zoneSection).join("")}`
-    + ((pendingMaps = [["map-all", terrs()]]), "") + `
-  </div>`;
+  pendingMaps.push(() => mountPins("map-all", terrs()));
+  return `${crumbs([["Home", "#/"], ["Cluster Working Groups"]])}
+    <div class="wrap page-hero"><div class="stack"><h1 class="h1"><span class="lt">Meet our</span><br>Cluster Working Groups</h1>
+      <p class="lede">Territories share and learn in four Cluster Working Groups across two zones. Open a group to see its territories, what they focus on and the support they offer each other.</p></div>
+      ${cluster([cl("spe1-01", 0, 6, 22), cl("g11-01", 26, 0, 20, 10), cl("sas2-03", 52, 10, 20), cl("spe2-17", 76, 2, 22), cl("sas1-13", 14, 56, 18), cl("g7-06", 40, 62, 34), cl("sas2-14", 80, 56, 18)])}</div>
+    <div class="wrap page-body">
+      ${cwgExplainer()}
+      <div class="aslp-map" id="map-all" role="region" aria-label="Map of ASLP territorial and regional headquarters"></div>${zoneLegend(["SPEA", "SASIA"])}
+      ${ZONES.map(zoneSection).join("")}
+    </div>`;
 }
 function pageZone(zk) {
   const z = ZONES.find(x => x.key.toLowerCase() === zk); if (!z) return notFound();
-  pendingMaps = [["map-zone", terrs().filter(t => zoneOf(t.cwg) === z.key)]];
-  return `<div class="page wrap">${crumbs([["Home", "#/"], ["Cluster Working Groups", "#/cwgs"], [z.label]])}${zoneSection(z)}
-    <div class="map-block"><div class="aslp-map" id="map-zone" role="region" aria-label="Map of ${esc(z.label)} headquarters"></div>${mapLegend([z.key])}</div></div>`;
+  pendingMaps.push(() => mountPins("map-zone", terrs().filter(t => zoneOf(t.cwg) === z.key)));
+  return `${crumbs([["Home", "#/"], ["Cluster Working Groups", "#/cwgs"], [z.label]])}
+    <div class="wrap page-body">${zoneSection(z)}
+      <div style="margin-top:var(--g6)"><div class="aslp-map" id="map-zone" role="region" aria-label="Map of ${esc(z.label)} headquarters"></div>${zoneLegend([z.key])}</div></div>`;
 }
 
 // ---- CWG ----
@@ -572,108 +696,122 @@ function pageCwg(cs) {
   const c = cwgList().find(x => cwgSlug(x) === cs); if (!c) return notFound();
   const z = ZONES.find(x => x.key === zoneOf(c)), l = leadOf(c), ts = terrsOf(c), a = ART(c);
   const countries = [...new Set(ts.flatMap(t => t.countries || []))].sort();
-  pendingMaps = [["map-cwg", ts]];
+  pendingMaps.push(() => mountPins("map-cwg", ts));
   return `<div style="${cwgVars(c)}">
-    <div class="wrap" style="padding-top:28px">${crumbs([["Home", "#/"], ["Cluster Working Groups", "#/cwgs"], ...(z ? [[z.label, `#/zone/${z.key.toLowerCase()}`]] : []), [c]])}</div>
-    <section class="cwg-hero">${a ? `<img class="map-bg" src="${a.map}" alt="" aria-hidden="true">` : ""}<div class="wrap">
-      <div>${a ? `<h1 style="margin:0"><img class="lv" src="${a.v}" alt="${esc(c)} Cluster Working Group"></h1>` : `<h1 class="h1">${esc(c)}</h1>`}</div>
-      <div class="side">${a ? `<img class="dd cut" src="${a.doodles}" alt="" aria-hidden="true">` : ""}
+    ${crumbs([["Home", "#/"], ["Cluster Working Groups", "#/cwgs"], ...(z ? [[z.label, `#/zone/${z.key.toLowerCase()}`]] : []), [c]])}
+    <section class="cwg-hero">${a ? `<img class="map-bg" src="${a.map}" alt="" aria-hidden="true">` : ""}${cwgDecor(c)}<div class="wrap">
+      <div>${a ? `<h1><img class="lv" src="${a.v}" alt="${esc(c)} Cluster Working Group"></h1>` : `<h1 class="h1">${esc(c)}</h1>`}</div>
+      <div class="side">
         ${l ? `<div class="lead-card"><div class="who">CWG lead</div>${contactHtml({ name: l.name, role: [l.role, l.territory && terrName(l.territory)].filter(Boolean).join(", "), email: l.email })}</div>` : ""}</div>
     </div></section>
-    <section class="wrap page" style="padding-top:42px">
+    <div class="wrap page-body" style="padding-top:var(--g7)">
+      <p class="lede" style="margin-bottom:var(--g6)">${esc(c)} is one of four <a class="textlink" href="#/cwgs">Cluster Working Groups</a>. Its members meet online through the year and in person every two years to share what works, build their teams' skills and shape their territories' Community Development Strategies.</p>
       <h2 class="h2">${ts.length} territories and regions</h2>
       <div class="terr-grid">${ts.map(t => { const p = t.profile || {};
         return `<a class="terr-row" href="#/territory/${esc(t.id)}"><div class="nm">${esc(t.name)}</div>
           <div class="where">${t.location ? `${isRegion(t) ? "Regional" : "Territorial"} Headquarters in ${esc(t.location)}` : ""}</div>
           ${(p.thematic || []).length ? tags(p.thematic.slice(0, 4)) : `<span class="small">Profile coming soon</span>`}</a>`; }).join("")}</div>
-      <div class="map-block" style="margin-top:36px"><div class="aslp-map" id="map-cwg" role="region" aria-label="Map of ${esc(c)} headquarters"></div>${z ? mapLegend([z.key]) : ""}</div>
-      ${countries.length ? `<div class="countries"><h3 class="h3">Countries covered</h3><div class="chips" style="margin-top:10px">${countries.map(x => `<span class="chip">${esc(x)}</span>`).join("")}</div></div>` : ""}
-    </section></div>`;
+      <div style="margin-top:var(--g6)"><div class="aslp-map" id="map-cwg" role="region" aria-label="Map of ${esc(c)} headquarters"></div>${z ? zoneLegend([z.key]) : ""}</div>
+      ${countries.length ? `<div class="stack" style="margin-top:var(--g6)"><h3 class="h3">Countries covered</h3><div class="chips">${countries.map(x => `<span class="chip">${esc(x)}</span>`).join("")}</div></div>` : ""}
+    </div></div>`;
 }
 
 // ---- TERRITORY ----
 function pageTerritory(id) {
   const t = terrs().find(x => x.id === id); if (!t) return notFound();
   const c = (t.cwg || "").trim(), z = ZONES.find(x => x.key === zoneOf(c)), p = t.profile || {}, a = ART(c), l = c && leadOf(c);
-  const offices = (t.offices || []).map(o => o.name).filter(Boolean);
+  const offices = (t.offices || []).filter(o => o.name);
+  const color = ZCOL[zoneOf(c)] || "#6f6e69";
   const sec = (title, body, empty) => `<div class="t-sec"><h2 class="h3">${title}</h2>${body || `<p class="empty">${empty}</p>`}</div>`;
+  pendingMaps.push(() => mountTerritory("map-terr", t));
   return `<div style="${cwgVars(c)}">
-    <div class="wrap" style="padding-top:28px">${crumbs([["Home", "#/"], ["Cluster Working Groups", "#/cwgs"], ...(z ? [[z.key, `#/zone/${z.key.toLowerCase()}`]] : []), ...(c ? [[c, `#/cwg/${cwgSlug(c)}`]] : []), [shortName(t.name)]])}</div>
+    ${crumbs([["Home", "#/"], ["Cluster Working Groups", "#/cwgs"], ...(z ? [[z.key, `#/zone/${z.key.toLowerCase()}`]] : []), ...(c ? [[c, `#/cwg/${cwgSlug(c)}`]] : []), [shortName(t.name)]])}
     <section class="t-hero"><div class="wrap">
-      <div>${a ? `<a class="lockup" href="#/cwg/${cwgSlug(c)}"><img src="${a.h}" alt="${esc(c)} Cluster Working Group"></a>` : ""}
-        <h1 class="h1" style="margin-bottom:14px">${esc(t.name)}</h1>
+      <div class="stack">${a ? `<a class="lockup" href="#/cwg/${cwgSlug(c)}"><img src="${a.h}" alt="${esc(c)} Cluster Working Group"></a>` : ""}
+        <h1 class="h1">${esc(t.name)}</h1>
         <div class="facts-row">
           <div><div class="k">${isRegion(t) ? "Regional" : "Territorial"} Headquarters</div><div class="v">${esc(t.location || "Not recorded")}</div></div>
           <div><div class="k">${(t.countries || []).length > 1 ? "Countries" : "Country"}</div><div class="v">${esc((t.countries || []).join(", ") || "Not recorded")}</div></div>
           <div><div class="k">CD Strategy</div><div class="v">${statusChip(t)}</div></div>
         </div></div>
-      ${a ? `<img class="cut" src="${a.doodles}" alt="" aria-hidden="true">` : ""}
+      ${cwgCluster(c)}
     </div></section>
     <div class="wrap t-body">
       <div>
-        ${sec("Where they work", (p.workAreas ? `<p>${esc(p.workAreas)}</p>` : "") + (offices.length ? `<p class="small" style="margin-top:10px">Other offices: ${esc(offices.join("; "))}</p>` : ""), "The territory hasn't described where it works yet.")}
-        ${sec("Thematic areas", (p.thematic || []).length ? `<div style="margin-top:8px">${tags(p.thematic)}</div>` : "", "Thematic areas will appear here once the territory adds them.")}
+        <div class="t-sec"><h2 class="h3">Where they work</h2>
+          <div class="aslp-map sm" id="map-terr" role="region" aria-label="Map of ${esc(t.name)}"></div>
+          <div class="map-legend"><span>${pinSvg(color, 12)}${isRegion(t) ? "Regional" : "Territorial"} Headquarters</span>${offices.length ? `<span>${officeSvg(13)}Regional, divisional and other offices</span>` : ""}<span><span class="dot" style="background:${color};opacity:.45;border-radius:3px"></span>${(t.countries || []).length > 1 ? "Countries covered" : "Country"}</span></div>
+          ${offices.length ? `<ul class="office-list">${offices.map(o => `<li>${officeSvg(14)}<span>${esc(o.name)}</span></li>`).join("")}</ul>` : ""}
+          ${p.workAreas ? `<p style="margin-top:var(--g3)">${esc(p.workAreas)}</p>` : ""}
+        </div>
+        ${sec("Thematic areas", (p.thematic || []).length ? tags(p.thematic) : "", "Thematic areas will appear here once the territory adds them.")}
         ${sec("Strengths", p.strengths ? `<p>${esc(p.strengths)}</p>` : "", "Strengths will appear here once the territory adds them.")}
         ${sec("Technical support they can offer other territories", p.techSupport ? `<p>${esc(p.techSupport)}</p>` : "", "Support offers will appear here once the territory adds them.")}
       </div>
       <aside>
-        <div class="aside-box"><h2 class="h3">Contact persons</h2>${(t.contacts || []).length ? t.contacts.map(contactHtml).join("") : `<p class="empty" style="margin:4px 0 0">Contacts will be listed here. Until then, reach the territory through its CWG lead.</p>`}</div>
-        <div class="aside-box"><h2 class="h3">CD Strategy</h2><div>${statusChip(t)}</div>${t.strategyPeriod ? `<div class="small" style="margin-top:4px">Strategy period ${esc(t.strategyPeriod)}</div>` : ""}
-          <div style="margin-top:12px"><a class="textlink" href="/cd-strategy/#territory-${esc(t.id)}">See CD Strategy details</a></div></div>
-        ${l ? `<div class="aside-box"><h2 class="h3">${esc(c)} CWG lead</h2>${contactHtml({ name: l.name, role: [l.role, terrName(l.territory)].filter(Boolean).join(", "), email: l.email })}
-          <div style="margin-top:8px"><a class="textlink" href="#/cwg/${cwgSlug(c)}">Other territories in ${esc(c)}</a></div></div>` : ""}
+        <div class="aside-box"><h2 class="h3">Contact persons</h2>${(t.contacts || []).length ? `<div>${t.contacts.map(contactHtml).join("")}</div>` : `<p class="empty">Contacts will be listed here. Until then, reach the territory through its CWG lead.</p>`}</div>
+        <div class="aside-box"><h2 class="h3">CD Strategy</h2><div class="stack" style="--gap:var(--g1)"><div>${statusChip(t)}</div>${t.strategyPeriod ? `<div class="small">Strategy period ${esc(t.strategyPeriod)}</div>` : ""}
+          <div style="margin-top:var(--g2)"><a class="textlink" href="/cd-strategy/#territory-${esc(t.id)}">See CD Strategy details</a></div></div></div>
+        ${l ? `<div class="aside-box"><h2 class="h3">${esc(c)} CWG lead</h2><div>${contactHtml({ name: l.name, role: [l.role, terrName(l.territory)].filter(Boolean).join(", "), email: l.email })}
+          <div style="margin-top:var(--g2)"><a class="textlink" href="#/cwg/${cwgSlug(c)}">Other territories in ${esc(c)}</a></div></div></div>` : ""}
       </aside>
     </div></div>`;
 }
 
 // ---- GROUPS ----
 const GCLS = ["g0", "g1", "g2", "g3"], GBG = ["#e14b1e", "#005fc0", "#f5c400", "#24215f"];
+const GSHAPES = [
+  [el("g11-02", "top:-30px;right:-24px", 150, 0, "white"), el("g7-05", "bottom:26px;right:16%", 60, 12, "white hm")],
+  [el("spe1-07", "top:22px;right:-20px", 130, 0, "white"), el("spe1-06", "bottom:26px;right:18%", 56, -10, "white hm")],
+  [el("g8-03", "top:22px;right:24px", 58, 10), el("g7-06", "bottom:26px;right:6%", 120, -6)],
+  [el("g11-02", "top:-26px;right:-20px", 140, 0), el("g8-08", "bottom:24px;right:14%", 80, 0, "hm")],
+];
 function pageGroups() {
-  return `<div class="page wrap">${crumbs([["Home", "#/"], ["ASLP Groups"]])}
-    <div class="page-hero"><div><h1 class="h1">ASLP Groups</h1><p class="lede">Alongside the Cluster Working Groups, four groups steer, shape and support the Asia-Pacific Sharing &amp; Learning Programme.</p></div>${cut("4")}</div>
-    <div class="grp-grid">${(data.groups || []).map((g, i) => `<a class="grp-card ${GCLS[i % 4]}" href="#/group/${esc(g.key)}"><b>${esc(g.short)}</b><div class="gn">${esc(g.name)}</div>
-      ${g.description ? `<div class="gd">${esc(g.description.split(/\n/)[0]).slice(0, 150)}</div>` : ""}</a>`).join("")}</div>
-  </div>`;
+  return `${crumbs([["Home", "#/"], ["ASLP Groups"]])}
+    <div class="wrap page-hero"><div class="stack"><h1 class="h1">ASLP Groups</h1><p class="lede">Alongside the Cluster Working Groups, four groups steer, shape and support the Asia-Pacific Sharing &amp; Learning Programme.</p><p>The Steering Committee oversees the programme. The support offices that fund ASLP review its progress and funding together in the Support Office Group, and the Finance Coordination Group follows the money month by month. The four Cluster Working Group leads sit on the Steering Committee, so what territories learn reaches the decisions.</p></div>
+      ${cluster([cl("g8-01", 0, 20, 28), cl("g8-02", 30, 0, 36), cl("g8-04", 70, 18, 22), cl("g8-06", 36, 52, 14, 8), cl("g8-07", 56, 60, 30), cl("g8-03", 88, 54, 10)])}</div>
+    <div class="wrap page-body"><div class="grp-grid">${(data.groups || []).map((g, i) => `<a class="grp-card ${GCLS[i % 4]}" href="#/group/${esc(g.key)}">${decor(GSHAPES[i % 4])}<b>${esc(g.short)}</b><div class="gn">${esc(g.name)}</div>
+      ${g.description ? `<div class="gd">${esc(g.description.split(/\n/)[0])}</div>` : ""}</a>`).join("")}</div></div>`;
 }
 function pageGroup(key) {
   const gs = data.groups || [], i = gs.findIndex(x => x.key === key), g = gs[i]; if (!g) return notFound();
-  return `<div class="page wrap">${crumbs([["Home", "#/"], ["ASLP Groups", "#/groups"], [g.short]])}
-    <div class="grp-hero" style="background:${GBG[i % 4]};${i % 4 === 2 ? "color:#000" : ""}"><h1 style="margin:0"><b>${esc(g.short)}</b></h1><div class="gn">${esc(g.name)}</div></div>
-    <div class="two-col">
-      <div><h2 class="h2">About the ${esc(g.short)}</h2>${g.description ? g.description.split(/\n\s*\n/).map(p => `<p>${esc(p)}</p>`).join("") : `<p class="empty">A description of the ${esc(g.name)} is coming soon.</p>`}</div>
-      <div class="aside-box"><h2 class="h3">Members</h2>${(g.members || []).length ? g.members.map(m => contactHtml({ ...m, role: [m.role, m.territory && (terrName(m.territory) || m.territory)].filter(Boolean).join(", ") })).join("") : `<p class="empty" style="margin:4px 0 0">Members will be listed here.</p>`}</div>
+  return `${crumbs([["Home", "#/"], ["ASLP Groups", "#/groups"], [g.short]])}
+    <div class="wrap"><div class="grp-hero" style="background:${GBG[i % 4]};${i % 4 === 2 ? "color:#000" : ""}">${decor(GSHAPES[i % 4])}<h1><b>${esc(g.short)}</b></h1><div class="gn">${esc(g.name)}</div></div></div>
+    <div class="wrap page-body"><div class="two-col">
+      <div class="stack"><h2 class="h2">About the ${esc(g.short)}</h2>${g.description ? g.description.split(/\n\s*\n/).map(paraHtml).join("") : `<p class="empty">A description of the ${esc(g.name)} is coming soon.</p>`}</div>
+      <div class="aside-box"><h2 class="h3">Members</h2>${(g.members || []).length ? `<div>${g.members.map(m => contactHtml({ ...m, role: [m.role, m.territory && (terrName(m.territory) || m.territory)].filter(Boolean).join(", ") })).join("")}</div>` : `<p class="empty">Members will be listed here.</p>`}</div>
     </div></div>`;
 }
 
 // ---- NEWSLETTER ----
 function pageNewsletter() {
-  return `<div class="page wrap">${crumbs([["Home", "#/"], ["Newsletter"]])}
-    <div class="page-hero"><div><h1 class="h1"><span class="lt">ASLP</span> Newsletter</h1><p class="lede">Every issue, readable as a book with turnable pages, or as a PDF to download.</p></div>${cut("2")}</div>
-    <div class="soon"><div class="h3">The first issues are on their way</div><p style="margin:6px 0 0">New issues will appear on this shelf as soon as they're uploaded.</p></div>
-    <div class="shelf" aria-hidden="true">${[1, 2, 3, 4].map(() => `<div class="spine">Issue coming soon</div>`).join("")}</div>
-  </div>`;
+  return `${crumbs([["Home", "#/"], ["Newsletter"]])}
+    <div class="wrap page-hero"><div class="stack"><h1 class="h1"><span class="lt">ASLP</span> Newsletter</h1><p class="lede">Every issue, readable as a book with turnable pages, or as a PDF to download.</p></div>
+      ${cluster([cl("g6-09", 4, 52, 46), cl("g6-02", 10, 4, 9, 8), cl("g6-03", 22, 0, 9, 2), cl("g6-04", 34, 4, 9, 14), cl("g6-05", 54, 8, 36), cl("g2-04", 62, 44, 22), cl("g6-10", 86, 56, 14, -8)])}</div>
+    <div class="wrap page-body"><div class="soon" style="max-width:720px"><h2 class="h3">The first issues are on their way</h2><p>New issues will appear on this shelf as soon as they're uploaded.</p></div>
+      <div class="shelf" aria-hidden="true">${[1, 2, 3, 4].map(() => `<div class="spine">Issue coming soon</div>`).join("")}</div></div>`;
 }
-const notFound = () => `<div class="page wrap"><h1 class="h1">Page not found</h1><p><a class="textlink" href="#/">Go to the ASLP home page</a></p></div>`;
+const paraHtml = p => { const m = p.match(/^([A-Z][^:]{2,28}):\s+([\s\S]*)$/); return m ? `<p><b>${esc(m[1])}.</b> ${esc(m[2].charAt(0).toUpperCase() + m[2].slice(1))}</p>` : `<p class="lede" style="color:var(--ink)">${esc(p)}</p>`; };
+const notFound = () => `<div class="wrap page-body" style="padding-top:var(--g7)"><div class="stack"><h1 class="h1">Page not found</h1><p><a class="textlink" href="#/">Go to the ASLP home page</a></p></div></div>`;
 
-// ---- drop-down menus (built once the data is in) ----
+// ---- drop-down menus ----
 function buildMenus() {
-  const cl = cwgList();
-  $("dd-cwgs").innerHTML = ZONES.map(z => `<div class="dd-h">${z.key} CWGs</div>` + cl.filter(c => zoneOf(c) === z.key).map(c =>
-    `<a href="#/cwg/${cwgSlug(c)}" style="${cwgVars(c)}">${ART(c) ? `<img src="${ART(c).h}" alt="">` : ""}<span>${terrsOf(c).map(t => esc(shortName(t.name))).join(", ")}</span></a>`).join("")).join("");
+  const cls = cwgList();
+  $("dd-cwgs").innerHTML = ZONES.map(z => `<div class="dd-h">${z.key} CWGs</div>` + cls.filter(c => zoneOf(c) === z.key).map(c =>
+    `<a href="#/cwg/${cwgSlug(c)}" style="${cwgVars(c)}">${ART(c) ? `<img src="${ART(c).h}" alt="${esc(c)}">` : esc(c)}<span>${terrsOf(c).map(t => esc(shortName(t.name))).join(", ")}</span></a>`).join("")).join("");
   $("dd-groups").innerHTML = (data.groups || []).map(g => `<a href="#/group/${esc(g.key)}"><b>${esc(g.short)}</b><span>${esc(g.name)}</span></a>`).join("");
 }
+
 // ---- router ----
 function route() {
   if (!data) return;
-  pendingMaps = [];
+  maps.forEach(m => m.remove()); maps = []; pendingMaps = [];
   const [p, a] = (location.hash.replace(/^#\/?/, "") || "").split("/").filter(Boolean);
   const html = !p ? pageHome() : p === "about" ? pageAbout() : p === "cwgs" ? pageCwgs() : p === "zone" ? pageZone(a) : p === "cwg" ? pageCwg(a)
     : p === "territory" ? pageTerritory(a) : p === "groups" ? pageGroups() : p === "group" ? pageGroup(a) : p === "newsletter" ? pageNewsletter() : notFound();
-  maps.forEach(m => m.remove()); maps = [];
-  pendingMaps = pendingMaps || [];
   $("view").innerHTML = html;
   document.body.classList.toggle("is-home", !p);
-  pendingMaps.forEach(([id, list]) => mountMap(id, list)); pendingMaps = [];
+  pendingMaps.forEach(f => f()); pendingMaps = [];
   const nav = p === "zone" || p === "cwg" || p === "territory" ? "cwgs" : p === "group" ? "groups" : p;
   document.querySelectorAll("[data-nav]").forEach(x => x.classList.toggle("on", x.dataset.nav === nav));
   $("menu").classList.remove("open"); $("menu-btn").setAttribute("aria-expanded", "false");
