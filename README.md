@@ -2,7 +2,7 @@
 
 Main website of the **Asia-Pacific Sharing & Learning Programme (ASLP)** of The Salvation Army.
 
-Live at **https://asia-sharing-and-learning-programme.github.io/**
+Live at **https://asia-sharing-and-learning-programme.github.io/ASLP/**
 
 - **About ASLP**
 - **Cluster Working Groups**: SPEA and SASIA zones → CWGs → territory profiles (where they work, thematic areas, strengths, technical support offered, contact persons)
