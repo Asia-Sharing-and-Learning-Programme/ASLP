@@ -414,16 +414,20 @@
   .apsg-info .textlink { display: inline-block; margin-top: var(--g2); }
   @media (max-width: 1000px) { .apsg-info { min-height: 0; } }
   .pm-grid { display: grid; gap: var(--g3); margin-top: var(--g6); }
-  .pm-card { border-radius: 22px; padding: var(--g5) var(--g4); background: var(--paper-2); }
-  .pm-card .h3 + * { margin-top: var(--g2); }
-  .pm-purpose { background: #005fc0; color: #fff; }
-  .pm-purpose, .pm-row { display: grid; grid-template-columns: 9em minmax(0, 1fr); gap: var(--g4); align-items: baseline; }
-  .pm-purpose .h3 + *, .pm-row .h3 + * { margin-top: 0; }
-  .pm-purpose p { font-size: clamp(19px, 1.8vw, 24px); line-height: 1.4; font-weight: 450; max-width: 46ch; }
-  .pm-list { max-width: 80ch; }
-  @media (max-width: 700px) { .pm-purpose, .pm-row { grid-template-columns: 1fr; gap: var(--g2); } }
-  .pm-list { margin: var(--g2) 0 0; padding-left: 1.2em; display: grid; gap: var(--g1); font-size: 15.5px; line-height: 1.5; }
-  .pm-list li::marker { color: #005fc0; font-weight: 800; }
+  .pm-card { border-radius: 24px; padding: var(--g5); background: var(--paper-2); }
+  .pm-purpose { background: #005fc0; color: #fff; display: grid; grid-template-columns: auto minmax(0, 1fr); gap: var(--g5); align-items: baseline; }
+  .pm-purpose .h3 { font-size: 20px; }
+  .pm-purpose p { margin: 0; max-width: none; font-size: clamp(24px, 2.5vw, 36px); line-height: 1.25; font-weight: 500; letter-spacing: -.01em; }
+  .pm-mh { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px var(--g3); }
+  .pm-mh .h3 { font-size: 20px; }
+  .pm-mh p { margin: 0; color: var(--ink-2); font-size: 16.5px; }
+  .pm-cols { list-style: none; counter-reset: m; padding: 0; margin: var(--g4) 0 0; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: var(--g4); }
+  .pm-cols li { counter-increment: m; border-top: 3px solid #005fc0; padding-top: var(--g2); font-size: 16.5px; line-height: 1.45; }
+  .pm-cols li::before { content: counter(m); display: block; font-size: 44px; font-weight: 900; font-stretch: 112%; color: #005fc0; line-height: 1; margin-bottom: var(--g2); }
+  @media (prefers-color-scheme: dark) { :root:where(:not([data-theme="light"])) .pm-cols li::before { color: #5b9cf0; } }
+  :root[data-theme="dark"] .pm-cols li::before { color: #5b9cf0; }
+  @media (max-width: 1000px) { .pm-cols { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+  @media (max-width: 700px) { .pm-purpose { grid-template-columns: 1fr; gap: var(--g2); } .pm-cols { grid-template-columns: 1fr; gap: var(--g3); } .pm-cols li { display: grid; grid-template-columns: 2.2em minmax(0, 1fr); } .pm-cols li::before { font-size: 30px; margin: 0; } .pm-card { padding: var(--g4); } }
   footer { background: #000; color: #fff; padding: var(--g7) 0 var(--g6); }
   footer .wrap { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: var(--g5); align-items: end; }
   footer .fname { font-size: clamp(26px, 3.4vw, 40px); line-height: 1.04; letter-spacing: -.02em; }
@@ -1019,7 +1023,7 @@ const APSG_MANDATE = ["Emerges from territory-approved Community Development Str
   "Produces a draft Asia Pacific Community Development Strategy for endorsement at ASLF 2027."];
 const apsgPurpose = () => `<section class="pm-grid" aria-label="Purpose and mandate">
   <div class="pm-card pm-purpose"><h2 class="h3">Purpose</h2><p>To guide, support, bring together and quality-assure a coherent, values-based Asia Pacific Community Development Strategy, through a collaborative, bottom‑up regional process.</p></div>
-  <div class="pm-card pm-row"><h2 class="h3">Mandate</h2><div><p class="small">The APSG makes sure the regional strategy:</p><ol class="pm-list">${APSG_MANDATE.map(x => `<li>${esc(x)}</li>`).join("")}</ol></div></div>
+  <div class="pm-card pm-mandate"><div class="pm-mh"><h2 class="h3">Mandate</h2><p>The APSG makes sure the regional strategy:</p></div><ol class="pm-cols">${APSG_MANDATE.map(x => `<li>${esc(x)}</li>`).join("")}</ol></div>
 </section>`;
 function pageGroup(key) {
   const gs = data.groups || [], i = gs.findIndex(x => x.key === key), g = gs[i]; if (!g) return notFound();
