@@ -213,6 +213,27 @@
   .yr-lab.act { color: var(--ink); font-weight: 700; margin-top: 2px; }
   .yr-lab .ax { text-align: right; color: var(--ink-3); font-weight: 400; font-size: 11px; padding-right: 6px; }
   .cds-cta { margin-top: var(--g6); }
+  /* phones: years as rows, bars run sideways */
+  .yr-rows { display: none; }
+  @media (max-width: 600px) {
+    .yr-wide { display: none; }
+    .yr-rows { display: block; border-top: 2px solid var(--ink); }
+    .yrr { display: grid; grid-template-columns: 3.2em minmax(0, 1fr) 3.4em; gap: var(--g2); align-items: center; padding: 7px 0; border-bottom: 1px solid var(--line); }
+    .yrr b { font-size: 15px; font-weight: 700; }
+    .yrr .ac { text-align: right; font-weight: 800; font-size: 15px; }
+    .yrr-h { font-size: 12.5px; color: var(--ink-3); padding: 6px 0; }
+    .yrr-h span:last-child { text-align: right; }
+    .hb { display: grid; gap: 3px; }
+    .hbar { display: flex; align-items: center; gap: 6px; height: 12px; }
+    .hbar i { display: block; height: 100%; border-radius: 0 4px 4px 0; min-width: 0; }
+    .hbar i.s { background: #005fc0; } .hbar i.e { background: #e04c1e; }
+    .hbar em { font-style: normal; font-size: 12px; font-weight: 700; line-height: 1; }
+    .panel { padding: var(--g4) 20px; }
+    .sbar-row { grid-template-columns: 84px minmax(0, 1fr) 22px; gap: var(--g2); }
+    .sbar-row img { height: 19px; }
+    .cds-cta .btn { width: 100%; justify-content: center; text-align: center; }
+  }
+
 
   /* HOME: groups band */
   .band-navy { background: #24215f; color: #fff; }
@@ -638,10 +659,16 @@ function implTimeline() {
   const withP = terrs().filter(t => periodYears(t.strategyPeriod) || (t.pastCycles || []).some(c => periodYears(c.period))).length;
   const bar = (n, k) => `<div class="b ${k}" style="height:${n / mx * 100}%">${n ? `<em>${n}</em>` : ""}</div>`;
   return `<div class="legend"><span><i style="background:#005fc0"></i>Starting implementation</span><span><i style="background:#e04c1e"></i>Ending</span></div>
-    <div class="yrs" role="img" aria-label="${years.map((y, i) => `${y}: ${st[i]} starting, ${en[i]} ending`).join("; ")}"><div class="ax"><span>${mx}</span><span>0</span></div>
+    <div class="yr-wide"><div class="yrs" role="img" aria-label="${years.map((y, i) => `${y}: ${st[i]} starting, ${en[i]} ending`).join("; ")}"><div class="ax"><span>${mx}</span><span>0</span></div>
       ${years.map((y, i) => `<div class="yr">${bar(st[i], "s")}${bar(en[i], "e")}</div>`).join("")}</div>
     <div class="yr-lab"><span></span>${years.map(y => `<span>${y}</span>`).join("")}</div>
-    <div class="yr-lab act"><span class="ax">Active</span>${act.map(a => `<span>${a}</span>`).join("")}</div>
+    <div class="yr-lab act"><span class="ax">Active</span>${act.map(a => `<span>${a}</span>`).join("")}</div></div>
+    <div class="yr-rows" role="img" aria-label="${years.map((y, i) => `${y}: ${st[i]} starting, ${en[i]} ending, ${act[i]} active`).join("; ")}">
+      <div class="yrr yrr-h"><span>Year</span><span></span><span>Active</span></div>
+      ${years.map((y, i) => `<div class="yrr"><b>${y}</b><div class="hb">
+        <div class="hbar"><i class="s" style="width:${st[i] / mx * 100}%"></i><em>${st[i] || ""}</em></div>
+        <div class="hbar"><i class="e" style="width:${en[i] / mx * 100}%"></i><em>${en[i] || ""}</em></div></div><span class="ac">${act[i]}</span></div>`).join("")}
+    </div>
     <p class="small" style="margin-top:var(--g3)">${withP} of ${terrs().length} territories have a strategy period so far. Active means strategies being implemented that year.</p>`;
 }
 
