@@ -363,6 +363,69 @@
   .shelf { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: var(--g4); margin-top: var(--g5); }
   .shelf .spine { aspect-ratio: 3 / 4; border-radius: 6px 16px 16px 6px; background: var(--paper-2); border: 1.5px dashed var(--line); display: grid; place-items: center; color: var(--ink-3); font-size: 14px; text-align: center; padding: var(--g2); }
 
+
+  /* APSG structure diagram */
+  .apsg-wrap { margin-top: var(--g8); }
+  .apsg-grid { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: var(--g5); align-items: center; }
+  @media (max-width: 1000px) { .apsg-grid { grid-template-columns: 1fr; } }
+  .apsg-stage { position: relative; container-type: inline-size; width: 100%; color: var(--ink-2); }
+  .apsg-lines { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+  .apsg-node { position: absolute; border-radius: 50%; transform: translate(-50%, -50%) scale(var(--z, 1)); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: .15em;
+    border: 0; padding: 6%; background: var(--bg); color: var(--fg); font-family: var(--font); line-height: 1.12; text-align: center; cursor: pointer; z-index: 2;
+    box-shadow: 0 0 0 .3cqw var(--paper); transition: transform .35s cubic-bezier(.2,.8,.2,1), opacity .3s, box-shadow .3s; }
+  .apsg-node .nl { font-weight: 800; font-stretch: 104%; letter-spacing: -.01em; }
+  .apsg-node .ns { font-weight: 500; font-size: .84em; opacity: .92; }
+  .apsg-node.is-center .ns { color: var(--ink-2); }
+  .apsg-node.is-br .nl, .apsg-node.is-br .ns { font-style: italic; }
+  .apsg-node.is-br { outline: .3cqw dashed var(--bg); outline-offset: .55cqw; }
+  .apsg-node[data-node="tf"] { outline-color: #000; border: .25cqw solid #000; }
+  .apsg-node.is-side .nl { font-size: 1.2em; }
+  .apsg-node.is-center { z-index: 1; cursor: default; background: color-mix(in srgb, #005fc0 10%, var(--paper)); color: var(--ink); box-shadow: inset 0 0 0 .35cqw color-mix(in srgb, #005fc0 30%, var(--paper)); justify-content: center; padding: 22%; }
+  .apsg-node.is-center .nl { font-weight: 900; font-stretch: 115%; letter-spacing: -.04em; color: #005fc0; line-height: .9; }
+  .apsg-node.is-center .ns { font-size: .26em; font-weight: 650; font-style: normal; max-width: 12em; margin-top: .4em; }
+  @media (prefers-color-scheme: dark) { :root:where(:not([data-theme="light"])) .apsg-node.is-center .nl { color: #5b9cf0; } :root:where(:not([data-theme="light"])) .apsg-node[data-node="tf"] { border-color: #fff; outline-color: #fff; } }
+  :root[data-theme="dark"] .apsg-node.is-center .nl { color: #5b9cf0; } :root[data-theme="dark"] .apsg-node[data-node="tf"] { border-color: #fff; outline-color: #fff; }
+  /* zoom: the circle you point at grows, the rest step back */
+  @media (hover: hover) {
+    .apsg-stage:has(.apsg-node:not(.is-center):hover) .apsg-node:not(.is-center):not(:hover) { --z: .9; opacity: .5; }
+    .apsg-node:not(.is-center):hover { --z: 1.2; z-index: 5; box-shadow: 0 0 0 .3cqw var(--paper), 0 1.4cqw 3cqw rgba(0,0,0,.22); }
+    .apsg-node.is-center:hover { --z: 1.02; }
+  }
+  .apsg-node.on { --z: 1.14; z-index: 4; box-shadow: 0 0 0 .3cqw var(--paper), 0 1.2cqw 2.6cqw rgba(0,0,0,.2); }
+  .apsg-node:focus-visible { outline: 3px solid var(--listen); outline-offset: 4px; }
+  @media (prefers-reduced-motion: reduce) { .apsg-node { transition: none; } }
+  .apsg-info { position: relative; border-radius: 24px; padding: var(--g5) var(--g4) var(--g4); background: var(--paper-2); min-height: 260px; }
+  .apsg-info .ai-dot { width: 44px; height: 44px; border-radius: 50%; background: var(--bg); margin-bottom: var(--g3); box-shadow: inset 0 0 0 2px rgba(0,0,0,.08); }
+  .apsg-info .h3 + p { margin-top: var(--g1); }
+  .apsg-info p + a { display: inline-block; margin-top: var(--g2); }
+  @media (max-width: 1000px) { .apsg-info { min-height: 0; } }
+  /* Terms of Reference */
+  .tor { margin-top: var(--g8); }
+  .tor-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: end; gap: var(--g4); margin-bottom: var(--g5); }
+  .tor-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.3fr); gap: var(--g4); margin-top: var(--g4); }
+  .tor-grid.three { grid-template-columns: repeat(3, minmax(0, 1fr)); margin-top: var(--g6); }
+  @media (max-width: 900px) { .tor-grid, .tor-grid.three { grid-template-columns: 1fr; } }
+  .tor-card { border-radius: 22px; padding: var(--g5) var(--g4); background: var(--paper-2); }
+  .tor-card .h3 + * { margin-top: var(--g2); }
+  .tor-card.t-purpose { background: #005fc0; color: #fff; }
+  .tor-card.t-purpose p:first-of-type { font-size: clamp(19px, 1.7vw, 23px); line-height: 1.4; font-weight: 450; }
+  .tor-list { margin: var(--g2) 0 0; padding-left: 1.2em; display: grid; gap: var(--g1); font-size: 15.5px; line-height: 1.5; }
+  .tor-list li::marker { color: #005fc0; font-weight: 800; }
+  .tor-sub { margin: var(--g6) 0 var(--g3); font-size: 22px; }
+  .scope-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--g3); }
+  @media (max-width: 900px) { .scope-grid { grid-template-columns: 1fr 1fr; } } @media (max-width: 560px) { .scope-grid { grid-template-columns: 1fr; } }
+  .scope { border-top: 4px solid #005fc0; padding: var(--g3) 0 0; }
+  .scope b { display: block; font-size: 17px; line-height: 1.3; }
+  .scope p, .scope ul { margin-top: var(--g1); font-size: 15px; color: var(--ink-2); line-height: 1.5; }
+  .scope ul { padding-left: 1.1em; display: grid; gap: 4px; }
+  .scope.out { border-top-color: var(--ink-3); }
+  .deliv { list-style: none; padding: 0; margin: 0; counter-reset: d; border-top: 2px solid var(--ink); }
+  .deliv li { counter-increment: d; display: grid; grid-template-columns: 2.4em 13em minmax(0, 1fr); gap: var(--g3); padding: var(--g2) 0; border-bottom: 1px solid var(--line); align-items: baseline; line-height: 1.45; }
+  .deliv li::before { content: counter(d); font-weight: 900; font-stretch: 112%; color: #005fc0; font-size: 18px; }
+  .deliv .dq { font-size: 14px; font-weight: 700; color: var(--ink-2); }
+  @media (max-width: 640px) { .deliv li { grid-template-columns: 2em minmax(0, 1fr); row-gap: 2px; } .deliv .dq { grid-column: 2; } .deliv .dd { grid-column: 2; } }
+  .facts { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: var(--g1) var(--g3); margin: var(--g2) 0 0; font-size: 15.5px; line-height: 1.45; }
+  .facts dt { font-weight: 750; } .facts dd { margin: 0; color: var(--ink-2); }
   footer { background: #000; color: #fff; padding: var(--g7) 0 var(--g6); }
   footer .wrap { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: var(--g5); align-items: end; }
   footer .fname { font-size: clamp(26px, 3.4vw, 40px); line-height: 1.04; letter-spacing: -.02em; }
@@ -780,6 +843,136 @@ function pageGroups() {
     <div class="wrap page-body"><div class="grp-grid">${(data.groups || []).map((g, i) => `<a class="grp-card ${GCLS[i % 4]}" href="#/group/${esc(g.key)}">${decor(GSHAPES[i % 4])}<b>${esc(g.short)}</b><div class="gn">${esc(g.name)}</div>
       ${g.description ? `<div class="gd">${esc(g.description.split(/\n/)[0])}</div>` : ""}</a>`).join("")}</div></div>`;
 }
+// ---- APSG: structure diagram + Terms of Reference (approved ToR, effective July 2026 – December 2027) ----
+const APSG_NODES = [
+  { id: "apsg", label: "APSG", sub: "Asia and the Pacific Strategy Group", center: true,
+    title: "Asia and the Pacific Strategy Group (APSG)", text: "Guides, supports, brings together and quality-assures the Asia Pacific Community Development Strategy. The strategy is built from the bottom up, from territories' approved strategies and the thematic priorities their CWGs have verified." },
+  { id: "co-spea", label: "ASLP Coordinator", sub: "SPEA", ring: 0, bg: "#c0391e", br: true, title: "ASLP Coordinator, SPEA",
+    text: "Chairs the APSG with the South Asia coordinator. One coordinator leads on strategic direction and synthesis; the other leads on coordination and documentation. Together they keep deliverables to the agreed timeline." },
+  { id: "co-sasia", label: "ASLP Coordinator", sub: "SASIA", ring: 1, bg: "#c0391e", title: "ASLP Coordinator, South Asia",
+    text: "Chairs the APSG with the SPEA coordinator: sets agendas, follows milestones, represents the APSG within ASLP, leads the synthesis work and makes sure meetings, decisions and outputs are documented." },
+  { id: "sog", label: "SOG", sub: "Representative", ring: 2, bg: "#f5c400", ink: "#000", title: "Support Office Group representative",
+    text: "One Support Office representative with a focus on monitoring, evaluation, accountability and learning (MEAL), nominated by the ASC Chair.", link: ["#/group/sog", "About the Support Office Group"] },
+  { id: "spea2", label: "SPEA\u00a02", sub: "CWG rep.", ring: 3, bg: "#2e6be0", cwg: "SPEA 2" },
+  { id: "spea1", label: "SPEA\u00a01", sub: "CWG rep.", ring: 4, bg: "#188afd", cwg: "SPEA 1" },
+  { id: "sasia2", label: "SASIA\u00a02", sub: "CWG rep.", ring: 5, bg: "#ff8228", ink: "#000", cwg: "SASIA 2" },
+  { id: "sasia1", label: "SASIA\u00a01", sub: "CWG rep.", ring: 6, bg: "#fe6809", ink: "#000", cwg: "SASIA 1" },
+  { id: "cs", label: "Chief Secretary", sub: "Rotating", ring: 7, bg: "#24215f", br: true, title: "Rotating Chief Secretary representative",
+    text: "One Chief Secretary represents territorial leadership in the APSG, one at a time, rotating across the zones." },
+  { id: "asc", label: "ASLP Steering Committee", sub: "ASC", side: "l", bg: "#e14b1e", title: "ASLP Steering Committee (ASC)",
+    text: "The APSG shares its minutes with the ASC. The ASC helps when delays fall outside the APSG's control, receives dissenting views where needed and can ask for the ToR to be reviewed.", link: ["#/group/asc", "About the ASLP Steering Committee"] },
+  { id: "tf", label: "ASLF 2027", sub: "Task Force", side: "r", bg: "#ffffff", ink: "#000", br: true, title: "ASLF 2027 Task Force",
+    text: "The APSG helps the Task Force prepare the strategy session at the Asia-Pacific Sharing and Learning Forum 2027, where the draft Asia Pacific Community Development Strategy is presented for endorsement." },
+];
+APSG_NODES.forEach(n => { if (n.cwg) { n.title = `${n.cwg} CWG representative`; n.text = `An experienced or emerging Development Officer, nominated by the ${n.cwg} CWG lead. Brings the CWG's territories' perspectives to the APSG and represents the CWG accurately and objectively.`; n.link = [`#/cwg/${cwgSlug(n.cwg)}`, `About ${n.cwg}`]; } });
+// two layouts in stage units: wide screens and phones
+const APSG_LAYOUT = {
+  wide: { W: 1100, H: 700, c: [550, 300, 292], ring: 196, d: 136, l: [128, 560, 120], r: [972, 560, 120], bar: 670, fs: 1.6, cfs: 5 },
+  narrow: { W: 400, H: 760, c: [200, 238, 196], ring: 134, d: 94, l: [96, 636, 88], r: [304, 636, 88], bar: null, fs: 3.1, cfs: 10.5 },
+};
+function apsgStructure() {
+  return `<section class="apsg-wrap" aria-labelledby="apsg-st-h">
+    <div class="sec-head" style="margin-bottom:var(--g4)"><div class="stack"><h2 class="h2" id="apsg-st-h">How the APSG is made up</h2>
+      <p class="lede">Eight members around one table, working between the ASLP Steering Committee and the ASLF 2027 Task Force. Hover over or tap a circle to see each role.</p></div></div>
+    <div class="apsg-grid">
+      <div class="apsg-stage" id="apsg-stage">
+        <svg class="apsg-lines" id="apsg-lines" aria-hidden="true"></svg>
+        ${APSG_NODES.map(n => `<button type="button" class="apsg-node${n.center ? " is-center" : ""}${n.br ? " is-br" : ""}${n.side ? " is-side" : ""}" data-node="${n.id}" aria-describedby="apsg-info"
+          style="--bg:${n.bg || "transparent"};--fg:${n.ink || "#fff"}"><span class="nl">${esc(n.label)}</span><span class="ns">${esc(n.sub)}</span></button>`).join("")}
+      </div>
+      <div class="apsg-info" id="apsg-info" aria-live="polite"></div>
+    </div>
+    <p class="small" style="margin-top:var(--g3)">Dashed rings show the roles that appear in brackets in the approved structure. Arrows show the two-way links between groups.</p>
+  </section>`;
+}
+function apsgInfo(id) {
+  const n = APSG_NODES.find(x => x.id === id) || APSG_NODES[0], box = $("apsg-info"); if (!box) return;
+  box.style.setProperty("--bg", n.center ? "#005fc0" : n.bg); 
+  box.innerHTML = `<div class="ai-dot"></div><h3 class="h3">${esc(n.title)}</h3><p>${esc(n.text)}</p>${n.link ? `<a class="textlink" href="${n.link[0]}">${esc(n.link[1])}</a>` : ""}`;
+  document.querySelectorAll(".apsg-node").forEach(b => b.classList.toggle("on", b.dataset.node === n.id && !n.center));
+}
+function apsgLayout() {
+  const st = $("apsg-stage"); if (!st) return;
+  const L = APSG_LAYOUT[st.clientWidth < 620 ? "narrow" : "wide"], pct = (v, t) => `${v / t * 100}%`;
+  const k = st.clientWidth / L.W; st.style.height = `${L.H * k}px`;
+  const place = (el, x, y, d) => { el.style.left = `${x * k}px`; el.style.top = `${y * k}px`; el.style.width = el.style.height = `${d * k}px`; };
+  APSG_NODES.forEach(n => {
+    const el = st.querySelector(`[data-node="${n.id}"]`); el.style.fontSize = `${n.center ? L.cfs : n.side ? L.fs * 1.25 : L.fs}cqw`;
+    if (n.center) place(el, L.c[0], L.c[1], L.c[2] * 2);
+    else if (n.side) { const s = n.side === "l" ? L.l : L.r; place(el, s[0], s[1], s[2] * 2); }
+    else { const a = (-22.5 + n.ring * 45) * Math.PI / 180; place(el, L.c[0] + L.ring * Math.sin(a), L.c[1] - L.ring * Math.cos(a), L.d); }
+  });
+  // two-way dashed arrows between circles
+  const edge = (a, b, ra, rb, gap = 14) => { const dx = b[0] - a[0], dy = b[1] - a[1], len = Math.hypot(dx, dy), ux = dx / len, uy = dy / len;
+    return [a[0] + ux * (ra + gap), a[1] + uy * (ra + gap), b[0] - ux * (rb + gap), b[1] - uy * (rb + gap)]; };
+  const lines = [edge(L.l, L.c, L.l[2], L.c[2]), edge(L.r, L.c, L.r[2], L.c[2])];
+  if (L.bar) { const dy = L.bar - L.l[1], dx = Math.sqrt(Math.max(0, L.l[2] ** 2 - dy ** 2)); lines.push([L.l[0] + dx + 16, L.bar, L.r[0] - dx - 16, L.bar]); }
+  else lines.push([L.l[0] + L.l[2] + 6, L.l[1], L.r[0] - L.r[2] - 6, L.r[1]]);
+  const svg = $("apsg-lines"); svg.setAttribute("viewBox", `0 0 ${L.W} ${L.H}`);
+  svg.innerHTML = `<defs><marker id="ah" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="${L.W > 600 ? 7 : 5}" markerHeight="${L.W > 600 ? 7 : 5}" orient="auto-start-reverse"><path d="M0 0 10 5 0 10z" fill="currentColor"/></marker></defs>` +
+    lines.map(([x1, y1, x2, y2]) => `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="currentColor" stroke-width="${L.W > 600 ? 3 : 2.4}" stroke-dasharray="9 8" marker-start="url(#ah)" marker-end="url(#ah)"/>`).join("");
+}
+function mountApsg() {
+  const st = $("apsg-stage"); if (!st) return;
+  apsgLayout(); apsgInfo("apsg");
+  st.addEventListener("mouseover", e => { const b = e.target.closest(".apsg-node"); if (b) apsgInfo(b.dataset.node); });
+  st.addEventListener("focusin", e => { const b = e.target.closest(".apsg-node"); if (b) apsgInfo(b.dataset.node); });
+  st.addEventListener("click", e => { const b = e.target.closest(".apsg-node"); if (b) apsgInfo(b.dataset.node); });
+}
+window.addEventListener("resize", () => { if ($("apsg-stage")) apsgLayout(); });
+
+const APSG_TOR = {
+  pdf: "docs/APSG-Terms-of-Reference.pdf", period: "July 2026 – December 2027",
+  mandate: ["Emerges from territory-approved Community Development Strategies and the thematic priorities verified by the Cluster Working Groups.",
+    "Provides technical support to territories developing or refining their territorial strategies.",
+    "Is anchored in The Salvation Army's core principles: integrated mission, accountability, dignity, inclusion, stewardship and learning.",
+    "Identifies the territorial policies, systems and resources good community development needs, including practical MEAL for implementation and monitoring.",
+    "Produces a draft Asia Pacific Community Development Strategy for endorsement at ASLF 2027."],
+  inScope: [["Strategy development", "Vision and mission, an outcomes framework (short, medium and long term), strategic priorities and cross-cutting themes such as leaving no one behind, partnerships and shared learning."],
+    ["Policy enablement", "Guidance on territorial alignment, shared Asia Pacific policy commitments, and stronger policy communication and accountability."],
+    ["Resources and capacity", "Succession planning, minimum staffing for Development Offices, realistic operational budgets and step-by-step capacity building for development staff, recognising each territory's context."],
+    ["Regional and global links", "Coordination with zonal and IHQ initiatives, such as the Africa Zone, Americas Zone and SMILES, to align and share knowledge."],
+    ["Cross-sector integration", "Links between community development and thematic sectors, for integrated mission and a coherent strategy."]],
+  outScope: ["Territory-specific project targets or operational plans beyond ASLP's strategic parameters.", "Direct involvement in or management of territories' community development work.", "Decision-making authority over territorial strategies or structures."],
+  deliverables: [["Update the CD Strategy status tracking table", "Ongoing"], ["Develop a standard template for CD Strategies", "Q3 2026 (September)"],
+    ["Find which territories need support with their strategies and plan support for approval by Q1 2027", "Q4 2026 (October)"], ["Develop the Asia Pacific CD Strategy Roadmap 2026–2027", "Q4 2026"],
+    ["Give technical support to territories facing challenges in strategy development", "Q4 2026 – Q1 2027"], ["Review approved territorial CD Strategies", "Q4 2026 (October–December)"],
+    ["Produce a synthesis report bringing together territorial CD Strategies and ASLF outcomes", "Q4 2026 – Q1 2027"], ["Present the synthesis findings at CWG meetings", "Q1 2027"],
+    ["Confirm which approved strategies have an action or follow-up plan", "Q1 2027"], ["Develop tools to track and monitor territorial CD Strategies and their implementation", "Q2 2027"],
+    ["Develop the draft Asia Pacific Community Development Strategy", "Q1–Q3 2027"], ["Support the ASLF 2027 Task Force in preparing the strategy session", "Q2–Q3 2027"],
+    ["Finalise the Asia Pacific Community Development Strategy package", "Q4 2027 (after ASLF)"]],
+  criteria: ["Strategic experience in developing territorial strategies", "Knowledge of ASLF and the ASLP programme", "About 4–6 hours a month for meetings and document review",
+    "Able to represent their CWG accurately and objectively", "Open to collaborative, cross-cultural work"],
+};
+function apsgTor() {
+  const T = APSG_TOR;
+  return `<section class="tor" aria-labelledby="tor-h">
+    <div class="tor-head"><div class="stack"><h2 class="h2" id="tor-h">Terms of Reference</h2><p class="lede">Approved. In effect ${T.period}, and to be extended for as long as ASLP is active.</p></div>
+      <a class="btn fill" href="${T.pdf}" download>Download the ToR (PDF)</a></div>
+    <div class="tor-grid">
+      <div class="tor-card t-purpose"><h3 class="h3">Purpose</h3><p>To guide, support, bring together and quality-assure a coherent, values-based Asia Pacific Community Development Strategy, through a collaborative, bottom-up regional process.</p>
+        <p class="small" style="margin-top:var(--g2);color:inherit;opacity:.85">It builds on ASLF 2018 and the insights consolidated at ASLF 2025, turning territorial strategies and pathways into one regional strategy framework.</p></div>
+      <div class="tor-card"><h3 class="h3">Mandate</h3><p class="small">The APSG makes sure the regional strategy:</p><ol class="tor-list">${T.mandate.map(x => `<li>${esc(x)}</li>`).join("")}</ol></div>
+    </div>
+    <h3 class="h3 tor-sub">What the APSG works on</h3>
+    <div class="scope-grid">${T.inScope.map(([h, t]) => `<div class="scope"><b>${esc(h)}</b><p>${esc(t)}</p></div>`).join("")}
+      <div class="scope out"><b>Outside its remit</b><ul>${T.outScope.map(x => `<li>${esc(x)}</li>`).join("")}</ul></div></div>
+    <h3 class="h3 tor-sub">Deliverables and timeline</h3>
+    <ol class="deliv">${T.deliverables.map(([d, q]) => `<li><span class="dq">${esc(q)}</span><span class="dd">${esc(d)}</span></li>`).join("")}</ol>
+    <div class="tor-grid three">
+      <div class="tor-card"><h3 class="h3">Who's on it</h3><ul class="tor-list"><li>Chair: the ASLP Coordinators (SPEA and South Asia), one leading on strategy and synthesis, one on coordination and documentation</li><li>4 CWG representatives, one per CWG, nominated by the CWG leads</li><li>1 Support Office representative (MEAL focus), nominated by the ASC Chair</li><li>1 rotating Chief Secretary representative</li></ul>
+        <p class="small" style="margin-top:var(--g2)">A consultant may support facilitation and quality assurance, without a say in decisions. Territories with established strategies may join through CWG nomination or as resource persons.</p></div>
+      <div class="tor-card"><h3 class="h3">Members should have</h3><ul class="tor-list">${T.criteria.map(x => `<li>${esc(x)}</li>`).join("")}</ul></div>
+      <div class="tor-card"><h3 class="h3">How decisions are made</h3><dl class="facts"><dt>Quorum</dt><dd>The Chair and at least half of the members</dd><dt>Approach</dt><dd>Consensus first; if needed, a vote with at least 70% in favour</dd><dt>Dissent</dt><dd>Recorded with the reasons and raised with the ASC where needed</dd></dl></div>
+    </div>
+    <div class="tor-grid">
+      <div class="tor-card"><h3 class="h3">Meetings and ways of working</h3><ul class="tor-list"><li>Monthly online meetings of 60–120 minutes on Microsoft Teams</li><li>A yearly in-person workshop alongside ASLP events, budget permitting</li><li>Technical support visits to territories when requested, budget permitting</li><li>Agendas go out at least 5 days before; minutes and actions within 7 days after, shared with the ASC</li></ul></div>
+      <div class="tor-card"><h3 class="h3">When things slip</h3><ul class="tor-list"><li>Each deliverable has a named lead in the APSG work plan</li><li>Leads tell the Chair early about risks or delays</li><li>The Chair brings big issues to the members to resolve</li><li>Delays outside the APSG's control go to the ASC, and new timelines are recorded and shared</li></ul>
+        <p class="small" style="margin-top:var(--g2)">The ToR is reviewed every year, or sooner if the ASC asks.</p></div>
+    </div>
+  </section>`;
+}
+
 function pageGroup(key) {
   const gs = data.groups || [], i = gs.findIndex(x => x.key === key), g = gs[i]; if (!g) return notFound();
   return `${crumbs([["Home", "#/"], ["ASLP Groups", "#/groups"], [g.short]])}
@@ -787,7 +980,7 @@ function pageGroup(key) {
     <div class="wrap page-body"><div class="two-col">
       <div class="stack"><h2 class="h2">About the ${esc(g.short)}</h2>${g.description ? g.description.split(/\n\s*\n/).map(paraHtml).join("") : `<p class="empty">A description of the ${esc(g.name)} is coming soon.</p>`}</div>
       <div class="aside-box"><h2 class="h3">Members</h2>${(g.members || []).length ? `<div>${g.members.map(m => contactHtml({ ...m, role: [m.role, m.territory && (terrName(m.territory) || m.territory)].filter(Boolean).join(", ") })).join("")}</div>` : `<p class="empty">Members will be listed here.</p>`}</div>
-    </div></div>`;
+    </div>${g.key === "apsg" ? (pendingMaps.push(mountApsg), apsgStructure() + apsgTor()) : ""}</div>`;
 }
 
 // ---- NEWSLETTER ----
