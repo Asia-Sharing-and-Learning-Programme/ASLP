@@ -92,9 +92,14 @@
   /* ---------- top bar ---------- */
   .topbar { position: sticky; top: 0; z-index: 1100; background: color-mix(in srgb, var(--paper) 94%, transparent); backdrop-filter: blur(10px); border-bottom: 1px solid var(--line); }
   .topbar .wrap { display: flex; align-items: center; gap: var(--g3); height: 68px; }
+  .brand { flex: none; display: block; }
   .brand img { height: 38px; width: auto; display: block; }
+  /* on inner pages the full programme name replaces the acronym */
+  .brand .b-inner img { height: 24px; }
+  body:not(.is-home) .brand .b-home, body.is-home .brand .b-inner { display: none; }
   nav.menu { display: flex; gap: 2px; margin-left: auto; align-items: center; }
-  nav.menu > a, .dd-top { display: block; padding: 8px 12px; text-decoration: none; font-weight: 600; font-size: 15px; border-bottom: 3px solid transparent; }
+  nav.menu > a, .dd-top { display: block; padding: 8px 9px; text-decoration: none; font-weight: 600; font-size: 15px; border-bottom: 3px solid transparent; }
+  .topbar > .wrap > .theme { margin-left: var(--g3); }
   nav.menu > a:hover, .dd-top:hover { border-bottom-color: var(--line); }
   nav.menu .on { border-bottom-color: var(--orange); }
   .dd { position: relative; }
@@ -116,7 +121,7 @@
   /* the home page already shows every section, so the menu stays out of the way there */
   body.is-home nav.menu, body.is-home .menu-btn { display: none !important; }
   body.is-home .topbar > .wrap > .theme { display: inline-flex !important; margin-left: auto; }
-  @media (max-width: 1060px) {
+  @media (max-width: 1200px) {
     .menu-btn { display: inline-flex; }
     nav.menu { display: none; position: absolute; top: 68px; left: 0; right: 0; flex-direction: column; align-items: stretch; background: var(--paper); border-bottom: 1px solid var(--line); padding: var(--g1) 20px var(--g4); gap: 0; max-height: calc(100vh - 68px); overflow: auto; }
     nav.menu.open { display: flex; }
@@ -464,9 +469,10 @@
 </head>
 <body>
 <div class="topbar"><div class="wrap">
-  <a class="brand" href="#/" aria-label="ASLP home"><img class="on-light" src="brand/acronym-h.webp" alt="ASLP"><img class="on-dark" src="brand/acronym-h-dark.webp" alt="ASLP"></a>
+  <a class="brand" href="#/" aria-label="ASLP home"><span class="b-home"><img class="on-light" src="brand/acronym-h.webp" alt="ASLP"><img class="on-dark" src="brand/acronym-h-dark.webp" alt="ASLP"></span><span class="b-inner"><img class="on-light" src="brand/fullname-h.webp" alt="Asia-Pacific Sharing &amp; Learning Programme"><img class="on-dark" src="brand/fullname-h-dark.webp" alt="Asia-Pacific Sharing &amp; Learning Programme"></span></a>
   <button class="menu-btn" id="menu-btn" aria-expanded="false" aria-controls="menu">Menu</button>
   <nav class="menu" id="menu" aria-label="Main">
+    <a href="#/" data-nav="home">Home</a>
     <a href="#/about" data-nav="about">About</a>
     <div class="dd"><a href="#/cwgs" data-nav="cwgs" class="dd-top" aria-haspopup="true">Cluster Working Groups</a><div class="dd-menu" id="dd-cwgs"></div></div>
     <div class="dd"><a href="#/groups" data-nav="groups" class="dd-top" aria-haspopup="true">ASLP Groups</a><div class="dd-menu" id="dd-groups"></div></div>
@@ -916,11 +922,11 @@ const DIAGRAMS = {
       { id: "co-spea", ring: 1, label: "ASLP Coordinator", sub: "SPEA", bg: "#c0391e", br: true, title: "ASLP Coordinator, SPEA",
         text: "Brings the programme's coordination for South Pacific and East Asia to the committee, as a non-voting member." },
       { id: "l-spea1", ring: 2, lead: "SPEA 1" }, { id: "l-spea2", ring: 3, lead: "SPEA 2" },
-      { id: "us-spea", ring: 4, label: "SPEA Zone", sub: "Under Secretary", bg: "#1a5cba", title: "Under Secretary for South Pacific and East Asia",
-        text: "Represents the South Pacific and East Asia Zone at International Headquarters on the committee." },
+      { id: "us-spea", ring: 4, label: "SPEA Zone", sub: "Under Secretary", bg: "#1a5cba", title: "Under Secretary for South Pacific and East Asia (Chair)",
+        text: "Chairs the Steering Committee and represents the South Pacific and East Asia Zone at International Headquarters on it." },
       { id: "l-sog", ring: 5, label: "SOG", sub: "Lead", bg: "#f5c400", ink: "#000", title: "Support Office Group lead", toTitle: "Support Office Group (SOG)",
         how: "Brings the support offices' shared view of how the programme and its funding are doing to the committee, and takes the committee's decisions back to the support offices.",
-        text: "The Netherlands, as lead support office, leads the Support Office Group and chairs the Steering Committee.", link: ["#/group/sog", "About the Support Office Group"] },
+        text: "The Netherlands, as lead support office, leads the Support Office Group and represents the support offices on the committee.", link: ["#/group/sog", "About the Support Office Group"] },
       { id: "l-fcg", ring: 6, label: "FCG", sub: "Lead", bg: "#f5c400", ink: "#000", title: "Finance Coordination Group lead", toTitle: "Finance Coordination Group (FCG)",
         how: "Brings the group's review of finance reports, fund transfers and financial risks to the committee. Spending the committee approves then goes to The Salvation Army Switzerland.",
         text: "Switzerland leads the Finance Coordination Group and brings its view of ASLP's money to the committee. Spending requests go to The Salvation Army Switzerland once the committee has approved them.", link: ["#/group/fcg", "About the Finance Coordination Group"] },
