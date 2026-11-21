@@ -18,6 +18,8 @@
 <meta name="twitter:card" content="summary_large_image">
 <link rel="apple-touch-icon" href="og-square.png">
 <link rel="preload" href="fonts/archivo-latin-wdth-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="vendor/leaflet.css">
+<script src="vendor/leaflet.js"></script>
 <script src="vendor/supabase.js"></script>
 <style>
   /* Archivo (variable weight + width), hosted with the site. SIL Open Font License. */
@@ -67,13 +69,28 @@
   p { max-width: 68ch; }
 
   /* ---------- top bar ---------- */
-  .topbar { position: sticky; top: 0; z-index: 50; background: color-mix(in srgb, var(--paper) 94%, transparent); backdrop-filter: blur(10px); border-bottom: 1px solid var(--line); }
+  .topbar { position: sticky; top: 0; z-index: 1100; background: color-mix(in srgb, var(--paper) 94%, transparent); backdrop-filter: blur(10px); border-bottom: 1px solid var(--line); }
   .topbar .wrap { display: flex; align-items: center; gap: 18px; height: 68px; }
   .brand img { height: 40px; width: auto; display: block; }
   nav.menu { display: flex; gap: 4px; margin-left: auto; align-items: center; }
   nav.menu a { padding: 8px 12px; text-decoration: none; font-weight: 600; font-size: 15px; border-bottom: 3px solid transparent; }
   nav.menu a:hover { border-bottom-color: var(--line); }
   nav.menu a.on { border-bottom-color: var(--orange); }
+  /* drop-down menus */
+  .dd { position: relative; }
+  .dd-top::after { content: ""; display: inline-block; width: 7px; height: 7px; border-right: 2px solid currentColor; border-bottom: 2px solid currentColor; transform: rotate(45deg) translateY(-3px); margin-left: 8px; opacity: .55; }
+  .dd-menu { position: absolute; left: 0; top: 100%; min-width: 280px; background: var(--paper); border: 1px solid var(--line); border-radius: 16px; box-shadow: 0 12px 34px rgba(0,0,0,.12); padding: 12px; display: none; z-index: 60; }
+  .dd:hover .dd-menu, .dd:focus-within .dd-menu { display: block; }
+  .dd-menu .dd-h { font-size: 13px; font-weight: 700; color: var(--ink-3); padding: 8px 10px 4px; }
+  .dd-menu a { display: flex; align-items: center; gap: 12px; padding: 8px 10px; border-radius: 10px; text-decoration: none; font-weight: 600; font-size: 15px; border: 0 !important; }
+  .dd-menu a:hover { background: var(--paper-2); }
+  .dd-menu a img { height: 22px; width: auto; flex: none; }
+  #dd-cwgs { min-width: 470px; }
+  .dd-menu a b { font-weight: 900; font-stretch: 112%; letter-spacing: -.02em; min-width: 3.4em; font-size: 17px; }
+  .dd-menu a span { color: var(--ink-2); font-weight: 500; font-size: 14px; }
+  /* on the home page every section is already on the page, so the menu stays out of the way */
+  body.is-home nav.menu, body.is-home .menu-btn { display: none !important; }
+  body.is-home .topbar > .wrap > .theme { display: inline-flex !important; margin-left: auto; }
   .seg { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
   .seg button { border: 0; background: none; padding: 5px 9px; font: inherit; font-size: 12.5px; color: var(--ink-3); cursor: pointer; }
   .seg button.on { background: var(--paper-2); color: var(--ink); font-weight: 700; }
@@ -87,6 +104,11 @@
     nav.menu a.on { color: var(--orange); border-bottom-color: var(--line); }
     .topbar > .wrap > .theme { display: none; }
     nav.menu .theme-in-menu { display: flex !important; margin-top: 14px; }
+    .dd-top::after { display: none; }
+    #dd-cwgs { min-width: 0; }
+    .dd-menu { display: block; position: static; box-shadow: none; border: 0; padding: 0 0 6px 12px; min-width: 0; background: none; }
+    .dd-menu .dd-h { padding: 8px 4px 2px; }
+    .dd-menu a { padding: 9px 4px; font-size: 16px; }
   }
 
   /* ---------- buttons, chips ---------- */
@@ -134,6 +156,41 @@
   .zone-tile .zcount { position: relative; font-size: 15.5px; margin: 0 0 18px; max-width: 40ch; }
   @media (max-width: 760px) { .zones { grid-template-columns: 1fr; } .zone-tile { min-height: 380px; } }
 
+  /* CD Strategies on the home page */
+  .cds { padding: 64px 0 20px; }
+  .cds-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 40px; margin-top: 26px; }
+  @media (max-width: 900px) { .cds-grid { grid-template-columns: 1fr; } }
+  .chart-title { font-size: 19px; font-weight: 750; margin: 0 0 4px; letter-spacing: -.01em; }
+  .chart-note { font-size: 14px; color: var(--ink-3); margin: 0 0 14px; }
+  .legend { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 13.5px; color: var(--ink-2); margin-bottom: 14px; }
+  .legend i { display: inline-block; width: 11px; height: 11px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; }
+  .sbar-row { display: grid; grid-template-columns: 112px minmax(0, 1fr) 34px; gap: 14px; align-items: center; padding: 10px 0; border-top: 1px solid var(--line); }
+  .sbar-row img { height: 24px; width: auto; display: block; }
+  .sbar { display: flex; height: 30px; border-radius: 6px; overflow: hidden; gap: 2px; background: var(--paper-2); }
+  .sbar span { display: grid; place-items: center; font-size: 13px; font-weight: 700; color: #fff; min-width: 0; }
+  .sbar span.dk { color: #000; }
+  .sbar-row .tot { font-weight: 800; text-align: right; }
+  .yrs { display: grid; grid-template-columns: 26px repeat(10, minmax(0, 1fr)); align-items: end; gap: 0 6px; height: 220px; border-bottom: 2px solid var(--ink); padding-top: 18px; position: relative; }
+  .yrs .ax { align-self: stretch; display: flex; flex-direction: column; justify-content: space-between; font-size: 12px; color: var(--ink-3); text-align: right; padding-right: 4px; }
+  .yr { display: flex; align-items: flex-end; justify-content: center; gap: 3px; height: 100%; }
+  .yr .b { width: min(16px, 40%); border-radius: 4px 4px 0 0; position: relative; }
+  .yr .b em { position: absolute; top: -18px; left: 50%; transform: translateX(-50%); font-style: normal; font-size: 12px; font-weight: 700; color: var(--ink); }
+  .yr .b.s { background: #005fc0; } .yr .b.e { background: #e04c1e; }
+  .yr-lab { display: grid; grid-template-columns: 26px repeat(10, minmax(0, 1fr)); gap: 0 6px; font-size: 12.5px; color: var(--ink-2); text-align: center; margin-top: 6px; }
+  .yr-lab.act { color: var(--ink); font-weight: 700; margin-top: 2px; }
+  .yr-lab .ax { text-align: right; color: var(--ink-3); font-weight: 400; font-size: 11.5px; padding-right: 4px; }
+  .cds-cta { margin-top: 30px; }
+  .cds-cta .btn { background: #005fc0; border-color: #005fc0; color: #fff; }
+  .cds-cta .btn:hover { background: var(--orange); border-color: var(--orange); }
+  /* maps */
+  .aslp-map { position: relative; z-index: 0; isolation: isolate; height: 460px; border-radius: 22px; overflow: hidden; border: 1px solid var(--line); background: var(--paper-2); }
+  .aslp-map .leaflet-tile-pane { filter: grayscale(.85) brightness(1.06) contrast(.9); }
+  .aslp-map.map-dark .leaflet-tile-pane { filter: grayscale(.9) invert(1) hue-rotate(180deg) brightness(.85) contrast(.9); }
+  .aslp-map .leaflet-tooltip { font: 13px/1.45 var(--font); padding: 8px 11px; border-radius: 10px; }
+  .map-block { margin: 0 0 40px; }
+  .map-block .legend { margin: 12px 0 0; }
+  .pin-dot { display: inline-block; width: 12px; height: 12px; border-radius: 50%; margin-right: 6px; vertical-align: -1px; }
+  @media (max-width: 700px) { .aslp-map { height: 340px; } }
   /* territory finder */
   .finder { padding: 60px 24px 34px; }
   .finder-head { display: grid; grid-template-columns: minmax(0, 1fr) 280px; gap: 30px; align-items: end; margin-bottom: 26px; }
@@ -159,7 +216,7 @@
   @media (max-width: 760px) { .grp-row { grid-template-columns: 1fr 1fr; gap: 10px 0; } .band-navy .cut { display: none; } }
 
   /* three doors */
-  .doors { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 22px; padding: 60px 24px 76px; }
+  .doors { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 22px; padding: 60px 24px 76px; }
   .door { display: block; text-decoration: none; padding: 26px 24px 26px; border-radius: 22px; min-height: 260px; }
   .door .cut { height: 100px; width: auto; max-width: 100%; display: block; margin-bottom: 18px; }
   .door p { margin: 0; color: var(--ink-2); font-size: 15.5px; }
@@ -283,8 +340,8 @@
   <button class="menu-btn" id="menu-btn" aria-expanded="false" aria-controls="menu">Menu</button>
   <nav class="menu" id="menu" aria-label="Main">
     <a href="#/about" data-nav="about">About</a>
-    <a href="#/cwgs" data-nav="cwgs">Cluster Working Groups</a>
-    <a href="#/groups" data-nav="groups">ASLP Groups</a>
+    <div class="dd"><a href="#/cwgs" data-nav="cwgs" class="dd-top" aria-haspopup="true">Cluster Working Groups</a><div class="dd-menu" id="dd-cwgs"></div></div>
+    <div class="dd"><a href="#/groups" data-nav="groups" class="dd-top" aria-haspopup="true">ASLP Groups</a><div class="dd-menu" id="dd-groups"></div></div>
     <a href="#/newsletter" data-nav="newsletter">Newsletter</a>
     <a href="/cd-strategy/">CD Strategies</a>
     <a href="/Calendar-2027-2028/">Calendar</a>
@@ -321,7 +378,8 @@ function applyTheme(t) {
 }
 let theme = "auto"; try { theme = localStorage.getItem("cds-theme") || "auto"; } catch (e) {}
 applyTheme(theme);
-document.querySelectorAll("[data-theme-set]").forEach(b => b.addEventListener("click", () => { theme = b.dataset.themeSet; try { localStorage.setItem("cds-theme", theme); } catch (e) {} applyTheme(theme); }));
+document.querySelectorAll("[data-theme-set]").forEach(b => b.addEventListener("click", () => { theme = b.dataset.themeSet; try { localStorage.setItem("cds-theme", theme); } catch (e) {} applyTheme(theme);
+  document.querySelectorAll(".aslp-map").forEach(el => el.classList.toggle("map-dark", typeof mapDark === "function" && mapDark())); }));
 $("menu-btn").addEventListener("click", () => { const o = $("menu").classList.toggle("open"); $("menu-btn").setAttribute("aria-expanded", o); });
 
 // ---- structure + brand artwork (brand/ comes from the ASLP presentation template and logo pack) ----
@@ -370,6 +428,61 @@ document.addEventListener("click", async e => {
 });
 const aboutFirst = () => { const b = (data.content && data.content.about && data.content.about.body) || ""; return b ? b.split(/\n\s*\n/)[0].slice(0, 300) : ""; };
 
+// ---- CD Strategies charts (same rules as the CD Strategies site) ----
+const SKEYS = Object.keys(STATUS);
+const DARK_INK = { drafting: true };
+const periodYears = v => { const m = String(v || "").match(/(\d{4})\D+(\d{4})/); if (m) { const a = +m[1], b = +m[2]; return a <= b ? [a, b] : [b, a]; } const o = String(v || "").match(/^\s*(\d{4})\s*$/); return o ? [+o[1], +o[1]] : null; };
+function statusByCwg() {
+  const cl = cwgList();
+  return `<div class="legend">${SKEYS.map(k => `<span><i style="background:${STATUS[k][1]}"></i>${STATUS[k][0]}</span>`).join("")}</div>
+    ${cl.map(c => { const ts = terrsOf(c);
+      return `<div class="sbar-row"><a href="#/cwg/${cwgSlug(c)}">${ART(c) ? `<img src="${ART(c).h}" alt="${esc(c)}">` : esc(c)}</a>
+        <div class="sbar" role="img" aria-label="${esc(c)}: ${SKEYS.map(k => `${STATUS[k][0]} ${ts.filter(t => t.status === k).length}`).join(", ")}">${SKEYS.map(k => { const n = ts.filter(t => t.status === k).length;
+          return n ? `<span class="${DARK_INK[k] ? "dk" : ""}" style="flex:${n};background:${STATUS[k][1]}" title="${STATUS[k][0]}: ${n}">${n}</span>` : ""; }).join("")}</div>
+        <div class="tot">${ts.length}</div></div>`; }).join("")}`;
+}
+function implTimeline() {
+  const Y0 = new Date().getFullYear(), years = Array.from({ length: 10 }, (_, k) => Y0 + k);
+  const cyc = terrs().flatMap(t => [periodYears(t.strategyPeriod), ...(t.pastCycles || []).map(c => periodYears(c.period))]).filter(Boolean);
+  const st = years.map(y => cyc.filter(p => p[0] === y).length), en = years.map(y => cyc.filter(p => p[1] === y).length);
+  const act = years.map(y => cyc.filter(p => p[0] <= y && y <= p[1]).length);
+  const mx = Math.max(3, ...st, ...en);
+  const withP = terrs().filter(t => periodYears(t.strategyPeriod) || (t.pastCycles || []).some(c => periodYears(c.period))).length;
+  return `<div class="legend"><span><i style="background:#005fc0"></i>Starting implementation</span><span><i style="background:#e04c1e"></i>Ending</span></div>
+    <div class="yrs" role="img" aria-label="${years.map((y, i) => `${y}: ${st[i]} starting, ${en[i]} ending`).join("; ")}"><div class="ax"><span>${mx}</span><span>0</span></div>
+      ${years.map((y, i) => `<div class="yr">${st[i] ? `<div class="b s" style="height:${st[i] / mx * 100}%"><em>${st[i]}</em></div>` : `<div class="b s" style="height:0"></div>`}${en[i] ? `<div class="b e" style="height:${en[i] / mx * 100}%"><em>${en[i]}</em></div>` : `<div class="b e" style="height:0"></div>`}</div>`).join("")}</div>
+    <div class="yr-lab"><span></span>${years.map(y => `<span>${y}</span>`).join("")}</div>
+    <div class="yr-lab act"><span class="ax">Active</span>${act.map(a => `<span>${a}</span>`).join("")}</div>
+    <p class="chart-note" style="margin-top:12px">${withP} of ${terrs().length} territories have a strategy period so far. Active means strategies being implemented that year.</p>`;
+}
+// map with HQ pins, coloured by zone (SPEA blue, SASIA orange)
+const ZCOL = { SPEA: "#1a5cba", SASIA: "#e24a1b" };
+let maps = [];
+function pinSvg(color) {
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="26" height="36" viewBox="0 0 26 36" aria-hidden="true"><path d="M13 1C6.4 1 1 6.3 1 12.9c0 8.6 10.4 20.6 11.2 21.5a1 1 0 0 0 1.6 0C14.6 33.5 25 21.5 25 12.9 25 6.3 19.6 1 13 1z" fill="${color}" stroke="#fff" stroke-width="2"/><circle cx="13" cy="13" r="4.6" fill="#fff"/></svg>`;
+}
+const mapDark = () => { const a = document.documentElement.getAttribute("data-theme"); return a ? a === "dark" : matchMedia("(prefers-color-scheme: dark)").matches; };
+function mountMap(elId, list) {
+  const el = $(elId); if (!el || !window.L) return;
+  const m = L.map(el, { scrollWheelZoom: false, worldCopyJump: true, minZoom: 2, zoomSnap: 0.5 });
+  L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 18, attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> contributors' }).addTo(m);
+  el.classList.toggle("map-dark", mapDark());
+  const pts = [];
+  list.forEach(t => {
+    if (typeof t.lat !== "number" || typeof t.lng !== "number") return;
+    const col = ZCOL[zoneOf(t.cwg)] || "#6f6e69";
+    const mk = L.marker([t.lat, t.lng], { icon: L.divIcon({ className: "", html: pinSvg(col), iconSize: [26, 36], iconAnchor: [13, 35] }), title: t.name, keyboard: true }).addTo(m);
+    mk.bindTooltip(`<strong>${esc(t.name)}</strong><br>${esc(t.cwg || "")}${t.location ? `<br><span style="opacity:.75">${isRegion(t) ? "RHQ" : "THQ"}: ${esc(t.location)}</span>` : ""}`, { direction: "top", offset: [0, -30] });
+    mk.on("click", () => { location.hash = `#/territory/${t.id}`; });
+    pts.push([t.lat, t.lng]);
+  });
+  if (pts.length > 1) m.fitBounds(pts, { padding: [40, 40], maxZoom: 6 }); else if (pts.length) m.setView(pts[0], 5); else m.setView([10, 100], 3);
+  m.on("focus click", () => m.scrollWheelZoom.enable()); m.on("mouseout", () => m.scrollWheelZoom.disable());
+  maps.push(m);
+}
+const mapLegend = zs => `<div class="legend">${zs.map(z => `<span><span class="pin-dot" style="background:${ZCOL[z]}"></span>${z} territories and regions</span>`).join("")}<span>Click a pin to open the territory.</span></div>`;
+let pendingMaps = [];
+
 // ---- HOME ----
 function pageHome() {
   const ts = terrs(), cl = cwgList();
@@ -394,13 +507,21 @@ function pageHome() {
       <div class="finder-grid">${cl.map(c => `<div class="fcol" style="${cwgVars(c)}"><h3>${ART(c) ? `<a href="#/cwg/${cwgSlug(c)}"><img src="${ART(c).h}" alt="${esc(c)} Cluster Working Group"></a>` : esc(c)}</h3>
         <ul>${terrsOf(c).map(t => `<li><a href="#/territory/${esc(t.id)}">${esc(t.name)}</a></li>`).join("")}</ul></div>`).join("")}</div>
     </section>
+    <section class="cds wrap" aria-labelledby="cds-h">
+      <h2 class="h2" id="cds-h">Community Development Strategies</h2>
+      <p class="lede" style="margin:0">Where each Cluster Working Group's territories are with their CD Strategies, and when strategies start and end.</p>
+      <div class="cds-grid">
+        <div><h3 class="chart-title">Status by CWG</h3><p class="chart-note">Number of territories at each stage.</p>${statusByCwg()}</div>
+        <div><h3 class="chart-title">Strategy implementation by year, ${new Date().getFullYear()}–${new Date().getFullYear() + 9}</h3><p class="chart-note">Strategies starting and ending each year.</p>${implTimeline()}</div>
+      </div>
+      <div class="cds-cta"><a class="btn" href="/cd-strategy/">View details of Asia-Pacific's Community Development Strategies</a></div>
+    </section>
     <section class="band-navy" aria-labelledby="grp-h"><div class="wrap" style="position:relative">${cut("4")}
       <div class="intro"><h2 class="h2" id="grp-h">ASLP Groups</h2><p style="margin:0;opacity:.9">The groups that steer, shape and support the programme alongside the Cluster Working Groups.</p></div>
       <div class="grp-row">${(data.groups || []).map(g => `<a href="#/group/${esc(g.key)}"><b>${esc(g.short)}</b><span>${esc(g.name)}</span></a>`).join("")}</div>
     </div></section>
     <section class="doors wrap" aria-label="More from ASLP">
       <a class="door d1" href="#/newsletter">${cut("2")}<div class="h3">Newsletter</div><p>Read each ASLP newsletter as a digital book.</p></a>
-      <a class="door d2" href="/cd-strategy/"><img class="cut" src="brand/doodles-spea-1.webp" alt="" aria-hidden="true" loading="lazy"><div class="h3">CD Strategies</div><p>Where every territory is with its Community Development Strategy.</p></a>
       <a class="door d3" href="/Calendar-2027-2028/"><img class="cut" src="brand/doodles-sasia-1.webp" alt="" aria-hidden="true" loading="lazy"><div class="h3">Calendar</div><p>ASLP dates and events for 2027 and 2028. Sign-in needed.</p></a>
     </section>`;
 }
@@ -434,12 +555,16 @@ function pageCwgs() {
   return `<div class="page wrap">${crumbs([["Home", "#/"], ["Cluster Working Groups"]])}
     <div class="page-hero"><div><h1 class="h1"><span class="lt">Meet our</span><br>Cluster Working Groups</h1>
       <p class="lede">Territories share and learn in four Cluster Working Groups across two zones. Open a group to see its territories, what they focus on and the support they offer each other.</p></div>${cut("5")}</div>
-    ${ZONES.map(zoneSection).join("")}
+    <div class="map-block"><div class="aslp-map" id="map-all" role="region" aria-label="Map of ASLP territorial and regional headquarters"></div>${mapLegend(["SPEA", "SASIA"])}</div>
+    ${ZONES.map(zoneSection).join("")}`
+    + ((pendingMaps = [["map-all", terrs()]]), "") + `
   </div>`;
 }
 function pageZone(zk) {
   const z = ZONES.find(x => x.key.toLowerCase() === zk); if (!z) return notFound();
-  return `<div class="page wrap">${crumbs([["Home", "#/"], ["Cluster Working Groups", "#/cwgs"], [z.label]])}${zoneSection(z)}</div>`;
+  pendingMaps = [["map-zone", terrs().filter(t => zoneOf(t.cwg) === z.key)]];
+  return `<div class="page wrap">${crumbs([["Home", "#/"], ["Cluster Working Groups", "#/cwgs"], [z.label]])}${zoneSection(z)}
+    <div class="map-block"><div class="aslp-map" id="map-zone" role="region" aria-label="Map of ${esc(z.label)} headquarters"></div>${mapLegend([z.key])}</div></div>`;
 }
 
 // ---- CWG ----
@@ -447,6 +572,7 @@ function pageCwg(cs) {
   const c = cwgList().find(x => cwgSlug(x) === cs); if (!c) return notFound();
   const z = ZONES.find(x => x.key === zoneOf(c)), l = leadOf(c), ts = terrsOf(c), a = ART(c);
   const countries = [...new Set(ts.flatMap(t => t.countries || []))].sort();
+  pendingMaps = [["map-cwg", ts]];
   return `<div style="${cwgVars(c)}">
     <div class="wrap" style="padding-top:28px">${crumbs([["Home", "#/"], ["Cluster Working Groups", "#/cwgs"], ...(z ? [[z.label, `#/zone/${z.key.toLowerCase()}`]] : []), [c]])}</div>
     <section class="cwg-hero">${a ? `<img class="map-bg" src="${a.map}" alt="" aria-hidden="true">` : ""}<div class="wrap">
@@ -460,6 +586,7 @@ function pageCwg(cs) {
         return `<a class="terr-row" href="#/territory/${esc(t.id)}"><div class="nm">${esc(t.name)}</div>
           <div class="where">${t.location ? `${isRegion(t) ? "Regional" : "Territorial"} Headquarters in ${esc(t.location)}` : ""}</div>
           ${(p.thematic || []).length ? tags(p.thematic.slice(0, 4)) : `<span class="small">Profile coming soon</span>`}</a>`; }).join("")}</div>
+      <div class="map-block" style="margin-top:36px"><div class="aslp-map" id="map-cwg" role="region" aria-label="Map of ${esc(c)} headquarters"></div>${z ? mapLegend([z.key]) : ""}</div>
       ${countries.length ? `<div class="countries"><h3 class="h3">Countries covered</h3><div class="chips" style="margin-top:10px">${countries.map(x => `<span class="chip">${esc(x)}</span>`).join("")}</div></div>` : ""}
     </section></div>`;
 }
@@ -528,13 +655,25 @@ function pageNewsletter() {
 }
 const notFound = () => `<div class="page wrap"><h1 class="h1">Page not found</h1><p><a class="textlink" href="#/">Go to the ASLP home page</a></p></div>`;
 
+// ---- drop-down menus (built once the data is in) ----
+function buildMenus() {
+  const cl = cwgList();
+  $("dd-cwgs").innerHTML = ZONES.map(z => `<div class="dd-h">${z.key} CWGs</div>` + cl.filter(c => zoneOf(c) === z.key).map(c =>
+    `<a href="#/cwg/${cwgSlug(c)}" style="${cwgVars(c)}">${ART(c) ? `<img src="${ART(c).h}" alt="">` : ""}<span>${terrsOf(c).map(t => esc(shortName(t.name))).join(", ")}</span></a>`).join("")).join("");
+  $("dd-groups").innerHTML = (data.groups || []).map(g => `<a href="#/group/${esc(g.key)}"><b>${esc(g.short)}</b><span>${esc(g.name)}</span></a>`).join("");
+}
 // ---- router ----
 function route() {
   if (!data) return;
+  pendingMaps = [];
   const [p, a] = (location.hash.replace(/^#\/?/, "") || "").split("/").filter(Boolean);
   const html = !p ? pageHome() : p === "about" ? pageAbout() : p === "cwgs" ? pageCwgs() : p === "zone" ? pageZone(a) : p === "cwg" ? pageCwg(a)
     : p === "territory" ? pageTerritory(a) : p === "groups" ? pageGroups() : p === "group" ? pageGroup(a) : p === "newsletter" ? pageNewsletter() : notFound();
+  maps.forEach(m => m.remove()); maps = [];
+  pendingMaps = pendingMaps || [];
   $("view").innerHTML = html;
+  document.body.classList.toggle("is-home", !p);
+  pendingMaps.forEach(([id, list]) => mountMap(id, list)); pendingMaps = [];
   const nav = p === "zone" || p === "cwg" || p === "territory" ? "cwgs" : p === "group" ? "groups" : p;
   document.querySelectorAll("[data-nav]").forEach(x => x.classList.toggle("on", x.dataset.nav === nav));
   $("menu").classList.remove("open"); $("menu-btn").setAttribute("aria-expanded", "false");
@@ -543,7 +682,7 @@ function route() {
   window.scrollTo(0, 0);
 }
 window.addEventListener("hashchange", route);
-load().then(route).catch(e => { $("view").innerHTML = `<div class="wrap loading">The site couldn't load its content. Check your connection and refresh the page.</div>`; console.error(e); });
+load().then(() => { buildMenus(); route(); }).catch(e => { $("view").innerHTML = `<div class="wrap loading">The site couldn't load its content. Check your connection and refresh the page.</div>`; console.error(e); });
 </script>
 </body>
 </html>
