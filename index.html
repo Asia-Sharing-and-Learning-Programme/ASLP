@@ -454,6 +454,23 @@
   :root[data-theme="dark"] .pm-cols li::before { color: #5b9cf0; }
   @media (max-width: 1000px) { .pm-cols { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
   @media (max-width: 700px) { .pm-purpose { grid-template-columns: 1fr; gap: var(--g2); } .pm-cols { grid-template-columns: 1fr; gap: var(--g3); } .pm-cols li { display: grid; grid-template-columns: 2.2em minmax(0, 1fr); } .pm-cols li::before { font-size: 30px; margin: 0; } .pm-card { padding: var(--g4); } }
+  /* home: a Share button sits where the logo is on other pages */
+  .share-top { display: none; align-items: center; gap: 8px; border: 2px solid var(--ink); background: none; color: var(--ink); border-radius: 999px; padding: 7px 16px; font: inherit; font-weight: 700; font-size: 15px; cursor: pointer; }
+  .share-top:hover { background: var(--ink); color: var(--paper); }
+  body.is-home .share-top { display: inline-flex; }
+  body.is-home .brand { display: none; }
+  .mini-dlg { border: 0; border-radius: 22px; padding: var(--g4); width: min(460px, calc(100vw - 32px)); background: var(--paper); color: var(--ink); box-shadow: 0 24px 60px rgba(0,0,0,.25); }
+  .mini-dlg::backdrop { background: rgba(0,0,0,.4); }
+  .md-head { display: flex; justify-content: space-between; align-items: center; gap: var(--g3); margin-bottom: var(--g1); }
+  .md-x { border: 0; background: none; font-size: 26px; line-height: 1; cursor: pointer; color: var(--ink-2); }
+  .copy-row { display: flex; gap: var(--g1); margin-top: var(--g2); }
+  .copy-row input { flex: 1; min-width: 0; font: inherit; font-size: 14px; padding: 9px 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--paper-2); color: var(--ink); }
+  .btn.sm { padding: 8px 16px; font-size: 14px; }
+  .share-apps { display: flex; flex-wrap: wrap; gap: var(--g1); margin-top: var(--g1); }
+  .share-app { display: inline-flex; align-items: center; gap: 8px; padding: 8px 14px; border: 1px solid var(--line); border-radius: 999px; text-decoration: none; font: inherit; font-size: 14px; font-weight: 600; background: var(--paper); color: var(--ink); cursor: pointer; }
+  .share-app:hover { border-color: var(--ink); }
+  .sa-dot { width: 10px; height: 10px; border-radius: 50%; }
+  .grp-actions { display: flex; flex-wrap: wrap; gap: var(--g2); align-items: center; margin-bottom: var(--g5); }
   footer { background: #000; color: #fff; padding: var(--g7) 0 var(--g6); }
   footer .wrap { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: var(--g5); align-items: end; }
   footer .fname { font-size: clamp(26px, 3.4vw, 40px); line-height: 1.04; letter-spacing: -.02em; }
@@ -470,6 +487,7 @@
 <body>
 <div class="topbar"><div class="wrap">
   <a class="brand" href="#/" aria-label="ASLP home"><span class="b-home"><img class="on-light" src="brand/acronym-h.webp" alt="ASLP"><img class="on-dark" src="brand/acronym-h-dark.webp" alt="ASLP"></span><span class="b-inner"><img class="on-light" src="brand/fullname-h.webp" alt="Asia-Pacific Sharing &amp; Learning Programme"><img class="on-dark" src="brand/fullname-h-dark.webp" alt="Asia-Pacific Sharing &amp; Learning Programme"></span></a>
+  <button type="button" class="share-top" id="share-btn"><svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12M7 8l5-5 5 5M5 13v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>Share</button>
   <button class="menu-btn" id="menu-btn" aria-expanded="false" aria-controls="menu">Menu</button>
   <nav class="menu" id="menu" aria-label="Main">
     <a href="#/" data-nav="home">Home</a>
@@ -484,6 +502,19 @@
   <div class="seg theme" role="group" aria-label="Theme"><button data-theme-set="light">Light</button><button data-theme-set="auto">Auto</button><button data-theme-set="dark">Dark</button></div>
 </div></div>
 
+<dialog id="sdlg" class="mini-dlg" aria-labelledby="sdlg-title">
+  <div class="md-head"><h2 class="h3" id="sdlg-title">Share the ASLP website</h2><button type="button" class="md-x" data-close aria-label="Close">×</button></div>
+  <p class="small">Anyone with the link can open the site.</p>
+  <div class="copy-row"><input type="text" id="sdlg-url" readonly aria-label="Website link"><button type="button" class="btn fill sm" data-copy="sdlg-url">Copy link</button></div>
+  <p class="small" style="margin-top:var(--g3)">Share via</p>
+  <div class="share-apps">
+    <a class="share-app" id="sh-wa" target="_blank" rel="noopener noreferrer"><span class="sa-dot" style="background:#25d366"></span>WhatsApp</a>
+    <a class="share-app" id="sh-ol"><span class="sa-dot" style="background:#0078d4"></span>Outlook</a>
+    <a class="share-app" id="sh-olweb" target="_blank" rel="noopener noreferrer"><span class="sa-dot" style="background:#0f6cbd"></span>Outlook on the web</a>
+    <a class="share-app" id="sh-tm" target="_blank" rel="noopener noreferrer"><span class="sa-dot" style="background:#5b5fc7"></span>Teams</a>
+    <button type="button" class="share-app" id="sdlg-native" hidden>More…</button>
+  </div>
+</dialog>
 <main id="view"><div class="wrap loading">Loading the ASLP site…</div></main>
 
 <footer><div class="wrap">
@@ -516,6 +547,26 @@ let theme = "auto"; try { theme = localStorage.getItem("cds-theme") || "auto"; }
 applyTheme(theme);
 document.querySelectorAll("[data-theme-set]").forEach(b => b.addEventListener("click", () => { theme = b.dataset.themeSet; try { localStorage.setItem("cds-theme", theme); } catch (e) {} applyTheme(theme); }));
 $("menu-btn").addEventListener("click", () => { const o = $("menu").classList.toggle("open"); $("menu-btn").setAttribute("aria-expanded", o); });
+
+
+// ---- share ----
+const SITE_URL = "https://asia-sharing-and-learning-programme.github.io/ASLP/";
+$("share-btn").addEventListener("click", () => {
+  $("sdlg-url").value = SITE_URL; $("sdlg-native").hidden = !navigator.share;
+  const subj = "Asia-Pacific Sharing & Learning Programme (ASLP) website", msg = `Here is the link to the Asia-Pacific Sharing & Learning Programme (ASLP) website: ${SITE_URL}`;
+  $("sh-wa").href = `https://wa.me/?text=${encodeURIComponent(msg)}`;
+  $("sh-ol").href = `mailto:?subject=${encodeURIComponent(subj)}&body=${encodeURIComponent(msg)}`;
+  $("sh-olweb").href = `https://outlook.office.com/mail/deeplink/compose?subject=${encodeURIComponent(subj)}&body=${encodeURIComponent(msg)}`;
+  $("sh-tm").href = `https://teams.microsoft.com/share?href=${encodeURIComponent(SITE_URL)}&msgText=${encodeURIComponent(subj)}`;
+  $("sdlg").showModal(); setTimeout(() => $("sdlg-url").select(), 30);
+});
+$("sdlg-native").addEventListener("click", () => navigator.share({ title: "ASLP | Asia-Pacific Sharing & Learning Programme", url: SITE_URL }).catch(() => {}));
+$("sdlg").addEventListener("click", async e => {
+  if (e.target === $("sdlg") || e.target.closest("[data-close]")) return $("sdlg").close();
+  const b = e.target.closest("[data-copy]"); if (!b) return;
+  try { await navigator.clipboard.writeText($(b.dataset.copy).value); } catch (err) { $(b.dataset.copy).select(); document.execCommand("copy"); }
+  const o = b.textContent; b.textContent = "Copied"; setTimeout(() => b.textContent = o, 1500);
+});
 
 // ---- structure + brand artwork ----
 const ZONES = [
@@ -986,18 +1037,25 @@ function dgPin(key, id) {
   st.querySelectorAll(".apsg-node").forEach(b => { b.classList.toggle("on", b.dataset.node === dgPinned[key]); b.setAttribute("aria-pressed", b.dataset.node === dgPinned[key]); });
   dgInfo(key, dgPinned[key] || center);
 }
-function dgLayout(key) {
-  const st = $(`dg-stage-${key}`); if (!st) return;
-  const D = DIAGRAMS[key], L = D.layouts[st.clientWidth < 620 ? "narrow" : "wide"], k = st.clientWidth / L.W;
-  st.style.height = `${L.H * k}px`;
-  const geo = {};   // where each node sits, in layout units
+function dgGeo(D, L) {
+  const geo = {};
   D.nodes.forEach(n => {
-    const el = st.querySelector(`[data-node="${n.id}"]`); let g;
+    let g;
     if (n.kind === "center") g = { x: L.c[0], y: L.c[1], r: L.c[2] };
     else if (n.kind === "side") { const p = L.pos[n.id]; g = { x: p[0], y: p[1], r: p[2] }; }
     else if (n.kind === "pill") { const p = L.pos[n.id]; g = { x: p[0], y: p[1], w: p[2], h: p[3] }; }
     else { const a = (L.start + n.ring * 360 / L.n) * Math.PI / 180; g = { x: L.c[0] + L.ring * Math.sin(a), y: L.c[1] - L.ring * Math.cos(a), r: L.d / 2 }; }
     geo[n.id] = g;
+  });
+  return geo;
+}
+function dgLayout(key) {
+  const st = $(`dg-stage-${key}`); if (!st) return;
+  const D = DIAGRAMS[key], L = D.layouts[st.clientWidth < 620 ? "narrow" : "wide"], k = st.clientWidth / L.W;
+  st.style.height = `${L.H * k}px`;
+  const geo = dgGeo(D, L);   // where each node sits, in layout units
+  D.nodes.forEach(n => {
+    const el = st.querySelector(`[data-node="${n.id}"]`), g = geo[n.id];
     el.style.left = `${g.x * k}px`; el.style.top = `${g.y * k}px`;
     el.style.width = `${(g.w || g.r * 2) * k}px`; el.style.height = `${(g.h || g.r * 2) * k}px`;
     el.style.fontSize = `${n.kind === "center" ? L.cfs : n.kind === "side" ? L.fs * 1.25 : L.fs}cqw`;
@@ -1054,11 +1112,133 @@ function pageGroup(key) {
   const gs = data.groups || [], i = gs.findIndex(x => x.key === key), g = gs[i]; if (!g) return notFound();
   return `${crumbs([["Home", "#/"], ["ASLP Groups", "#/groups"], [g.short]])}
     <div class="wrap"><div class="grp-hero" style="background:${GBG[i % 4]};${i % 4 === 2 ? "color:#000" : ""}">${decor(GSHAPES[i % 4])}<h1><b>${esc(g.short)}</b></h1><div class="gn">${esc(g.name)}</div></div></div>
-    <div class="wrap page-body"><div class="two-col">
+    <div class="wrap page-body"><div class="grp-actions"><button type="button" class="btn fill" data-grp-pdf="${esc(g.key)}">Download one-page summary (PDF)</button></div><div class="two-col">
       <div class="stack"><h2 class="h2">About the ${esc(g.short)}</h2>${g.description ? g.description.split(/\n\s*\n/).map(paraHtml).join("") : `<p class="empty">A description of the ${esc(g.name)} is coming soon.</p>`}</div>
       <div class="aside-box"><h2 class="h3">Members</h2>${(g.members || []).length ? `<div>${g.members.map(m => contactHtml({ ...m, role: [m.role, m.territory && (terrName(m.territory) || m.territory)].filter(Boolean).join(", ") })).join("")}</div>` : `<p class="empty">Members will be listed here.</p>`}</div>
     </div>${(g.key === "apsg" ? apsgPurpose() : "") + (DIAGRAMS[g.key] ? (pendingMaps.push(() => mountDiagram(g.key)), diagramHtml(g.key)) : "")}</div>`;
 }
+
+
+// ---- one-page PDF summary of a group ----
+const loadedJs = {};
+const loadScript = src => loadedJs[src] || (loadedJs[src] = new Promise((res, rej) => { const el = document.createElement("script"); el.src = src; el.onload = res; el.onerror = () => { delete loadedJs[src]; rej(new Error("load")); }; document.head.appendChild(el); }));
+const pdfSafe = t => String(t ?? "").replace(/[ ‑]/g, m => m === " " ? " " : "-").replace(/[‘’]/g, "'").replace(/[“”]/g, '"');
+const hexRgb = h => [1, 3, 5].map(i => parseInt(h.slice(i, i + 2), 16));
+const mixW = (h, a) => hexRgb(h).map(c => Math.round(c * a + 255 * (1 - a)));
+async function imgData(src) {
+  const im = new Image(); im.src = src; await im.decode();
+  const c = document.createElement("canvas"); c.width = im.naturalWidth; c.height = im.naturalHeight; c.getContext("2d").drawImage(im, 0, 0);
+  return { url: c.toDataURL("image/png"), w: im.naturalWidth, h: im.naturalHeight };
+}
+function pdfDiagram(doc, key, X, Y, W) {
+  const D = DIAGRAMS[key], L = D.layouts.wide, k = W / L.W, geo = dgGeo(D, L), P = (x, y) => [X + x * k, Y + y * k];
+  const pt = mm => mm * 2.835;   // mm to points for font sizes
+  // links
+  doc.setDrawColor(70, 70, 70); doc.setLineWidth(0.45); doc.setLineDashPattern([1.6, 1.3], 0);
+  const head = (x, y, ux, uy) => { const s = 2.2, px = -uy, py = ux; doc.setFillColor(70, 70, 70); doc.triangle(x, y, x - ux * s + px * s * .55, y - uy * s + py * s * .55, x - ux * s - px * s * .55, y - uy * s - py * s * .55, "F"); };
+  L.links.forEach(([a, b, type, extra, opt]) => {
+    if (opt === "hover") return;
+    const A = geo[a], B = geo[b], g2 = (typeof opt === "number" ? opt : 34);
+    if (type === "arrow") {
+      const dx = B.x - A.x, dy = B.y - A.y, len = Math.hypot(dx, dy), ux = dx / len, uy = dy / len;
+      const [x1, y1] = P(A.x + ux * (A.r + g2), A.y + uy * (A.r + g2)), [x2, y2] = P(B.x - ux * (B.r + g2), B.y - uy * (B.r + g2));
+      doc.line(x1, y1, x2, y2); doc.setLineDashPattern([], 0); head(x2, y2, ux, uy); head(x1, y1, -ux, -uy); doc.setLineDashPattern([1.6, 1.3], 0);
+    } else if (type === "curve") {
+      const t = 52 * Math.PI / 180, ra = A.r + g2, rb = B.r + g2;
+      const p0 = P(A.x + ra * Math.cos(t), A.y + ra * Math.sin(t)), q = P(L.W / 2, extra), p2 = P(B.x - rb * Math.cos(t), B.y + rb * Math.sin(t));
+      const c1 = [p0[0] + 2 / 3 * (q[0] - p0[0]), p0[1] + 2 / 3 * (q[1] - p0[1])], c2 = [p2[0] + 2 / 3 * (q[0] - p2[0]), p2[1] + 2 / 3 * (q[1] - p2[1])];
+      doc.lines([[c1[0] - p0[0], c1[1] - p0[1], c2[0] - p0[0], c2[1] - p0[1], p2[0] - p0[0], p2[1] - p0[1]]], p0[0], p0[1], [1, 1], "S");
+      doc.setLineDashPattern([], 0);
+      const e1 = [p2[0] - q[0], p2[1] - q[1]], l1 = Math.hypot(...e1), e0 = [p0[0] - q[0], p0[1] - q[1]], l0 = Math.hypot(...e0);
+      head(p2[0], p2[1], e1[0] / l1, e1[1] / l1); head(p0[0], p0[1], e0[0] / l0, e0[1] / l0); doc.setLineDashPattern([1.6, 1.3], 0);
+    }
+  });
+  doc.setLineDashPattern([], 0);
+  // circles
+  D.nodes.forEach(n => {
+    const g = geo[n.id]; if (g.w) return;
+    const [cx, cy] = P(g.x, g.y), r = g.r * k;
+    if (n.kind === "center") {
+      doc.setFillColor(...mixW(D.color, .09)); doc.setDrawColor(...mixW(D.color, .3)); doc.setLineWidth(0.6); doc.circle(cx, cy, r, "FD");
+      doc.setFont("helvetica", "bold"); doc.setTextColor(...hexRgb(D.color)); let fs = pt(r * 0.3); doc.setFontSize(fs);
+      const tw = doc.getTextWidth(pdfSafe(n.label)); if (tw > r * 0.78) { fs *= r * 0.78 / tw; doc.setFontSize(fs); }
+      doc.text(pdfSafe(n.label), cx, cy + r * 0.08, { align: "center" });
+      doc.setFont("helvetica", "normal"); doc.setTextColor(70, 70, 70); doc.setFontSize(pt(r * 0.055));
+      doc.text(doc.splitTextToSize(pdfSafe(n.sub), r * 0.8), cx, cy + r * 0.22, { align: "center" });
+      return;
+    }
+    doc.setFillColor(...hexRgb(n.bg)); doc.setDrawColor(255, 255, 255); doc.setLineWidth(0.5); doc.circle(cx, cy, r, "FD");
+    if (n.outline) { doc.setDrawColor(0, 0, 0); doc.setLineWidth(0.4); doc.circle(cx, cy, r, "S"); }
+    if (n.br) { doc.setDrawColor(...(n.outline ? [0, 0, 0] : hexRgb(n.bg))); doc.setLineWidth(0.35); doc.setLineDashPattern([0.9, 0.7], 0); doc.circle(cx, cy, r + 1.1, "S"); doc.setLineDashPattern([], 0); }
+    const ink = n.ink === "#000" ? [0, 0, 0] : [255, 255, 255]; doc.setTextColor(...ink);
+    const fs = pt(r * (n.kind === "side" ? 0.2 : 0.25)), subFs = fs * 0.82;
+    doc.setFont("helvetica", n.br ? "bolditalic" : "bold"); doc.setFontSize(fs);
+    const lab = doc.splitTextToSize(pdfSafe(n.label), r * 1.62), lh = fs / 2.835 * 1.12;
+    doc.setFont("helvetica", n.br ? "italic" : "normal"); doc.setFontSize(subFs);
+    const sub = n.sub ? doc.splitTextToSize(pdfSafe(n.sub), r * 1.62) : [], slh = subFs / 2.835 * 1.15;
+    doc.setFont("helvetica", n.br ? "bolditalic" : "bold"); doc.setFontSize(fs);
+    let ty = cy - (lab.length * lh + sub.length * slh) / 2 + lh * 0.8;
+    lab.forEach(line => { doc.text(line, cx, ty, { align: "center" }); ty += lh; });
+    doc.setFont("helvetica", n.br ? "italic" : "normal"); doc.setFontSize(subFs);
+    sub.forEach(line => { doc.text(line, cx, ty, { align: "center" }); ty += slh; });
+  });
+  return L.H * k;
+}
+async function groupPDF(key, btn) {
+  const gs = data.groups || [], i = gs.findIndex(x => x.key === key), g = gs[i]; if (!g) return;
+  const label = btn.textContent; btn.disabled = true; btn.textContent = "Preparing…";
+  try {
+    await loadScript("vendor/jspdf.umd.min.js");
+    const { jsPDF } = window.jspdf, logo = await imgData("brand/fullname-h-pdf.png").catch(() => null);
+    const col = GBG[i % 4], onCol = i % 4 === 2 ? [0, 0, 0] : [255, 255, 255];
+    const paras = (g.description || "").split(/\n\s*\n/).map(t => t.trim()).filter(Boolean).map(t => { const m = t.match(/^([A-Z][^:]{2,40}):\s+([\s\S]+)$/); return m ? { h: m[1], t: m[2].charAt(0).toUpperCase() + m[2].slice(1) } : { t }; });
+    const build = (sc, dW) => {
+      const doc = new jsPDF({ unit: "mm", format: "a4" }), M = 15, PW = 210, CW = PW - 2 * M;
+      let y = 12;
+      if (logo) { const lw = 78; doc.addImage(logo.url, "PNG", M, y, lw, lw * logo.h / logo.w); }
+      doc.setFont("helvetica", "normal"); doc.setFontSize(8); doc.setTextColor(120, 120, 115);
+      doc.text(pdfSafe(`Summary as of ${new Date().toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })}`), PW - M, y + 5, { align: "right" });
+      y += 18;
+      // coloured band with the group's name
+      doc.setFillColor(...hexRgb(col)); doc.roundedRect(M, y, CW, 26, 4, 4, "F");
+      doc.setTextColor(...onCol); doc.setFont("helvetica", "bold"); doc.setFontSize(30); doc.text(pdfSafe(g.short), M + 7, y + 15.5);
+      const sw = doc.getTextWidth(pdfSafe(g.short)); doc.setFontSize(13); doc.setFont("helvetica", "normal");
+      doc.text(doc.splitTextToSize(pdfSafe(g.name), CW - sw - 22), M + 7 + sw + 6, y + 14.5);
+      y += 34;
+      const para = (t, size, color = [40, 40, 38], font = "normal", w = CW, x = M) => { doc.setFont("helvetica", font); doc.setFontSize(size * sc); doc.setTextColor(...color);
+        const lines = doc.splitTextToSize(pdfSafe(t), w); doc.text(lines, x, y, { lineHeightFactor: 1.38 }); y += lines.length * size * sc * 0.3528 * 1.38; };
+      const headH = t => { doc.setFont("helvetica", "bold"); doc.setFontSize(10.5 * sc); doc.setTextColor(...hexRgb(i % 4 === 2 ? "#8a6d00" : col)); doc.text(pdfSafe(t), M, y); y += 5 * sc; };
+      paras.forEach((p, n) => { if (p.h) headH(p.h); para(p.t, n === 0 && !p.h ? 11.5 : 9.6, n === 0 && !p.h ? [20, 20, 20] : [55, 55, 52]); y += 3.2 * sc; });
+      if (key === "apsg") {
+        headH("Purpose"); para("To guide, support, bring together and quality-assure a coherent, values-based Asia Pacific Community Development Strategy, through a collaborative, bottom-up regional process.", 9.6, [55, 55, 52]); y += 3.2 * sc;
+        headH("Mandate: the APSG makes sure the regional strategy"); APSG_MANDATE.forEach((m, n) => { const yy = y; doc.setFont("helvetica", "bold"); doc.setFontSize(9.6 * sc); doc.setTextColor(...hexRgb(col)); doc.text(String(n + 1), M, yy); para(m, 9.6, [55, 55, 52], "normal", CW - 6, M + 6); y += 0.8 * sc; });
+        y += 2.4 * sc;
+      }
+      if ((g.members || []).length) {
+        headH("Members");
+        g.members.forEach(m => para([[m.rank, m.name].filter(Boolean).join(" "), m.role, m.territory && (terrName(m.territory) || m.territory), m.email].filter(Boolean).join(", "), 9.2, [55, 55, 52]));
+        y += 3 * sc;
+      }
+      if (DIAGRAMS[key]) {
+        headH(DIAGRAMS[key].heading); y += 2;
+        const L = DIAGRAMS[key].layouts.wide, h = dW * L.H / L.W;
+        pdfDiagram(doc, key, M + (CW - dW) / 2, y, dW); y += h + 2;
+        para(DIAGRAMS[key].note.replace(/^Hover[^.]*\.\s*/, ""), 7.8, [120, 120, 115]);
+      }
+      // footer
+      doc.setDrawColor(225, 224, 220); doc.setLineWidth(0.3); doc.line(M, 284, PW - M, 284);
+      doc.setFont("helvetica", "normal"); doc.setFontSize(7.5); doc.setTextColor(120, 120, 115);
+      doc.text("Asia-Pacific Sharing & Learning Programme, The Salvation Army", M, 289); doc.text(SITE_URL + "#/group/" + key, PW - M, 289, { align: "right" });
+      return { doc, y };
+    };
+    // shrink text and diagram until everything fits on one page
+    let out;
+    for (const [sc, dW] of [[1, 150], [1, 132], [.94, 120], [.9, 108], [.86, 96], [.82, 86], [.78, 78]]) { out = build(sc, dW); if (out.y <= 280) break; }
+    out.doc.save(`ASLP_${g.short}_summary.pdf`);
+  } catch (e) { console.error(e); alert("The PDF couldn't be made. Please try again."); }
+  btn.disabled = false; btn.textContent = label;
+}
+document.addEventListener("click", e => { const b = e.target.closest("[data-grp-pdf]"); if (b) groupPDF(b.dataset.grpPdf, b); });
 
 // ---- NEWSLETTER ----
 function pageNewsletter() {
