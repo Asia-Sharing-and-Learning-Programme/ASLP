@@ -394,7 +394,8 @@
     .apsg-node:not(.is-center):hover { --z: 1.2; z-index: 5; box-shadow: 0 0 0 .3cqw var(--paper), 0 1.4cqw 3cqw rgba(0,0,0,.22); }
     .apsg-node.is-center:hover { --z: 1.02; }
   }
-  .apsg-node.on { --z: 1.14; z-index: 4; box-shadow: 0 0 0 .3cqw var(--paper), 0 1.2cqw 2.6cqw rgba(0,0,0,.2); }
+  .apsg-stage:has(.apsg-node.on) .apsg-node:not(.is-center):not(.on):not(:hover) { --z: .9; opacity: .5; }
+  .apsg-node.on { --z: 1.2; z-index: 4; box-shadow: 0 0 0 .3cqw var(--paper), 0 1.2cqw 2.6cqw rgba(0,0,0,.2); }
   .apsg-node:focus-visible { outline: 3px solid var(--listen); outline-offset: 4px; }
   @media (prefers-reduced-motion: reduce) { .apsg-node { transition: none; } }
   .apsg-info { position: relative; border-radius: 24px; padding: var(--g5) var(--g4) var(--g4); background: var(--paper-2); min-height: 260px; }
@@ -402,6 +403,14 @@
   .apsg-info .h3 + p { margin-top: var(--g1); }
   .apsg-info p + a { display: inline-block; margin-top: var(--g2); }
   @media (max-width: 1000px) { .apsg-info { min-height: 0; } }
+  .pm-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr); gap: var(--g4); margin-top: var(--g6); }
+  @media (max-width: 860px) { .pm-grid { grid-template-columns: 1fr; } }
+  .pm-card { border-radius: 22px; padding: var(--g5) var(--g4); background: var(--paper-2); }
+  .pm-card .h3 + * { margin-top: var(--g2); }
+  .pm-purpose { background: #005fc0; color: #fff; }
+  .pm-purpose p { font-size: clamp(19px, 1.7vw, 23px); line-height: 1.4; font-weight: 450; }
+  .pm-list { margin: var(--g2) 0 0; padding-left: 1.2em; display: grid; gap: var(--g1); font-size: 15.5px; line-height: 1.5; }
+  .pm-list li::marker { color: #005fc0; font-weight: 800; }
   footer { background: #000; color: #fff; padding: var(--g7) 0 var(--g6); }
   footer .wrap { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: var(--g5); align-items: end; }
   footer .fname { font-size: clamp(26px, 3.4vw, 40px); line-height: 1.04; letter-spacing: -.02em; }
@@ -903,6 +912,15 @@ function mountApsg() {
 }
 window.addEventListener("resize", () => { if ($("apsg-stage")) apsgLayout(); });
 
+const APSG_MANDATE = ["Emerges from territory-approved Community Development Strategies and the thematic priorities verified by the Cluster Working Groups.",
+  "Provides technical support to territories developing or refining their territorial strategies.",
+  "Is anchored in The Salvation Army's core principles: integrated mission, accountability, dignity, inclusion, stewardship and learning.",
+  "Identifies the territorial policies, systems and resources good community development needs, including practical MEAL for implementation and monitoring.",
+  "Produces a draft Asia Pacific Community Development Strategy for endorsement at ASLF 2027."];
+const apsgPurpose = () => `<section class="pm-grid" aria-label="Purpose and mandate">
+  <div class="pm-card pm-purpose"><h2 class="h3">Purpose</h2><p>To guide, support, bring together and quality-assure a coherent, values-based Asia Pacific Community Development Strategy, through a collaborative, bottom-up regional process.</p></div>
+  <div class="pm-card"><h2 class="h3">Mandate</h2><p class="small">The APSG makes sure the regional strategy:</p><ol class="pm-list">${APSG_MANDATE.map(x => `<li>${esc(x)}</li>`).join("")}</ol></div>
+</section>`;
 function pageGroup(key) {
   const gs = data.groups || [], i = gs.findIndex(x => x.key === key), g = gs[i]; if (!g) return notFound();
   return `${crumbs([["Home", "#/"], ["ASLP Groups", "#/groups"], [g.short]])}
@@ -910,7 +928,7 @@ function pageGroup(key) {
     <div class="wrap page-body"><div class="two-col">
       <div class="stack"><h2 class="h2">About the ${esc(g.short)}</h2>${g.description ? g.description.split(/\n\s*\n/).map(paraHtml).join("") : `<p class="empty">A description of the ${esc(g.name)} is coming soon.</p>`}</div>
       <div class="aside-box"><h2 class="h3">Members</h2>${(g.members || []).length ? `<div>${g.members.map(m => contactHtml({ ...m, role: [m.role, m.territory && (terrName(m.territory) || m.territory)].filter(Boolean).join(", ") })).join("")}</div>` : `<p class="empty">Members will be listed here.</p>`}</div>
-    </div>${g.key === "apsg" ? (pendingMaps.push(mountApsg), apsgStructure()) : ""}</div>`;
+    </div>${g.key === "apsg" ? (pendingMaps.push(mountApsg), apsgPurpose() + apsgStructure()) : ""}</div>`;
 }
 
 // ---- NEWSLETTER ----
