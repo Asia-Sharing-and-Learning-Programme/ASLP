@@ -459,6 +459,18 @@
   .tb-auth { flex: none; display: inline-flex; align-items: center; margin-left: var(--g2); padding: 7px 16px; border-radius: 999px; background: #f5c400; color: #000; font-weight: 700; font-size: 14.5px; text-decoration: none; }
   .tb-auth:hover, .tb-auth:active { background: #005fc0; color: #fff; }
   @media (max-width: 1340px) { .tb-auth { margin-left: var(--g1); } .menu-btn { margin-left: auto; } }
+  .issue { aspect-ratio: 3 / 4; border-radius: 6px 16px 16px 6px; padding: var(--g3); display: flex; flex-direction: column; gap: 6px; text-decoration: none; color: #fff; box-shadow: inset 6px 0 0 rgba(0,0,0,.18); }
+  .issue.c0 { background: #e14b1e; } .issue.c1 { background: #005fc0; } .issue.c2 { background: #f5c400; color: #000; } .issue.c3 { background: #24215f; }
+  .issue .i-top { font-size: 12px; font-weight: 700; opacity: .85; } .issue b { font-size: 20px; font-weight: 850; line-height: 1.15; margin-top: auto; } .issue .i-date { font-size: 14px; opacity: .9; }
+  .issue .i-open { font-size: 13px; font-weight: 700; text-decoration: underline; } .issue:hover b { text-decoration: underline; }
+  .con-nav { display: flex; flex-wrap: wrap; gap: var(--g1); margin-top: var(--g4); }
+  .toggle { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 4px var(--g3); align-items: start; padding: var(--g3) 0; border-top: 1px solid var(--line); }
+  .toggle input { width: 20px; height: 20px; margin-top: 3px; accent-color: #005fc0; }
+  .toggle b { display: block; } .toggle span { font-size: 14px; color: var(--ink-2); }
+  .ge-table { width: 100%; border-collapse: collapse; margin-top: var(--g3); font-size: 14.5px; }
+  .ge-table th, .ge-table td { text-align: left; padding: 8px 10px; border-top: 1px solid var(--line); vertical-align: top; }
+  .ge-table th { font-size: 13px; color: var(--ink-3); font-weight: 700; } .ge-table label { display: inline-flex; gap: 6px; align-items: center; margin: 2px 14px 2px 0; }
+  .ed-hint { font-size: 13px; color: var(--ink-3); font-weight: 400; }
   .share-top { display: none; align-items: center; gap: 8px; border: 2px solid var(--ink); background: none; color: var(--ink); border-radius: 999px; padding: 7px 16px; font: inherit; font-weight: 700; font-size: 15px; cursor: pointer; }
   .share-top:hover { background: var(--ink); color: var(--paper); }
   body.is-home .share-top { display: inline-flex; }
@@ -492,7 +504,8 @@
   .chip-btn.on { background: var(--ink); color: var(--paper); border-color: var(--ink); }
   .ed-rows { display: grid; gap: var(--g2); margin-top: var(--g3); }
   .ed-row { display: grid; grid-template-columns: .7fr 1.1fr 1.3fr 1.3fr 1fr auto; gap: var(--g2); align-items: end; background: var(--paper); border-radius: 14px; padding: var(--g2); }
-  #con-box .ed-row { grid-template-columns: .7fr 1.1fr 1.4fr 1.4fr auto; }
+  #con-box .ed-row, #gm-box .ed-row { grid-template-columns: .7fr 1.1fr 1.4fr 1.4fr auto; }
+  #nw-box .ed-row { grid-template-columns: 1.4fr .8fr 2fr auto; }
   .ed-row label, .ed-grid label { display: grid; gap: 4px; font-size: 12.5px; font-weight: 700; color: var(--ink-2); }
   .ed-row input, .ed-row select, .ed-grid input, .ed-grid textarea { font: inherit; font-size: 14.5px; font-weight: 400; color: var(--ink); padding: 8px 10px; border-radius: 10px; border: 1px solid var(--line); background: var(--paper); width: 100%; min-width: 0; }
   .ed-del { border: 0; background: none; color: var(--ink-3); font: inherit; font-size: 13px; cursor: pointer; padding: 8px 4px; text-decoration: underline; }
@@ -510,7 +523,7 @@
   .synced dt { color: var(--ink-3); } .synced dd { margin: 0; font-weight: 600; }
   .member-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: var(--g3); margin-top: var(--g3); }
   .member { background: var(--paper-2); border-radius: 16px; padding: var(--g3); }
-  @media (max-width: 860px) { .ed-row, #con-box .ed-row { grid-template-columns: 1fr 1fr; } .ed-grid { grid-template-columns: 1fr; } .console-card { padding: var(--g4) 18px; } }
+  @media (max-width: 860px) { .ed-row, #con-box .ed-row, #gm-box .ed-row, #nw-box .ed-row { grid-template-columns: 1fr 1fr; } .ed-grid { grid-template-columns: 1fr; } .console-card { padding: var(--g4) 18px; } }
   footer { background: #000; color: #fff; padding: var(--g7) 0 var(--g6); }
   footer .wrap { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: var(--g5); align-items: end; }
   footer .fname { font-size: clamp(26px, 3.4vw, 40px); line-height: 1.04; letter-spacing: -.02em; }
@@ -691,6 +704,7 @@ document.addEventListener("click", async e => {
   const b = e.target.closest("[data-copy]"); if (!b) return;
   try { await navigator.clipboard.writeText(b.dataset.copy); b.textContent = "Copied"; setTimeout(() => b.textContent = "Copy", 1400); } catch (err) {}
 });
+const homeIntro = () => ((data.content && data.content.home && data.content.home.body) || "").trim();
 const aboutFirst = () => { const b = (data.content && data.content.about && data.content.about.body) || ""; return b ? b.split(/\n\s*\n/)[0].slice(0, 300) : ""; };
 
 // ---- maps ----
@@ -805,7 +819,7 @@ function pageHome() {
         <div><img class="lk on-light" src="brand/lockup-v1.webp" alt="ASLP: Asia-Pacific Sharing & Learning Programme. Listen. Learn. Lead."><img class="lk on-dark" src="brand/lockup-v1-dark.webp" alt="ASLP: Asia-Pacific Sharing & Learning Programme. Listen. Learn. Lead."></div>
         <div class="stack">
           <h1 class="big"><b>Sharing</b> what works. <b>Learning</b> from each other.</h1>
-          <p class="lede">${esc(aboutFirst() || `${ts.length} Salvation Army territories and regions across South Pacific and East Asia and South Asia, listening to communities and leading change together.`)}</p>
+          <p class="lede">${esc(homeIntro() || aboutFirst() || `${ts.length} Salvation Army territories and regions across South Pacific and East Asia and South Asia, listening to communities and leading change together.`)}</p>
           <div class="actions"><a class="btn fill" href="#/cwgs">Meet our Cluster Working Groups</a><a class="btn" href="#/about">About ASLP</a></div>
         </div>
       </div></section>
@@ -1162,15 +1176,20 @@ const APSG_MANDATE = ["Emerges from territory-approved Community Development Str
   "Is anchored in The Salvation Army's core principles: integrated mission, accountability, dignity, inclusion, stewardship and learning.",
   "Identifies the territorial policies, systems and resources good community development needs, including practical MEAL for implementation and monitoring.",
   "Produces a draft Asia Pacific Community Development Strategy for endorsement at ASLF 2027."];
+const APSG_PURPOSE = "To guide, support, bring together and quality-assure a coherent, values-based Asia Pacific Community Development Strategy, through a collaborative, bottom-up regional process.";
+// the APSG's purpose and mandate: what an admin or the APSG editors saved, otherwise the approved ToR wording
+function apsgTor() { try { const c = data.content && data.content.apsg_tor; const j = c && c.body ? JSON.parse(c.body) : null;
+  if (j && (j.purpose || (j.mandate || []).length)) return { purpose: j.purpose || APSG_PURPOSE, mandate: (j.mandate || []).length ? j.mandate : APSG_MANDATE }; } catch (e) {}
+  return { purpose: APSG_PURPOSE, mandate: APSG_MANDATE }; }
 const apsgPurpose = () => `<section class="pm-grid" aria-label="Purpose and mandate">
-  <div class="pm-card pm-purpose"><h2 class="h3">Purpose</h2><p>To guide, support, bring together and quality-assure a coherent, values-based Asia Pacific Community Development Strategy, through a collaborative, bottom‑up regional process.</p></div>
-  <div class="pm-card pm-mandate"><div class="pm-mh"><h2 class="h3">Mandate</h2><p>The APSG makes sure the regional strategy:</p></div><ol class="pm-cols">${APSG_MANDATE.map(x => `<li>${esc(x)}</li>`).join("")}</ol></div>
+  <div class="pm-card pm-purpose"><h2 class="h3">Purpose</h2><p>${esc(apsgTor().purpose.replace("bottom-up", "bottom‑up"))}</p></div>
+  <div class="pm-card pm-mandate"><div class="pm-mh"><h2 class="h3">Mandate</h2><p>The APSG makes sure the regional strategy:</p></div><ol class="pm-cols">${apsgTor().mandate.map(x => `<li>${esc(x)}</li>`).join("")}</ol></div>
 </section>`;
 function pageGroup(key) {
   const gs = data.groups || [], i = gs.findIndex(x => x.key === key), g = gs[i]; if (!g) return notFound();
   return `${crumbs([["Home", "#/"], ["ASLP Groups", "#/groups"], [g.short]])}
     <div class="wrap"><div class="grp-hero" style="background:${GBG[i % 4]};${i % 4 === 2 ? "color:#000" : ""}">${decor(GSHAPES[i % 4])}<h1><b>${esc(g.short)}</b></h1><div class="gn">${esc(g.name)}</div></div></div>
-    <div class="wrap page-body">${DIAGRAMS[g.key] ? `<div class="grp-actions"><button type="button" class="btn fill" data-grp-pdf="${esc(g.key)}">Download one-page summary (PDF)</button></div>` : ""}<div class="two-col">
+    <div class="wrap page-body">${DIAGRAMS[g.key] || (V().can_groups || []).includes(g.key) ? `<div class="grp-actions">${DIAGRAMS[g.key] ? `<button type="button" class="btn fill" data-grp-pdf="${esc(g.key)}">Download one-page summary (PDF)</button>` : ""}${(V().can_groups || []).includes(g.key) ? `<a class="btn" href="#/console/group/${esc(g.key)}">Edit this group</a>` : ""}</div>` : ""}<div class="two-col">
       <div class="stack"><h2 class="h2">About the ${esc(g.short)}</h2>${g.description ? g.description.split(/\n\s*\n/).map(paraHtml).join("") : `<p class="empty">A description of the ${esc(g.name)} is coming soon.</p>`}</div>
       <div class="aside-box"><h2 class="h3">Members</h2>${(g.members || []).length ? `<div>${g.members.map(m => contactHtml({ ...m, role: [m.role, m.territory && (terrName(m.territory) || m.territory)].filter(Boolean).join(", ") })).join("")}</div>` : `<p class="empty">Members will be listed here.</p>`}</div>
     </div>${(g.key === "apsg" ? apsgPurpose() : "") + (DIAGRAMS[g.key] ? (pendingMaps.push(() => mountDiagram(g.key)), diagramHtml(g.key)) : "")}</div>`;
@@ -1299,9 +1318,9 @@ async function groupPDF(key, btn) {
       const headH = t => { doc.setFont("Archivo", "bold"); doc.setFontSize(10.6 * sc); doc.setTextColor(...accent); doc.text(pdfSafe(t), M, y); y += 5 * sc; };
       paras.forEach((p, n) => { if (p.h) headH(p.h); para(p.t, n === 0 && !p.h ? 11.6 : 9.5, n === 0 && !p.h ? [20, 20, 20] : [55, 55, 52]); y += 3.4 * sc; });
       if (key === "apsg") {
-        headH("Purpose"); para("To guide, support, bring together and quality-assure a coherent, values-based Asia Pacific Community Development Strategy, through a collaborative, bottom-up regional process.", 9.5); y += 3.4 * sc;
+        headH("Purpose"); para(apsgTor().purpose, 9.5); y += 3.4 * sc;
         headH("Mandate: the APSG makes sure the regional strategy");
-        APSG_MANDATE.forEach((m, n) => { doc.setFont("ArchivoX", "normal"); doc.setFontSize(9.5 * sc); doc.setTextColor(...accent); doc.text(String(n + 1), M, y); para(m, 9.5, [55, 55, 52], "normal", CW - 6, M + 6); y += 0.8 * sc; });
+        apsgTor().mandate.forEach((m, n) => { doc.setFont("ArchivoX", "normal"); doc.setFontSize(9.5 * sc); doc.setTextColor(...accent); doc.text(String(n + 1), M, y); para(m, 9.5, [55, 55, 52], "normal", CW - 6, M + 6); y += 0.8 * sc; });
         y += 2.6 * sc;
       }
       if ((g.members || []).length) {
@@ -1373,20 +1392,24 @@ function pageConsole(a, b) {
   const v = V();
   if (!v.email) return `${crumbs([["Home", "#/"], ["Console"]])}<div class="wrap page-body" style="padding-top:var(--g5)"><h1 class="h1" style="margin-bottom:var(--g5)">Console</h1>${consoleSignin()}</div>`;
   const terrIds = v.can_edit || [], cwgs = v.can_cwgs || [];
+  const groups = v.can_groups || [];
   const who = v.is_full_admin ? "Admin" : (v.lead_cwgs || []).length ? `${v.lead_cwgs.join(" and ")} CWG lead` : (v.member_of || []).length ? "CWG member" : "Signed in";
   const tab = a === "strategies" ? "strategies" : "website";
   const head = `${crumbs([["Home", "#/"], ["Console"]])}<div class="wrap" style="padding-top:var(--g4)">
     <div class="console-head"><div><h1 class="h1">Console</h1><p class="small" style="margin-top:6px">${esc(who)} · ${esc(v.email)}</p></div><button type="button" class="btn sm" id="si-out">Sign out</button></div>
-    <div class="ctabs" role="tablist"><a role="tab" aria-selected="${tab === "website"}" class="${tab === "website" ? "on" : ""}" href="#/console">Website details</a><a role="tab" aria-selected="${tab === "strategies"}" class="${tab === "strategies" ? "on" : ""}" href="#/console/strategies">CD Strategies</a></div></div>`;
+    <div class="ctabs" role="tablist"><a role="tab" aria-selected="${tab === "website"}" class="${tab === "website" ? "on" : ""}" href="#/console">Website details</a>${v.cds_access ? `<a role="tab" aria-selected="${tab === "strategies"}" class="${tab === "strategies" ? "on" : ""}" href="#/console/strategies">CD Strategies</a>` : ""}</div></div>`;
+  if (tab === "strategies" && !v.cds_access) return head + `<div class="wrap page-body"><div class="console-card"><p>This account doesn't use the CD Strategies console. Territories' CD focal persons, CWG leads and admins update the CD Strategies.</p></div></div>`;
   if (tab === "strategies") return head + `<div class="wrap page-body"><div class="console-card"><h2 class="h2">CD Strategies console</h2>
     <p>Update each territory's CD Strategy status and details, focal persons and approvals on the CD Strategies website. You're already signed in there with this account.</p>
     <p class="small">The territory's name, CWG, headquarters, countries, offices, status, strategy period and focal person are kept there and shown on this website automatically.</p>
     <a class="btn fill" href="${CDS_URL}#admin">Open the CD Strategies console</a></div></div>`;
-  if (!terrIds.length && !cwgs.length) return head + `<div class="wrap page-body"><div class="console-card"><p>This account can't edit any website details yet. CWG leads and admins edit their CWGs; CWG members edit their own territory. Ask your CWG lead or the ASLP Coordinator for access.</p></div></div>`;
+  if (!terrIds.length && !cwgs.length && !groups.length && !v.is_full_admin) return head + `<div class="wrap page-body"><div class="console-card"><p>This account can't edit any website details yet. CWG leads and admins edit their CWGs; CWG members edit their own territory. Ask your CWG lead or the ASLP Coordinator for access.</p></div></div>`;
   const selT = a === "territory" && terrIds.includes(b) ? b : terrIds[0];
   const selC = a === "cwg" ? cwgs.find(c => cwgSlug(c) === b) : null;
   pendingMaps.push(() => mountConsole());
+  const secs = [cwgs.length && ["cc-members", "CWG members"], terrIds.length && ["cc-terr", "Territory profiles"], groups.length && ["cc-groups", "ASLP Groups"], v.is_full_admin && ["cc-pages", "Pages and newsletter"], v.is_full_admin && ["cc-access", "Access"]].filter(Boolean);
   return head + `<div class="wrap page-body">
+    ${secs.length > 1 ? `<nav class="con-nav" aria-label="Console sections">${secs.map(([id, l]) => `<button type="button" class="chip-btn" data-jump="${id}">${l}</button>`).join("")}</nav>` : ""}
     ${cwgs.length ? `<section class="console-card" id="cc-members"><div class="row-head"><h2 class="h2">CWG members</h2></div>
       <p class="small">Add each CWG member's rank (if an officer), name, appointment or role and email. Members linked to a territory are listed on that territory's page and can sign in to edit its profile.</p>
       ${cwgs.length > 1 ? `<div class="cw-pick" role="tablist">${cwgs.map(c => `<button type="button" role="tab" class="chip-btn${c === (selC || cwgs[0]) ? " on" : ""}" data-cw="${esc(c)}">${esc(c)}</button>`).join("")}</div>` : ""}
@@ -1394,7 +1417,94 @@ function pageConsole(a, b) {
     ${terrIds.length ? `<section class="console-card" id="cc-terr"><div class="row-head"><h2 class="h2">Territory profiles</h2>
       <select id="t-pick" aria-label="Territory">${terrIds.map(id => `<option value="${esc(id)}"${id === selT ? " selected" : ""}>${esc(terrName(id))}</option>`).join("")}</select></div>
       <div id="terr-editor"></div></section>` : ""}
+    ${groups.length ? `<section class="console-card" id="cc-groups"><div class="row-head"><h2 class="h2">ASLP Groups</h2>
+      <select id="g-pick" aria-label="Group">${groups.map(k => { const g = (data.groups || []).find(x => x.key === k) || { short: k }; return `<option value="${esc(k)}"${a === "group" && b === k ? " selected" : ""}>${esc(g.short)}${g.name ? ` (${esc(g.name)})` : ""}</option>`; }).join("")}</select></div>
+      <div id="grp-editor"></div></section>` : ""}
+    ${v.is_full_admin ? `<section class="console-card" id="cc-pages"><h2 class="h2">Pages and newsletter</h2><div id="pages-editor"></div></section>
+    <section class="console-card" id="cc-access"><h2 class="h2">Access</h2><div id="access-editor"><p class="small">Loading…</p></div></section>` : ""}
   </div>`;
+}
+// ---- console: ASLP group details and members ----
+const GRP_COLS = [["rank", "Rank (officers)", "e.g. Major"], ["name", "Name"], ["role", "Appointment / role"], ["email", "Email"]];
+function groupEditor(key) {
+  const box = $("grp-editor"), g = (data.groups || []).find(x => x.key === key); if (!box || !g) return;
+  const admin = !!V().is_full_admin, tor = apsgTor();
+  box.innerHTML = `<div class="ed-grid">
+      ${admin ? `<label class="full"><span>Full name</span><input id="g-name" value="${esc(g.name || "")}"></label>` : ""}
+      <label class="full"><span>About the ${esc(g.short)} <span class="ed-hint">Leave a blank line between paragraphs. Start a paragraph with "What it does:", "Who sits on it:" or "How often it meets:" to give it a heading.</span></span>
+        <textarea id="g-desc" rows="10">${esc(g.description || "")}</textarea></label>
+      ${key === "apsg" ? `<label class="full"><span>Purpose</span><textarea id="g-purpose" rows="3">${esc(tor.purpose)}</textarea></label>
+      <label class="full"><span>Mandate <span class="ed-hint">One point per line. The page says "The APSG makes sure the regional strategy:" before them.</span></span><textarea id="g-mandate" rows="6">${esc(tor.mandate.join("\n"))}</textarea></label>` : ""}
+    </div>
+    <h3 class="h3" style="margin-top:var(--g5)">Members</h3>
+    <p class="small">Listed on the ${esc(g.short)} page. Being listed doesn't give anyone access to this console.</p>
+    <div id="gm-box"><div class="ed-rows">${((g.members || []).length ? g.members : [{}]).map(m => fieldRow(GRP_COLS, m, [])).join("")}</div>
+      <div class="ed-actions"><button type="button" class="btn sm ed-add">Add a member</button></div></div>
+    <div class="ed-actions sticky"><button type="button" class="btn fill" id="g-save">Save the ${esc(g.short)}</button><a class="textlink" href="#/group/${esc(key)}">View the page</a><span class="ed-msg" id="g-msg" role="status"></span></div>`;
+  wireRows($("gm-box"), GRP_COLS, []);
+  $("g-save").addEventListener("click", () => saveWith("g-save", "g-msg", async () => {
+    const r = await db.rpc("aslp_save_group", { p_key: key, p_group: { ...(admin ? { name: $("g-name").value.trim() } : {}), description: $("g-desc").value.trim(), members: readRows($("gm-box")) } });
+    if (r.error || key !== "apsg") return r;
+    return db.rpc("aslp_save_content", { p_key: "apsg_tor", p_title: "APSG purpose and mandate", p_body: JSON.stringify({ purpose: $("g-purpose").value.trim(), mandate: $("g-mandate").value.split("\n").map(x => x.trim()).filter(Boolean) }) });
+  }, `${g.short} saved.`));
+}
+// ---- console (admins): About, home introduction and newsletter issues ----
+const NEWS_COLS = [["title", "Issue title", "e.g. Issue 1: Listening first"], ["date", "Month and year", "e.g. March 2027"], ["url", "PDF link", "Upload a PDF or paste a link"]];
+function pagesEditor() {
+  const box = $("pages-editor"); if (!box) return;
+  const c = data.content || {}, about = c.about || {}, home = c.home || {}; let issues = []; try { issues = JSON.parse((c.newsletter || {}).body || "[]"); } catch (e) {}
+  box.innerHTML = `<div class="ed-grid">
+      <label class="full"><span>Home page introduction <span class="ed-hint">The sentence under "Sharing what works. Learning from each other." Leave empty to use the first paragraph of About.</span></span><textarea id="pg-home" rows="3">${esc(home.body || "")}</textarea></label>
+      <label class="full"><span>About ASLP <span class="ed-hint">Leave a blank line between paragraphs.</span></span><textarea id="pg-about" rows="12">${esc(about.body || "")}</textarea></label>
+    </div>
+    <div class="ed-actions"><button type="button" class="btn fill sm" id="pg-save">Save the home page and About</button><span class="ed-msg" id="pg-msg" role="status"></span></div>
+    <h3 class="h3" style="margin-top:var(--g6)">Newsletter issues</h3>
+    <p class="small">Newest first. Upload each issue's PDF, or paste a link to it. Each issue shows on the Newsletter page.</p>
+    <div id="nw-box"><div class="ed-rows">${(issues.length ? issues : [{}]).map(n => fieldRow(NEWS_COLS, n, [])).join("")}</div>
+      <div class="ed-actions"><button type="button" class="btn sm ed-add">Add an issue</button>
+        <label class="btn sm" style="cursor:pointer">Upload a PDF<input type="file" id="nw-file" accept="application/pdf" hidden></label>
+        <button type="button" class="btn fill sm" id="nw-save">Save the newsletter shelf</button><span class="ed-msg" id="nw-msg" role="status"></span></div></div>`;
+  wireRows($("nw-box"), NEWS_COLS, []);
+  $("pg-save").addEventListener("click", () => saveWith("pg-save", "pg-msg", async () => {
+    const r = await db.rpc("aslp_save_content", { p_key: "home", p_title: "Home introduction", p_body: $("pg-home").value.trim() }); if (r.error) return r;
+    return db.rpc("aslp_save_content", { p_key: "about", p_title: "About ASLP", p_body: $("pg-about").value.trim() });
+  }, "Home page and About saved."));
+  $("nw-file").addEventListener("change", async e => {
+    const f = e.target.files[0]; if (!f) return; const m = $("nw-msg"); m.className = "ed-msg"; m.textContent = `Uploading ${f.name}…`;
+    const path = `${new Date().toISOString().slice(0, 10)}-${f.name.toLowerCase().replace(/[^a-z0-9.]+/g, "-")}`;
+    const { error } = await db.storage.from("newsletters").upload(path, f, { contentType: "application/pdf", upsert: true });
+    if (error) { m.className = "ed-msg err"; m.textContent = error.message || "The upload didn't work."; return; }
+    const url = db.storage.from("newsletters").getPublicUrl(path).data.publicUrl;
+    $("nw-box").querySelector(".ed-rows").insertAdjacentHTML("afterbegin", fieldRow(NEWS_COLS, { title: f.name.replace(/\.pdf$/i, ""), url }, []));
+    m.className = "ed-msg ok"; m.textContent = "Uploaded. Check the title and month, then save the shelf."; e.target.value = "";
+  });
+  $("nw-save").addEventListener("click", () => saveWith("nw-save", "nw-msg", () => {
+    const rows = readRows($("nw-box")); const bad = rows.find(n => !n.title || !/^https:\/\//.test(n.url || ""));
+    if (bad) return Promise.resolve({ error: { message: "Each issue needs a title and a PDF link starting with https://" } });
+    return db.rpc("aslp_save_content", { p_key: "newsletter", p_title: "Newsletter issues", p_body: JSON.stringify(rows) });
+  }, "Newsletter shelf saved."));
+}
+// ---- console (admins): who can edit what. Access goes to roles, so it passes to whoever holds the role next ----
+async function accessEditor() {
+  const box = $("access-editor"); if (!box) return;
+  const { data: a, error } = await db.rpc("aslp_get_access");
+  if (error || !a) { box.innerHTML = `<p class="small">Couldn't load the access settings. ${esc((error && error.message) || "")}</p>`; return; }
+  const st = a.settings || {}, ge = st.group_editors || {}, on = k => st[k] !== false;
+  const roleOpts = [["coordinators", "ASLP Coordinators"], ["all_leads", "All CWG leads"], ...(a.leads || []).map(l => [`lead:${l.cwg}`, `${l.cwg} CWG lead${l.name ? ` (now ${l.name})` : ""}`])];
+  box.innerHTML = `<p class="small">Access goes with a role, not a person. When someone new becomes a CWG lead, a territory's CD focal person or a CWG member, they get the same access as the person before them. Admins can always edit everything.</p>
+    <label class="toggle"><input type="checkbox" id="ac-lead" ${on("lead_web") ? "checked" : ""}><div><b>CWG leads edit their CWG on this website</b><span>Their CWG's members, and the profiles and contacts of its territories.</span></div></label>
+    <label class="toggle"><input type="checkbox" id="ac-member" ${on("member_web") ? "checked" : ""}><div><b>CWG members edit their own territory on this website</b><span>Only the territory they're linked to in their CWG's member list (${a.memberCount || 0} members with an email). They don't get the CD Strategies console unless they're also that territory's CD focal person.</span></div></label>
+    <label class="toggle"><input type="checkbox" id="ac-focal" ${on("focal_cds") ? "checked" : ""}><div><b>CD focal persons update their territory's CD Strategy</b><span>The person named as focal person in the CD Strategies (${a.focalCount || 0} territories). CWG leads and admins keep their access either way.</span></div></label>
+    <h3 class="h3" style="margin-top:var(--g4)">Who can edit each ASLP Group page</h3>
+    <p class="small">Besides admins. Group members listed on a page don't get access.</p>
+    <table class="ge-table"><thead><tr><th>Group</th><th>Can edit its page and members</th></tr></thead><tbody>
+      ${(data.groups || []).map(g => `<tr><td><b>${esc(g.short)}</b></td><td>${roleOpts.map(([r, l]) => `<label><input type="checkbox" data-ge="${esc(g.key)}" value="${esc(r)}" ${(ge[g.key] || []).includes(r) ? "checked" : ""}>${esc(l)}</label>`).join("")}</td></tr>`).join("")}
+    </tbody></table>
+    <div class="ed-actions"><button type="button" class="btn fill" id="ac-save">Save access</button><span class="ed-msg" id="ac-msg" role="status"></span></div>`;
+  $("ac-save").addEventListener("click", () => saveWith("ac-save", "ac-msg", () => {
+    const groupsSel = {}; (data.groups || []).forEach(g => { groupsSel[g.key] = [...box.querySelectorAll(`[data-ge="${g.key}"]:checked`)].map(x => x.value); });
+    return db.rpc("aslp_set_access", { p_settings: { lead_web: $("ac-lead").checked, member_web: $("ac-member").checked, focal_cds: $("ac-focal").checked, group_editors: groupsSel } });
+  }, "Access saved. It applies straight away."));
 }
 const fieldRow = (cols, vals, terrOpts) => `<div class="ed-row">${cols.map(([k, l, ph]) => k === "territory"
   ? `<label><span>${l}</span><select data-k="territory"><option value="">Not linked to a territory</option>${terrOpts.map(t => `<option value="${esc(t.id)}"${vals.territory === t.id ? " selected" : ""}>${esc(shortName(t.name))}</option>`).join("")}</select></label>`
@@ -1465,6 +1575,10 @@ function mountConsole() {
     document.querySelectorAll("[data-cw]").forEach(x => x.addEventListener("click", () => { document.querySelectorAll("[data-cw]").forEach(y => y.classList.toggle("on", y === x)); memEditor(x.dataset.cw); }));
     if (a === "cwg") setTimeout(() => $("cc-members").scrollIntoView({ block: "start" }), 50);
   }
+  document.querySelectorAll("[data-jump]").forEach(x => x.addEventListener("click", () => $(x.dataset.jump).scrollIntoView({ behavior: "smooth", block: "start" })));
+  if ($("grp-editor")) { groupEditor($("g-pick").value); $("g-pick").addEventListener("change", e => groupEditor(e.target.value)); if (a === "group") setTimeout(() => $("cc-groups").scrollIntoView({ block: "start" }), 50); }
+  if ($("pages-editor")) pagesEditor();
+  if ($("access-editor")) accessEditor();
   if ($("terr-editor")) {
     terrEditor($("t-pick").value); $("t-pick").addEventListener("change", e => terrEditor(e.target.value));
     if (a === "territory") setTimeout(() => $("cc-terr").scrollIntoView({ block: "start" }), 50);
@@ -1500,9 +1614,12 @@ function pageNewsletter() {
   return `${crumbs([["Home", "#/"], ["Newsletter"]])}
     <div class="wrap page-hero"><div class="stack"><h1 class="h1"><span class="lt">ASLP</span> Newsletter</h1><p class="lede">Every issue, readable as a book with turnable pages, or as a PDF to download.</p></div>
       ${cluster([cl("g6-09", 4, 52, 46), cl("g6-02", 10, 4, 9, 8), cl("g6-03", 22, 0, 9, 2), cl("g6-04", 34, 4, 9, 14), cl("g6-05", 54, 8, 36), cl("g2-04", 62, 44, 22), cl("g6-10", 86, 56, 14, -8)])}</div>
-    <div class="wrap page-body"><div class="soon" style="max-width:720px"><h2 class="h3">The first issues are on their way</h2><p>New issues will appear on this shelf as soon as they're uploaded.</p></div>
-      <div class="shelf" aria-hidden="true">${[1, 2, 3, 4].map(() => `<div class="spine">Issue coming soon</div>`).join("")}</div></div>`;
+    <div class="wrap page-body">${newsIssues().length ? `<div class="shelf">${newsIssues().map((n, k) => `<a class="issue c${k % 4}" href="${esc(n.url)}" target="_blank" rel="noopener noreferrer">
+        <span class="i-top">ASLP Newsletter</span><b>${esc(n.title)}</b><span class="i-date">${esc(n.date || "")}</span><span class="i-open">Open the PDF</span></a>`).join("")}</div>`
+      : `<div class="soon" style="max-width:720px"><h2 class="h3">The first issues are on their way</h2><p>New issues will appear on this shelf as soon as they're uploaded.</p></div>
+      <div class="shelf" aria-hidden="true">${[1, 2, 3, 4].map(() => `<div class="spine">Issue coming soon</div>`).join("")}</div>`}</div>`;
 }
+function newsIssues() { try { const c = data.content && data.content.newsletter; const a = c && c.body ? JSON.parse(c.body) : []; return Array.isArray(a) ? a.filter(n => n && n.title && /^https:\/\//.test(n.url || "")) : []; } catch (e) { return []; } }
 const paraHtml = p => { const m = p.match(/^([A-Z][^:]{2,28}):\s+([\s\S]*)$/); return m ? `<p><b>${esc(m[1])}.</b> ${esc(m[2].charAt(0).toUpperCase() + m[2].slice(1))}</p>` : `<p class="lede" style="color:var(--ink)">${esc(p)}</p>`; };
 const notFound = () => `<div class="wrap page-body" style="padding-top:var(--g7)"><div class="stack"><h1 class="h1">Page not found</h1><p><a class="textlink" href="#/">Go to the ASLP home page</a></p></div></div>`;
 
