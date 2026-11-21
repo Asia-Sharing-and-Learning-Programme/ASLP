@@ -366,8 +366,10 @@
 
 
   /* APSG structure diagram */
-  .apsg-wrap { margin-top: var(--g8); }
-  .apsg-grid { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: var(--g5); align-items: center; }
+  .apsg-wrap { margin-top: var(--g6); padding-top: var(--g5); border-top: 1px solid var(--line); }
+  .apsg-h { font-size: 24px; }
+  .apsg-hint { margin-top: 4px; }
+  .apsg-grid { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: var(--g5); align-items: center; margin-top: var(--g2); }
   @media (max-width: 1000px) { .apsg-grid { grid-template-columns: 1fr; } }
   .apsg-stage { position: relative; container-type: inline-size; width: 100%; color: var(--ink-2); }
   .apsg-lines { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
@@ -844,8 +846,8 @@ const APSG_LAYOUT = {
 };
 function apsgStructure() {
   return `<section class="apsg-wrap" aria-labelledby="apsg-st-h">
-    <div class="sec-head" style="margin-bottom:var(--g4)"><div class="stack"><h2 class="h2" id="apsg-st-h">How the APSG is made up</h2>
-      <p class="lede">Eight members around one table, working between the ASLP Steering Committee and the ASLF 2027 Task Force. Hover over or tap a circle to see each role.</p></div></div>
+    <h2 class="h3 apsg-h" id="apsg-st-h">How the APSG is made up</h2>
+    <p class="small apsg-hint">Hover over a circle to see the role. Click to keep it open.</p>
     <div class="apsg-grid">
       <div class="apsg-stage" id="apsg-stage">
         <svg class="apsg-lines" id="apsg-lines" aria-hidden="true"></svg>
@@ -861,7 +863,12 @@ function apsgInfo(id) {
   const n = APSG_NODES.find(x => x.id === id) || APSG_NODES[0], box = $("apsg-info"); if (!box) return;
   box.style.setProperty("--bg", n.center ? "#005fc0" : n.bg); 
   box.innerHTML = `<div class="ai-dot"></div><h3 class="h3">${esc(n.title)}</h3><p>${esc(n.text)}</p>${n.link ? `<a class="textlink" href="${n.link[0]}">${esc(n.link[1])}</a>` : ""}`;
-  document.querySelectorAll(".apsg-node").forEach(b => b.classList.toggle("on", b.dataset.node === n.id && !n.center));
+}
+let apsgPinned = null;
+function apsgPin(id) {
+  apsgPinned = id && id !== "apsg" && id !== apsgPinned ? id : null;
+  document.querySelectorAll(".apsg-node").forEach(b => { b.classList.toggle("on", b.dataset.node === apsgPinned); b.setAttribute("aria-pressed", b.dataset.node === apsgPinned); });
+  apsgInfo(apsgPinned || "apsg");
 }
 function apsgLayout() {
   const st = $("apsg-stage"); if (!st) return;
@@ -886,10 +893,13 @@ function apsgLayout() {
 }
 function mountApsg() {
   const st = $("apsg-stage"); if (!st) return;
-  apsgLayout(); apsgInfo("apsg");
-  st.addEventListener("mouseover", e => { const b = e.target.closest(".apsg-node"); if (b) apsgInfo(b.dataset.node); });
+  apsgPinned = null; apsgLayout(); apsgInfo("apsg");
+  const back = () => apsgInfo(apsgPinned || "apsg");
+  st.addEventListener("mouseover", e => { const b = e.target.closest(".apsg-node"); if (b && !b.classList.contains("is-center")) apsgInfo(b.dataset.node); else back(); });
+  st.addEventListener("mouseleave", back);
   st.addEventListener("focusin", e => { const b = e.target.closest(".apsg-node"); if (b) apsgInfo(b.dataset.node); });
-  st.addEventListener("click", e => { const b = e.target.closest(".apsg-node"); if (b) apsgInfo(b.dataset.node); });
+  st.addEventListener("focusout", back);
+  st.addEventListener("click", e => { const b = e.target.closest(".apsg-node"); if (b) apsgPin(b.dataset.node); });
 }
 window.addEventListener("resize", () => { if ($("apsg-stage")) apsgLayout(); });
 
