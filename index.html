@@ -401,10 +401,17 @@
   .apsg-node.on { --z: 1.2; z-index: 4; box-shadow: 0 0 0 .3cqw var(--paper), 0 1.2cqw 2.6cqw rgba(0,0,0,.2); }
   .apsg-node:focus-visible { outline: 3px solid var(--listen); outline-offset: 4px; }
   @media (prefers-reduced-motion: reduce) { .apsg-node { transition: none; } }
+  .apsg-lines path.hl { opacity: 0; transition: opacity .25s; color: var(--ink); }
+  .apsg-lines path.hl.show { opacity: 1; }
+  .apsg-stage .apsg-node.rel { opacity: 1 !important; --z: 1.08 !important; z-index: 4; box-shadow: 0 0 0 .3cqw var(--paper), 0 1cqw 2.4cqw rgba(0,0,0,.18); }
+  .ai-link { margin-top: var(--g3); padding-top: var(--g3); border-top: 1px solid var(--line); }
+  .ai-to { display: flex; align-items: center; gap: 8px; font-weight: 750; font-size: 15px; line-height: 1.35; }
+  .ai-to svg { flex: none; color: var(--bg); }
+  .ai-link p { margin-top: 6px; font-size: 15px; color: var(--ink-2); line-height: 1.5; }
   .apsg-info { position: relative; border-radius: 24px; padding: var(--g5) var(--g4) var(--g4); background: var(--paper-2); min-height: 260px; }
   .apsg-info .ai-dot { width: 44px; height: 44px; border-radius: 50%; background: var(--bg); margin-bottom: var(--g3); box-shadow: inset 0 0 0 2px rgba(0,0,0,.08); }
   .apsg-info .h3 + p { margin-top: var(--g1); }
-  .apsg-info p + a { display: inline-block; margin-top: var(--g2); }
+  .apsg-info .textlink { display: inline-block; margin-top: var(--g2); }
   @media (max-width: 1000px) { .apsg-info { min-height: 0; } }
   .pm-grid { display: grid; gap: var(--g3); margin-top: var(--g6); }
   .pm-card { border-radius: 22px; padding: var(--g5) var(--g4); background: var(--paper-2); }
@@ -854,7 +861,7 @@ const DIAGRAMS = {
       { id: "cs", ring: 7, label: "Chief Secretary", sub: "Rotating", bg: "#24215f", br: true, title: "Rotating Chief Secretary representative",
         text: "One Chief Secretary represents territorial leadership in the APSG, one at a time, rotating across the zones." },
       { id: "asc", kind: "side", label: "ASLP Steering Committee", sub: "ASC", bg: "#e14b1e", title: "ASLP Steering Committee (ASC)",
-        text: "The APSG shares its minutes with the ASC. The ASC helps when delays fall outside the APSG's control, receives dissenting views where needed and can ask for the ToR to be reviewed.", link: ["#/group/asc", "About the ASLP Steering Committee"] },
+        text: "The ASC steers the ASLP programme as a whole. The APSG is a separate body with its own members, chair and decisions, set up to develop the Asia Pacific Community Development Strategy. The two stay linked: the APSG shares its minutes with the ASC and brings it issues that are outside the APSG's control, but they remain two different bodies within the programme.", link: ["#/group/asc", "About the ASLP Steering Committee"] },
       { id: "tf", kind: "side", label: "ASLF 2027", sub: "Task Force", bg: "#ffffff", ink: "#000", br: true, outline: true, title: "ASLF 2027 Task Force",
         text: "The APSG helps the Task Force prepare the strategy session at the Asia-Pacific Sharing and Learning Forum 2027, where the draft Asia Pacific Community Development Strategy is presented for endorsement." },
     ],
@@ -869,7 +876,7 @@ const DIAGRAMS = {
   },
   asc: {
     heading: "How the ASC is made up", color: "#e14b1e", dark: "#f0703f",
-    note: "Each CWG lead, and the leads of the Finance Coordination Group and the Support Office Group, link their group to the Steering Committee. The SPEA coordinator role appears in brackets in the approved structure.",
+    note: "Hover over or click a lead to see the group it links to the committee. The ASC and the APSG are linked but separate bodies. The SPEA coordinator role appears in brackets in the approved structure.",
     nodes: [
       { id: "ascc", kind: "center", label: "ASC", sub: "ASLP Steering Committee", title: "ASLP Steering Committee (ASC)",
         text: "Oversees ASLP as a whole: it keeps the programme on track, makes sure risks are managed and adjusts plans as the programme learns. It meets every month." },
@@ -880,9 +887,11 @@ const DIAGRAMS = {
       { id: "l-spea1", ring: 2, lead: "SPEA 1" }, { id: "l-spea2", ring: 3, lead: "SPEA 2" },
       { id: "us-spea", ring: 4, label: "SPEA Zone", sub: "Under Secretary", bg: "#1a5cba", title: "Under Secretary for South Pacific and East Asia",
         text: "Represents the South Pacific and East Asia Zone at International Headquarters on the committee." },
-      { id: "l-sog", ring: 5, label: "SOG", sub: "Lead", bg: "#f5c400", ink: "#000", title: "Support Office Group lead",
+      { id: "l-sog", ring: 5, label: "SOG", sub: "Lead", bg: "#f5c400", ink: "#000", title: "Support Office Group lead", to: "g-sog",
+        how: "Brings the support offices' shared view of how the programme and its funding are doing to the committee, and takes the committee's decisions back to the support offices.",
         text: "The Netherlands, as lead support office, leads the Support Office Group and chairs the Steering Committee.", link: ["#/group/sog", "About the Support Office Group"] },
-      { id: "l-fcg", ring: 6, label: "FCG", sub: "Lead", bg: "#f5c400", ink: "#000", title: "Finance Coordination Group lead",
+      { id: "l-fcg", ring: 6, label: "FCG", sub: "Lead", bg: "#f5c400", ink: "#000", title: "Finance Coordination Group lead", to: "g-fcg",
+        how: "Brings the group's review of finance reports, fund transfers and financial risks to the committee. Spending the committee approves then goes to The Salvation Army Switzerland.",
         text: "Switzerland leads the Finance Coordination Group and brings its view of ASLP's money to the committee. Spending requests go to The Salvation Army Switzerland once the committee has approved them.", link: ["#/group/fcg", "About the Finance Coordination Group"] },
       { id: "us-sasia", ring: 7, label: "SASIA Zone", sub: "Under Secretary", bg: "#e24a1b", title: "Under Secretary for South Asia",
         text: "Represents the South Asia Zone at International Headquarters on the committee." },
@@ -893,14 +902,16 @@ const DIAGRAMS = {
         text: "Keeps a close watch on ASLP's money, from support office transfers to territories' finance reports. Its support offices are Switzerland and the Netherlands.", link: ["#/group/fcg", "About the Finance Coordination Group"] },
       { id: "g-sog", kind: "pill", label: "SOG", sub: "Support Office Group", bg: "#f5c400", ink: "#000", title: "Support Office Group (SOG)",
         text: "Brings together the Salvation Army offices that fund ASLP: Australia, the Netherlands, Norway, SAWSO (USA), Switzerland, and the United Kingdom and Ireland.", link: ["#/group/sog", "About the Support Office Group"] },
+      { id: "x-apsg", kind: "side", label: "APSG", sub: "Strategy group", bg: "#005fc0", title: "Asia and the Pacific Strategy Group (APSG)",
+        text: "The ASC steers the ASLP programme as a whole. The APSG is a separate body with its own members, chair and decisions, set up to develop the Asia Pacific Community Development Strategy. The two stay linked: the APSG shares its minutes with the ASC and brings it issues that are outside the APSG's control, but they remain two different bodies within the programme.", link: ["#/group/apsg", "About the APSG"] },
     ],
     layouts: {
-      wide: { W: 1100, H: 800, c: [550, 380, 300], ring: 212, d: 122, n: 10, start: -18, fs: 1.45, cfs: 6.4,
-        pos: { "g-sasia1": [130, 150, 210, 74], "g-spea1": [970, 150, 210, 74], "g-sasia2": [130, 480, 210, 74], "g-spea2": [970, 480, 210, 74], "g-fcg": [300, 750, 230, 74], "g-sog": [800, 750, 230, 74] },
-        links: [["l-sasia1", "g-sasia1", "h"], ["l-spea1", "g-spea1", "h"], ["l-sasia2", "g-sasia2", "h"], ["l-spea2", "g-spea2", "h"], ["l-fcg", "g-fcg", "vh"], ["l-sog", "g-sog", "vh"]] },
-      narrow: { W: 400, H: 700, c: [200, 356, 192], ring: 138, d: 82, n: 10, start: -18, fs: 2.75, cfs: 13,
-        pos: { "g-sasia2": [50, 62, 92, 56], "g-sasia1": [149, 62, 92, 56], "g-spea1": [251, 62, 92, 56], "g-spea2": [350, 62, 92, 56], "g-fcg": [100, 650, 170, 54], "g-sog": [300, 650, 170, 54] },
-        links: [["l-sasia2", "g-sasia2", "v", 128], ["l-sasia1", "g-sasia1", "v", 128], ["l-spea1", "g-spea1", "v", 128], ["l-spea2", "g-spea2", "v", 128], ["l-fcg", "g-fcg", "v", 606], ["l-sog", "g-sog", "v", 606]] },
+      wide: { W: 1100, H: 1000, c: [550, 400, 300], ring: 212, d: 122, n: 10, start: -18, fs: 1.45, cfs: 6.4,
+        pos: { "g-sasia1": [130, 170, 210, 74], "g-spea1": [970, 170, 210, 74], "g-sasia2": [130, 470, 210, 74], "g-spea2": [970, 470, 210, 74], "g-fcg": [150, 760, 230, 74], "g-sog": [950, 760, 230, 74], "x-apsg": [550, 900, 84] },
+        links: [["ascc", "x-apsg", "arrow", null, 18], ["l-sasia1", "g-sasia1", "h", null, "hover"], ["l-spea1", "g-spea1", "h", null, "hover"], ["l-sasia2", "g-sasia2", "h", null, "hover"], ["l-spea2", "g-spea2", "h", null, "hover"], ["l-fcg", "g-fcg", "vh", null, "hover"], ["l-sog", "g-sog", "vh", null, "hover"]] },
+      narrow: { W: 400, H: 830, c: [200, 356, 192], ring: 138, d: 82, n: 10, start: -18, fs: 2.75, cfs: 13,
+        pos: { "g-sasia2": [50, 62, 92, 56], "g-sasia1": [149, 62, 92, 56], "g-spea1": [251, 62, 92, 56], "g-spea2": [350, 62, 92, 56], "g-fcg": [100, 650, 170, 54], "g-sog": [300, 650, 170, 54], "x-apsg": [200, 768, 56] },
+        links: [["ascc", "x-apsg", "arrow", null, 12], ["l-sasia2", "g-sasia2", "v", 128, "hover"], ["l-sasia1", "g-sasia1", "v", 128, "hover"], ["l-spea1", "g-spea1", "v", 128, "hover"], ["l-spea2", "g-spea2", "v", 128, "hover"], ["l-fcg", "g-fcg", "v", 606, "hover"], ["l-sog", "g-sog", "v", 606, "hover"]] },
     },
   },
 };
@@ -909,7 +920,8 @@ Object.values(DIAGRAMS).forEach(D => D.nodes.forEach(n => {
   const c = n.cwg || n.lead || n.group; if (!c) return;
   Object.assign(n, { bg: CWG_COL[c], ink: CWG_INK[c] || "#fff", link: [`#/cwg/${cwgSlug(c)}`, `About ${c}`] });
   if (n.cwg) Object.assign(n, { label: nb(c), title: D.cwgTitle(c), text: D.cwgText(c) });
-  if (n.lead) Object.assign(n, { label: nb(c), sub: "CWG lead", title: `${c} CWG lead`, text: `Leads the ${c} Cluster Working Group and brings its territories' voice to the Steering Committee.` });
+  if (n.lead) Object.assign(n, { label: nb(c), sub: "CWG lead", title: `${c} CWG lead`, text: `Leads the ${c} Cluster Working Group and brings its territories' voice to the Steering Committee.`,
+    to: `g-${c.toLowerCase().replace(" ", "")}`, how: `Carries the CWG's progress, challenges and territories' needs to the committee, and takes the committee's decisions and guidance back to the CWG.` });
   if (n.group) Object.assign(n, { label: `${nb(c)} CWG`, sub: "", title: `${c} Cluster Working Group`, text: `The ${c} Cluster Working Group. Its lead sits on the Steering Committee.` });
 }));
 function diagramHtml(key) {
@@ -932,7 +944,12 @@ const dgPinned = {};
 function dgInfo(key, id) {
   const D = DIAGRAMS[key], n = D.nodes.find(x => x.id === id) || D.nodes[0], box = $(`dg-info-${key}`); if (!box) return;
   box.style.setProperty("--bg", n.kind === "center" ? D.color : n.bg);
-  box.innerHTML = `<div class="ai-dot"></div><h3 class="h3">${esc(n.title)}</h3><p>${esc(n.text)}</p>${n.link ? `<a class="textlink" href="${n.link[0]}">${esc(n.link[1])}</a>` : ""}`;
+  const t = n.to && D.nodes.find(x => x.id === n.to), from = !n.to && n.kind === "pill" && D.nodes.find(x => x.to === n.id);
+  box.innerHTML = `<div class="ai-dot"></div><h3 class="h3">${esc(n.title)}</h3><p>${esc(n.text)}</p>
+    ${t ? `<div class="ai-link"><div class="ai-to"><svg width="22" height="12" viewBox="0 0 22 12" aria-hidden="true"><path d="M0 6h18M13 1l6 5-6 5" fill="none" stroke="currentColor" stroke-width="2.2"/></svg>Links to the ${esc(t.title)}</div><p>${esc(n.how)}</p></div>` : ""}
+    ${from ? `<div class="ai-link"><div class="ai-to"><svg width="22" height="12" viewBox="0 0 22 12" aria-hidden="true"><path d="M0 6h18M13 1l6 5-6 5" fill="none" stroke="currentColor" stroke-width="2.2"/></svg>Linked to the committee by its lead</div><p>${esc(from.how)}</p></div>` : ""}
+    ${n.link ? `<a class="textlink" href="${n.link[0]}">${esc(n.link[1])}</a>` : ""}`;
+  dgShow(key, n.kind === "center" ? "" : n.id);
 }
 function dgPin(key, id) {
   const D = DIAGRAMS[key], center = D.nodes[0].id, st = $(`dg-stage-${key}`);
@@ -957,23 +974,31 @@ function dgLayout(key) {
     el.style.fontSize = `${n.kind === "center" ? L.cfs : n.kind === "side" ? L.fs * 1.25 : L.fs}cqw`;
   });
   const wide = L.W > 600, gap = wide ? 34 : 18, paths = [];
-  L.links.forEach(([a, b, type, extra]) => {
-    const A = geo[a], B = geo[b];
+  L.links.forEach(([a, b, type, extra, opt]) => {
+    const A = geo[a], B = geo[b], hv = opt === "hover", g2 = typeof opt === "number" ? opt : gap, push = (d, arrow) => paths.push([d, arrow, hv, a, b]);
     if (type === "arrow") { const dx = B.x - A.x, dy = B.y - A.y, len = Math.hypot(dx, dy), ux = dx / len, uy = dy / len;
-      paths.push([`M${A.x + ux * (A.r + gap)} ${A.y + uy * (A.r + gap)} L${B.x - ux * (B.r + gap)} ${B.y - uy * (B.r + gap)}`, true]); }
+      push(`M${A.x + ux * (A.r + g2)} ${A.y + uy * (A.r + g2)} L${B.x - ux * (B.r + g2)} ${B.y - uy * (B.r + g2)}`, true); }
     else if (type === "curve") { const t = 52 * Math.PI / 180, ra = A.r + gap, rb = B.r + gap;
-      paths.push([`M${A.x + ra * Math.cos(t)} ${A.y + ra * Math.sin(t)} Q${L.W / 2} ${extra} ${B.x - rb * Math.cos(t)} ${B.y + rb * Math.sin(t)}`, true]); }
-    else if (type === "h") { const s = B.x < A.x ? -1 : 1, x1 = A.x + s * A.r, x2 = B.x - s * B.w / 2, mx = (x1 + x2) / 2;
-      paths.push([`M${x1} ${A.y} H${mx} V${B.y} H${x2}`, false]); }
+      push(`M${A.x + ra * Math.cos(t)} ${A.y + ra * Math.sin(t)} Q${L.W / 2} ${extra} ${B.x - rb * Math.cos(t)} ${B.y + rb * Math.sin(t)}`, true); }
+    else if (type === "h") { const s = B.x < A.x ? -1 : 1, x1 = A.x + s * (A.r + 6), x2 = B.x - s * (B.w / 2 + 8), mx = (x1 + x2) / 2;
+      push(`M${x1} ${A.y} H${mx} V${B.y} H${x2}`, false); }
     else if (type === "vh") { const s = B.x < A.x ? -1 : 1;
-      paths.push([`M${A.x} ${A.y + A.r} V${B.y} H${B.x - s * B.w / 2}`, false]); }
-    else if (type === "v") { const up = B.y < A.y, y1 = A.y + (up ? -A.r : A.r), y2 = B.y + (up ? B.h / 2 : -B.h / 2);
-      paths.push([`M${A.x} ${y1} V${extra} H${B.x} V${y2}`, false]); }
+      push(`M${A.x} ${A.y + A.r + 6} V${B.y} H${B.x - s * (B.w / 2 + 8)}`, false); }
+    else if (type === "v") { const up = B.y < A.y, y1 = A.y + (up ? -A.r - 4 : A.r + 4), y2 = B.y + (up ? B.h / 2 + 7 : -B.h / 2 - 7);
+      push(`M${A.x} ${y1} V${extra} H${B.x} V${y2}`, false); }
   });
   const svg = st.querySelector(".apsg-lines"); svg.setAttribute("viewBox", `0 0 ${L.W} ${L.H}`);
   svg.innerHTML = `<defs><marker id="ah-${key}" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="${wide ? 7 : 5}" markerHeight="${wide ? 7 : 5}" orient="auto-start-reverse"><path d="M0 0 10 5 0 10z" fill="currentColor"/></marker></defs>` +
-    paths.map(([d, arrow]) => arrow ? `<path d="${d}" fill="none" stroke="currentColor" stroke-width="${wide ? 3 : 2.4}" stroke-dasharray="9 8" marker-start="url(#ah-${key})" marker-end="url(#ah-${key})"/>`
-      : `<path d="${d}" fill="none" stroke="currentColor" stroke-width="${wide ? 2.6 : 2}" stroke-linejoin="round"/>`).join("");
+    paths.map(([d, arrow, hv, a, b]) => arrow ? `<path d="${d}" fill="none" stroke="currentColor" stroke-width="${wide ? 3 : 2.4}" stroke-dasharray="9 8" marker-start="url(#ah-${key})" marker-end="url(#ah-${key})"/>`
+      : `<path class="${hv ? "hl" : ""}" data-a="${a}" data-b="${b}" d="${d}" fill="none" stroke="currentColor" stroke-width="${wide ? 3 : 2.2}" stroke-linejoin="round" marker-end="url(#ah-${key})"/>`).join("");
+  dgShow(key, st.dataset.active);
+}
+// show the line from the active circle to the group it links to, and keep that group in full colour
+function dgShow(key, id) {
+  const st = $(`dg-stage-${key}`); if (!st) return; st.dataset.active = id || "";
+  const rel = new Set();
+  st.querySelectorAll(".apsg-lines path.hl").forEach(p => { const on = !!id && (p.dataset.a === id || p.dataset.b === id); p.classList.toggle("show", on); if (on) rel.add(p.dataset.a === id ? p.dataset.b : p.dataset.a); });
+  st.querySelectorAll(".apsg-node").forEach(b => b.classList.toggle("rel", rel.has(b.dataset.node)));
 }
 function mountDiagram(key) {
   const st = $(`dg-stage-${key}`); if (!st) return;
