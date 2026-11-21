@@ -99,7 +99,7 @@
   body:not(.is-home) .brand .b-home, body.is-home .brand .b-inner { display: none; }
   nav.menu { display: flex; gap: 2px; margin-left: auto; align-items: center; }
   nav.menu > a, .dd-top { display: block; padding: 8px 9px; text-decoration: none; font-weight: 600; font-size: 15px; border-bottom: 3px solid transparent; }
-  .topbar > .wrap > .theme { margin-left: var(--g3); }
+  .topbar > .wrap > .theme { margin-left: auto; }   /* free space splits evenly: logo → menu and menu → theme */
   nav.menu > a:hover, .dd-top:hover { border-bottom-color: var(--line); }
   nav.menu .on { border-bottom-color: var(--orange); }
   .dd { position: relative; }
@@ -121,7 +121,7 @@
   /* the home page already shows every section, so the menu stays out of the way there */
   body.is-home nav.menu, body.is-home .menu-btn { display: none !important; }
   body.is-home .topbar > .wrap > .theme { display: inline-flex !important; margin-left: auto; }
-  @media (max-width: 1200px) {
+  @media (max-width: 1340px) {
     .menu-btn { display: inline-flex; }
     nav.menu { display: none; position: absolute; top: 68px; left: 0; right: 0; flex-direction: column; align-items: stretch; background: var(--paper); border-bottom: 1px solid var(--line); padding: var(--g1) 20px var(--g4); gap: 0; max-height: calc(100vh - 68px); overflow: auto; }
     nav.menu.open { display: flex; }
@@ -455,6 +455,10 @@
   @media (max-width: 1000px) { .pm-cols { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
   @media (max-width: 700px) { .pm-purpose { grid-template-columns: 1fr; gap: var(--g2); } .pm-cols { grid-template-columns: 1fr; gap: var(--g3); } .pm-cols li { display: grid; grid-template-columns: 2.2em minmax(0, 1fr); } .pm-cols li::before { font-size: 30px; margin: 0; } .pm-card { padding: var(--g4); } }
   /* home: a Share button sits where the logo is on other pages */
+  .topbar .wrap { max-width: 1360px; }
+  .tb-auth { flex: none; display: inline-flex; align-items: center; margin-left: var(--g2); padding: 7px 16px; border-radius: 999px; background: #f5c400; color: #000; font-weight: 700; font-size: 14.5px; text-decoration: none; }
+  .tb-auth:hover, .tb-auth:active { background: #005fc0; color: #fff; }
+  @media (max-width: 1340px) { .tb-auth { margin-left: var(--g1); } .menu-btn { margin-left: auto; } }
   .share-top { display: none; align-items: center; gap: 8px; border: 2px solid var(--ink); background: none; color: var(--ink); border-radius: 999px; padding: 7px 16px; font: inherit; font-weight: 700; font-size: 15px; cursor: pointer; }
   .share-top:hover { background: var(--ink); color: var(--paper); }
   body.is-home .share-top { display: inline-flex; }
@@ -471,6 +475,42 @@
   .share-app:hover { border-color: var(--ink); }
   .sa-dot { width: 10px; height: 10px; border-radius: 50%; }
   .grp-actions { display: flex; flex-wrap: wrap; gap: var(--g2); align-items: center; margin-bottom: var(--g5); }
+  /* console */
+  .console-head { display: flex; justify-content: space-between; align-items: end; gap: var(--g3); flex-wrap: wrap; }
+  .ctabs { display: flex; gap: var(--g1); margin-top: var(--g4); border-bottom: 1px solid var(--line); }
+  .ctabs a { padding: 10px 16px; text-decoration: none; font-weight: 700; border-bottom: 3px solid transparent; margin-bottom: -1px; color: var(--ink-2); }
+  .ctabs a.on { color: var(--ink); border-bottom-color: var(--orange); }
+  .console-card { background: var(--paper-2); border-radius: 22px; padding: var(--g5); margin-top: var(--g4); }
+  .console-card > * + * { margin-top: var(--g2); }
+  .console-card .btn { margin-top: var(--g3); }
+  .row-head { display: flex; justify-content: space-between; align-items: center; gap: var(--g3); flex-wrap: wrap; }
+  .row-head select, .ed-row select { font: inherit; padding: 9px 12px; border-radius: 10px; border: 1px solid var(--line); background: var(--paper); color: var(--ink); }
+  .si-form label, #si-code label { display: block; font-weight: 700; font-size: 14px; margin-top: var(--g3); }
+  .si-msg { font-size: 14.5px; color: var(--ink-2); min-height: 1.4em; }
+  .cw-pick { display: flex; gap: var(--g1); flex-wrap: wrap; margin-top: var(--g3); }
+  .chip-btn { border: 1.5px solid var(--line); background: var(--paper); color: var(--ink); border-radius: 999px; padding: 6px 14px; font: inherit; font-weight: 700; font-size: 14px; cursor: pointer; }
+  .chip-btn.on { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+  .ed-rows { display: grid; gap: var(--g2); margin-top: var(--g3); }
+  .ed-row { display: grid; grid-template-columns: .7fr 1.1fr 1.3fr 1.3fr 1fr auto; gap: var(--g2); align-items: end; background: var(--paper); border-radius: 14px; padding: var(--g2); }
+  #con-box .ed-row { grid-template-columns: .7fr 1.1fr 1.4fr 1.4fr auto; }
+  .ed-row label, .ed-grid label { display: grid; gap: 4px; font-size: 12.5px; font-weight: 700; color: var(--ink-2); }
+  .ed-row input, .ed-row select, .ed-grid input, .ed-grid textarea { font: inherit; font-size: 14.5px; font-weight: 400; color: var(--ink); padding: 8px 10px; border-radius: 10px; border: 1px solid var(--line); background: var(--paper); width: 100%; min-width: 0; }
+  .ed-del { border: 0; background: none; color: var(--ink-3); font: inherit; font-size: 13px; cursor: pointer; padding: 8px 4px; text-decoration: underline; }
+  .ed-del:hover { color: #c0391e; }
+  .ed-actions { display: flex; flex-wrap: wrap; gap: var(--g2); align-items: center; margin-top: var(--g3); }
+  .ed-actions .btn { margin-top: 0; }
+  .ed-actions.sticky { position: sticky; bottom: 0; background: var(--paper-2); padding: var(--g2) 0; border-top: 1px solid var(--line); margin-top: var(--g4); }
+  .ed-msg { font-size: 14px; color: var(--ink-2); } .ed-msg.ok { color: #1a7f37; font-weight: 700; } .ed-msg.err { color: #c0391e; font-weight: 700; }
+  .ed-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--g3); margin-top: var(--g4); }
+  .ed-grid .full { grid-column: 1 / -1; }
+  .ed-grid textarea { resize: vertical; line-height: 1.5; }
+  .synced { background: var(--paper); border-radius: 16px; padding: var(--g4); margin-top: var(--g3); border-left: 5px solid var(--blue); }
+  .synced-h { display: flex; flex-wrap: wrap; gap: 4px var(--g2); align-items: baseline; }
+  .synced dl { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 6px var(--g3); margin: var(--g3) 0; font-size: 14.5px; }
+  .synced dt { color: var(--ink-3); } .synced dd { margin: 0; font-weight: 600; }
+  .member-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: var(--g3); margin-top: var(--g3); }
+  .member { background: var(--paper-2); border-radius: 16px; padding: var(--g3); }
+  @media (max-width: 860px) { .ed-row, #con-box .ed-row { grid-template-columns: 1fr 1fr; } .ed-grid { grid-template-columns: 1fr; } .console-card { padding: var(--g4) 18px; } }
   footer { background: #000; color: #fff; padding: var(--g7) 0 var(--g6); }
   footer .wrap { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: var(--g5); align-items: end; }
   footer .fname { font-size: clamp(26px, 3.4vw, 40px); line-height: 1.04; letter-spacing: -.02em; }
@@ -500,6 +540,7 @@
     <div class="theme-in-menu"><div class="seg" role="group" aria-label="Theme"><button data-theme-set="light">Light</button><button data-theme-set="auto">Auto</button><button data-theme-set="dark">Dark</button></div></div>
   </nav>
   <div class="seg theme" role="group" aria-label="Theme"><button data-theme-set="light">Light</button><button data-theme-set="auto">Auto</button><button data-theme-set="dark">Dark</button></div>
+  <a class="tb-auth" id="tb-auth" href="#/console">Sign in</a>
 </div></div>
 
 <dialog id="sdlg" class="mini-dlg" aria-labelledby="sdlg-title">
@@ -525,6 +566,7 @@
   <nav aria-label="Footer">
     <a href="#/about">About ASLP</a><a href="#/cwgs">Cluster Working Groups</a><a href="#/groups">ASLP Groups</a><a href="#/newsletter">Newsletter</a>
     <a href="/cd-strategy/">CD Strategies</a><a href="/Calendar-2027-2028/">Calendar</a>
+    <a href="#/console" id="ft-console">Sign in</a>
   </nav>
   <div class="copy-line">© 2026 Asia-Pacific Sharing &amp; Learning Programme, The Salvation Army</div>
 </div></footer>
@@ -624,6 +666,18 @@ const cwgList = () => [...new Set(terrs().map(t => (t.cwg || "").trim()).filter(
 const terrsOf = c => terrs().filter(t => (t.cwg || "").trim() === c);
 const leadOf = c => (data.cwgLeads || []).find(l => l.cwg === c);
 const terrName = id => (terrs().find(t => t.id === id) || {}).name || "";
+const V = () => (data && data.viewer) || {};
+const canTerr = id => (V().can_edit || []).includes(id);
+const canCwg = c => (V().can_cwgs || []).includes(c);
+// headquarters and countries live in the CD Strategies record: admins and the CWG lead can change them from either website
+const canShared = t => !!(V().email && (V().is_full_admin || (V().lead_cwgs || []).includes(t.cwg)));
+const membersOf = c => (data.cwgMembers || []).filter(m => m.cwg === c);
+// a territory's contacts: those entered for the website plus its CWG member(s), without repeats
+function terrContacts(t) {
+  const out = [...(t.contacts || [])], seen = new Set(out.map(c => (c.email || c.name || "").toLowerCase()));
+  (data.cwgMembers || []).filter(m => m.territory === t.id).forEach(m => { const k = (m.email || m.name || "").toLowerCase(); if (!seen.has(k)) { seen.add(k); out.push({ ...m, role: [m.role, `${m.cwg} CWG member`].filter(Boolean).join(", ") }); } });
+  return out;
+}
 const shortName = n => String(n || "").replace(/\s+(Territory|Region)$/i, "");
 const crumbs = list => `<nav class="crumbs wrap" aria-label="Breadcrumb">${list.map(([t, h], i) => (i ? `<span class="sep">/</span>` : "") + (h ? `<a href="${h}">${esc(t)}</a>` : `<span>${esc(t)}</span>`)).join("")}</nav>`;
 const tags = list => `<div class="tags">${(list || []).map(x => `<span class="tag">${esc(x)}</span>`).join("")}</div>`;
@@ -865,6 +919,8 @@ function pageCwg(cs) {
         return `<a class="terr-row" href="#/territory/${esc(t.id)}"><div class="nm">${esc(t.name)}</div>
           <div class="where">${t.location ? `${isRegion(t) ? "Regional" : "Territorial"} Headquarters in ${esc(t.location)}` : ""}</div>
           ${(p.thematic || []).length ? tags(p.thematic.slice(0, 4)) : `<span class="small">Profile coming soon</span>`}</a>`; }).join("")}</div>
+      ${(() => { const ms = membersOf(c); return `<div class="stack" style="margin-top:var(--g6)"><div class="row-head"><h2 class="h2">${esc(c)} CWG members</h2>${canCwg(c) ? `<a class="btn sm" href="#/console/cwg/${cwgSlug(c)}">Edit members</a>` : ""}</div>
+        ${ms.length ? `<div class="member-grid">${ms.map(m => `<div class="member">${contactHtml({ ...m, role: [m.role, m.territory && shortName(terrName(m.territory))].filter(Boolean).join(", ") })}</div>`).join("")}</div>` : `<p class="empty">The members of ${esc(c)} will be listed here.</p>`}</div>`; })()}
       <div style="margin-top:var(--g6)"><div class="aslp-map" id="map-cwg" role="region" aria-label="Map of ${esc(c)} headquarters"></div>${z ? zoneLegend([z.key]) : ""}</div>
       ${countries.length ? `<div class="stack" style="margin-top:var(--g6)"><h3 class="h3">Countries covered</h3><div class="chips">${countries.map(x => `<span class="chip">${esc(x)}</span>`).join("")}</div></div>` : ""}
     </div></div>`;
@@ -903,8 +959,10 @@ function pageTerritory(id) {
         ${sec("Technical support they can offer other territories", p.techSupport ? `<p>${esc(p.techSupport)}</p>` : "", "Support offers will appear here once the territory adds them.")}
       </div>
       <aside>
-        <div class="aside-box"><h2 class="h3">Contact persons</h2>${(t.contacts || []).length ? `<div>${t.contacts.map(contactHtml).join("")}</div>` : `<p class="empty">Contacts will be listed here. Until then, reach the territory through its CWG lead.</p>`}</div>
+        ${canTerr(t.id) ? `<a class="btn fill" style="margin-bottom:var(--g3)" href="#/console/territory/${esc(t.id)}">Edit this territory's profile</a>` : ""}
+        <div class="aside-box"><h2 class="h3">Contact persons</h2>${terrContacts(t).length ? `<div>${terrContacts(t).map(contactHtml).join("")}</div>` : `<p class="empty">Contacts will be listed here. Until then, reach the territory through its CWG lead.</p>`}</div>
         <div class="aside-box"><h2 class="h3">CD Strategy</h2><div class="stack" style="--gap:var(--g1)"><div>${statusChip(t)}</div>${t.strategyPeriod ? `<div class="small">Strategy period ${esc(t.strategyPeriod)}</div>` : ""}
+          ${t.focal ? `<div class="small">CD focal person: <b style="color:var(--ink)">${esc(t.focal.name)}</b>${t.focal.role ? `, ${esc(t.focal.role)}` : ""}</div>` : ""}
           <div style="margin-top:var(--g2)"><a class="textlink" href="/cd-strategy/#territory-${esc(t.id)}">See CD Strategy details</a></div></div></div>
         ${l ? `<div class="aside-box"><h2 class="h3">${esc(c)} CWG lead</h2><div>${contactHtml({ name: l.name, role: [l.role, terrName(l.territory)].filter(Boolean).join(", "), email: l.email })}
           <div style="margin-top:var(--g2)"><a class="textlink" href="#/cwg/${cwgSlug(c)}">Other territories in ${esc(c)}</a></div></div></div>` : ""}
@@ -1263,6 +1321,146 @@ async function groupPDF(key, btn) {
 }
 document.addEventListener("click", e => { const b = e.target.closest("[data-grp-pdf]"); if (b) groupPDF(b.dataset.grpPdf, b); });
 
+
+// ---- console: sign in once, then edit the strategies or the website ----
+const CDS_URL = "/cd-strategy/";
+let signinEmail = "";
+function consoleSignin() {
+  return `<div class="console-card"><h2 class="h2">Sign in</h2>
+    <p class="small">CWG leads, admins and CWG members use the same sign-in as the CD Strategies website. If you're already signed in there, you're signed in here too.</p>
+    <form id="si-form" class="si-form" autocomplete="on"><label for="si-email">Your email</label>
+      <div class="copy-row"><input type="email" id="si-email" required autocomplete="email" value="${esc(signinEmail)}" placeholder="name@salvationarmy.org"><button class="btn fill sm" id="si-go">Email me a sign-in code</button></div></form>
+    <div id="si-code" ${signinEmail ? "" : "hidden"}><label for="si-token">Code from the email</label>
+      <div class="copy-row"><input type="text" id="si-token" inputmode="numeric" autocomplete="one-time-code" placeholder="123456"><button class="btn fill sm" id="si-verify">Sign in</button></div>
+      <p class="small">The email also has a link. Opening it signs you in too.</p></div>
+    <p class="si-msg" id="si-msg" role="status"></p></div>`;
+}
+function pageConsole(a, b) {
+  const v = V();
+  if (!v.email) return `${crumbs([["Home", "#/"], ["Console"]])}<div class="wrap page-body" style="padding-top:var(--g5)"><h1 class="h1" style="margin-bottom:var(--g5)">Console</h1>${consoleSignin()}</div>`;
+  const terrIds = v.can_edit || [], cwgs = v.can_cwgs || [];
+  const who = v.is_full_admin ? "Admin" : (v.lead_cwgs || []).length ? `${v.lead_cwgs.join(" and ")} CWG lead` : (v.member_of || []).length ? "CWG member" : "Signed in";
+  const tab = a === "strategies" ? "strategies" : "website";
+  const head = `${crumbs([["Home", "#/"], ["Console"]])}<div class="wrap" style="padding-top:var(--g4)">
+    <div class="console-head"><div><h1 class="h1">Console</h1><p class="small" style="margin-top:6px">${esc(who)} · ${esc(v.email)}</p></div><button type="button" class="btn sm" id="si-out">Sign out</button></div>
+    <div class="ctabs" role="tablist"><a role="tab" aria-selected="${tab === "website"}" class="${tab === "website" ? "on" : ""}" href="#/console">Website details</a><a role="tab" aria-selected="${tab === "strategies"}" class="${tab === "strategies" ? "on" : ""}" href="#/console/strategies">CD Strategies</a></div></div>`;
+  if (tab === "strategies") return head + `<div class="wrap page-body"><div class="console-card"><h2 class="h2">CD Strategies console</h2>
+    <p>Update each territory's CD Strategy status and details, focal persons and approvals on the CD Strategies website. You're already signed in there with this account.</p>
+    <p class="small">The territory's name, CWG, headquarters, countries, offices, status, strategy period and focal person are kept there and shown on this website automatically.</p>
+    <a class="btn fill" href="${CDS_URL}#admin">Open the CD Strategies console</a></div></div>`;
+  if (!terrIds.length && !cwgs.length) return head + `<div class="wrap page-body"><div class="console-card"><p>This account can't edit any website details yet. CWG leads and admins edit their CWGs; CWG members edit their own territory. Ask your CWG lead or the ASLP Coordinator for access.</p></div></div>`;
+  const selT = a === "territory" && terrIds.includes(b) ? b : terrIds[0];
+  const selC = a === "cwg" ? cwgs.find(c => cwgSlug(c) === b) : null;
+  pendingMaps.push(() => mountConsole());
+  return head + `<div class="wrap page-body">
+    ${cwgs.length ? `<section class="console-card" id="cc-members"><div class="row-head"><h2 class="h2">CWG members</h2></div>
+      <p class="small">Add each CWG member's rank (if an officer), name, appointment or role and email. Members linked to a territory are listed on that territory's page and can sign in to edit its profile.</p>
+      ${cwgs.length > 1 ? `<div class="cw-pick" role="tablist">${cwgs.map(c => `<button type="button" role="tab" class="chip-btn${c === (selC || cwgs[0]) ? " on" : ""}" data-cw="${esc(c)}">${esc(c)}</button>`).join("")}</div>` : ""}
+      <div id="mem-editor"></div></section>` : ""}
+    ${terrIds.length ? `<section class="console-card" id="cc-terr"><div class="row-head"><h2 class="h2">Territory profiles</h2>
+      <select id="t-pick" aria-label="Territory">${terrIds.map(id => `<option value="${esc(id)}"${id === selT ? " selected" : ""}>${esc(terrName(id))}</option>`).join("")}</select></div>
+      <div id="terr-editor"></div></section>` : ""}
+  </div>`;
+}
+const fieldRow = (cols, vals, terrOpts) => `<div class="ed-row">${cols.map(([k, l, ph]) => k === "territory"
+  ? `<label><span>${l}</span><select data-k="territory"><option value="">Not linked to a territory</option>${terrOpts.map(t => `<option value="${esc(t.id)}"${vals.territory === t.id ? " selected" : ""}>${esc(shortName(t.name))}</option>`).join("")}</select></label>`
+  : `<label><span>${l}</span><input data-k="${k}" type="${k === "email" ? "email" : "text"}" value="${esc(vals[k] || "")}" placeholder="${esc(ph || "")}"></label>`).join("")}
+  <button type="button" class="ed-del" aria-label="Remove">Remove</button></div>`;
+const MEM_COLS = [["rank", "Rank (officers)", "e.g. Captain"], ["name", "Name"], ["role", "Appointment / role"], ["email", "Email"], ["territory", "Territory"]];
+const CON_COLS = [["rank", "Rank (officers)", "e.g. Major"], ["name", "Name"], ["role", "Appointment / role"], ["email", "Email"]];
+const readRows = box => [...box.querySelectorAll(".ed-row")].map(r => Object.fromEntries([...r.querySelectorAll("[data-k]")].map(i => [i.dataset.k, i.value.trim()]))).filter(o => Object.values(o).some(Boolean));
+function wireRows(box, cols, terrOpts) {
+  box.addEventListener("click", e => { const d = e.target.closest(".ed-del"); if (d) d.closest(".ed-row").remove(); });
+  box.querySelector(".ed-add").addEventListener("click", () => box.querySelector(".ed-rows").insertAdjacentHTML("beforeend", fieldRow(cols, {}, terrOpts)));
+}
+function memEditor(c) {
+  const box = $("mem-editor"); if (!box) return;
+  const opts = terrsOf(c), ms = membersOf(c);
+  box.innerHTML = `<div class="ed-rows">${(ms.length ? ms : [{}]).map(m => fieldRow(MEM_COLS, m, opts)).join("")}</div>
+    <div class="ed-actions"><button type="button" class="btn sm ed-add">Add a member</button><button type="button" class="btn fill sm" id="mem-save">Save ${esc(c)} members</button><span class="ed-msg" id="mem-msg" role="status"></span></div>`;
+  wireRows(box, MEM_COLS, opts);
+  $("mem-save").addEventListener("click", () => saveWith("mem-save", "mem-msg", () => db.rpc("aslp_set_cwg_members", { p_cwg: c, p_items: readRows(box) }), `${c} members saved.`));
+}
+function terrEditor(id) {
+  const box = $("terr-editor"), t = terrs().find(x => x.id === id); if (!box || !t) return;
+  const p = t.profile || {}, offices = (t.offices || []).map(o => o.name).filter(Boolean);
+  const shared = canShared(t), hqL = `${isRegion(t) ? "Regional" : "Territorial"} Headquarters`;
+  box.innerHTML = `<div class="synced"><div class="synced-h"><b>Shared with the CD Strategies website</b><span class="small">${shared ? "Kept in one place, so both websites always match. Changes you make here also show on the CD Strategies website and go into this territory's update history there." : "Kept in one place, so both websites always match. The CWG lead, the territory's CD focal person or an admin can change these."}</span></div>
+      ${shared ? `<div class="ed-grid" style="margin-top:var(--g3)"><label><span>${hqL}</span><input id="s-hq" value="${esc(t.location || "")}" placeholder="e.g. Kuwait City, Kuwait"></label>
+        <label><span>Countries</span><input id="s-ctry" value="${esc((t.countries || []).join(", "))}" placeholder="Separate with commas"></label></div>` : ""}
+      <dl><dt>CWG</dt><dd>${esc(t.cwg || "—")}</dd>${shared ? "" : `<dt>${hqL}</dt><dd>${esc(t.location || "—")}</dd>
+      <dt>Countries</dt><dd>${esc((t.countries || []).join(", ") || "—")}</dd>`}<dt>Offices</dt><dd>${esc(offices.join("; ") || "—")}</dd>
+      <dt>CD Strategy</dt><dd>${statusChip(t)}${t.strategyPeriod ? ` · ${esc(t.strategyPeriod)}` : ""}</dd><dt>CD focal person</dt><dd>${t.focal ? esc([t.focal.name, t.focal.role].filter(Boolean).join(", ")) : "—"}</dd></dl>
+      <a class="textlink" href="${CDS_URL}#territory-${esc(t.id)}">${shared ? "Change the offices, status and focal person in the CD Strategies console" : "See it on the CD Strategies website"}</a></div>
+    <div class="ed-grid">
+      <label class="full"><span>Where they work</span><textarea id="p-work" rows="3" placeholder="Areas, communities and programmes the territory works in">${esc(p.workAreas || "")}</textarea></label>
+      <label class="full"><span>Thematic areas</span><input id="p-them" value="${esc((p.thematic || []).join(", "))}" placeholder="Separate with commas, e.g. Disaster response, Livelihoods, Health"></label>
+      <label><span>Strengths</span><textarea id="p-str" rows="4">${esc(p.strengths || "")}</textarea></label>
+      <label><span>Technical support they can offer other territories</span><textarea id="p-tech" rows="4">${esc(p.techSupport || "")}</textarea></label>
+    </div>
+    <h3 class="h3" style="margin-top:var(--g5)">Contact persons</h3>
+    <p class="small">CWG members linked to this territory are added to its contacts automatically.</p>
+    <div id="con-box"><div class="ed-rows">${((t.contacts || []).length ? t.contacts : [{}]).map(c => fieldRow(CON_COLS, c, [])).join("")}</div>
+      <div class="ed-actions"><button type="button" class="btn sm ed-add">Add a contact</button></div></div>
+    <div class="ed-actions sticky"><button type="button" class="btn fill" id="terr-save">Save ${esc(shortName(t.name))}</button><a class="textlink" href="#/territory/${esc(t.id)}">View the page</a><span class="ed-msg" id="terr-msg" role="status"></span></div>`;
+  wireRows($("con-box"), CON_COLS, []);
+  $("terr-save").addEventListener("click", () => saveWith("terr-save", "terr-msg", async () => {
+    if (shared) {   // shared fields go to the one record both websites use
+      const hq = $("s-hq").value.trim(), ct = $("s-ctry").value.split(",").map(x => x.trim()).filter(Boolean), det = {};
+      if (hq !== (t.location || "")) det.location = hq;
+      if ([...ct].sort().join("|") !== [...(t.countries || [])].sort().join("|")) det.countries = ct;
+      if (Object.keys(det).length) { const r0 = await db.rpc("submit_details_update", { p_email: V().email, p_territory: id, p_details: det }); if (r0.error) return r0; }
+    }
+    const r1 = await db.rpc("aslp_save_profile", { p_territory: id, p_profile: { workAreas: $("p-work").value.trim(), thematic: $("p-them").value.split(",").map(x => x.trim()).filter(Boolean), strengths: $("p-str").value.trim(), techSupport: $("p-tech").value.trim() } });
+    if (r1.error) return r1;
+    return db.rpc("aslp_set_contacts", { p_territory: id, p_items: readRows($("con-box")) });
+  }, `${shortName(t.name)} saved.`));
+}
+async function saveWith(btnId, msgId, fn, okText) {
+  const b = $(btnId), m = $(msgId); b.disabled = true; m.textContent = "Saving…"; m.className = "ed-msg";
+  try { const { error } = await fn(); if (error) throw error; await refresh(); m.textContent = okText; m.className = "ed-msg ok"; }
+  catch (e) { m.textContent = (e && e.message) || "Couldn't save. Please try again."; m.className = "ed-msg err"; }
+  b.disabled = false;
+}
+async function refresh() { const { data: d, error } = await db.rpc("get_aslp_site"); if (!error && d) { data = d; buildMenus(); updateAuthLinks(); } }
+function mountConsole() {
+  const out = $("si-out"); if (out) out.addEventListener("click", async () => { await db.auth.signOut(); await refresh(); route(); });
+  const v = V(), cwgs = v.can_cwgs || [], [, a, b] = (location.hash.replace(/^#\/?/, "")).split("/");
+  if ($("mem-editor")) {
+    const first = (a === "cwg" && cwgs.find(c => cwgSlug(c) === b)) || cwgs[0]; memEditor(first);
+    document.querySelectorAll("[data-cw]").forEach(x => x.addEventListener("click", () => { document.querySelectorAll("[data-cw]").forEach(y => y.classList.toggle("on", y === x)); memEditor(x.dataset.cw); }));
+    if (a === "cwg") setTimeout(() => $("cc-members").scrollIntoView({ block: "start" }), 50);
+  }
+  if ($("terr-editor")) {
+    terrEditor($("t-pick").value); $("t-pick").addEventListener("change", e => terrEditor(e.target.value));
+    if (a === "territory") setTimeout(() => $("cc-terr").scrollIntoView({ block: "start" }), 50);
+  }
+}
+function mountSignin() {
+  const f = $("si-form"); if (!f) return;
+  const msg = t => { $("si-msg").textContent = t; };
+  f.addEventListener("submit", async e => {
+    e.preventDefault(); const email = $("si-email").value.trim().toLowerCase(); if (!email) return;
+    $("si-go").disabled = true; msg("Checking…");
+    const { data: d, error } = await db.rpc("aslp_request_signin", { p_email: email });
+    if (error || !d) { $("si-go").disabled = false; return msg("Couldn't send the sign-in email. Please try again."); }
+    if (!d.ok) { $("si-go").disabled = d.reason === "limit"; return msg(d.reason === "not_registered" ? "This email isn't registered. Ask your CWG lead or the ASLP Coordinator to add you." : "The hourly sign-in limit is reached. Please try again later; the newest email in your inbox may still work."); }
+    const r = await db.auth.signInWithOtp({ email, options: { emailRedirectTo: location.origin + location.pathname, shouldCreateUser: true } });
+    $("si-go").disabled = false;
+    if (r.error) return msg(r.error.message || "Couldn't send the sign-in email.");
+    signinEmail = email; $("si-code").hidden = false; msg(`Sign-in email sent to ${email}. Type the code from it below, or open its link.`); $("si-token").focus();
+  });
+  $("si-verify").addEventListener("click", async () => {
+    const token = $("si-token").value.replace(/\s+/g, ""), email = signinEmail || $("si-email").value.trim().toLowerCase();
+    if (!/^\d{6,10}$/.test(token)) return msg("Please type the code from the email (numbers only).");
+    $("si-verify").disabled = true;
+    const { error } = await db.auth.verifyOtp({ email, token, type: "email" });
+    $("si-verify").disabled = false;
+    if (error) return msg("That code didn't work. It may have expired or already been used.");
+    signinEmail = ""; await refresh(); route();
+  });
+}
+
 // ---- NEWSLETTER ----
 function pageNewsletter() {
   return `${crumbs([["Home", "#/"], ["Newsletter"]])}
@@ -1287,10 +1485,11 @@ function route() {
   maps.forEach(m => m.remove()); maps = []; pendingMaps = [];
   const [p, a] = (location.hash.replace(/^#\/?/, "") || "").split("/").filter(Boolean);
   const html = !p ? pageHome() : p === "about" ? pageAbout() : p === "cwgs" ? pageCwgs() : p === "zone" ? pageZone(a) : p === "cwg" ? pageCwg(a)
-    : p === "territory" ? pageTerritory(a) : p === "groups" ? pageGroups() : p === "group" ? pageGroup(a) : p === "newsletter" ? pageNewsletter() : notFound();
+    : p === "territory" ? pageTerritory(a) : p === "groups" ? pageGroups() : p === "group" ? pageGroup(a) : p === "newsletter" ? pageNewsletter() : p === "console" ? pageConsole(a, (location.hash.replace(/^#\/?/, "").split("/")[2] || "")) : notFound();
   $("view").innerHTML = html;
   document.body.classList.toggle("is-home", !p);
   pendingMaps.forEach(f => f()); pendingMaps = [];
+  if (p === "console") mountSignin();
   const nav = p === "zone" || p === "cwg" || p === "territory" ? "cwgs" : p === "group" ? "groups" : p;
   document.querySelectorAll("[data-nav]").forEach(x => x.classList.toggle("on", x.dataset.nav === nav));
   $("menu").classList.remove("open"); $("menu-btn").setAttribute("aria-expanded", "false");
@@ -1298,8 +1497,18 @@ function route() {
   document.title = (p && t1 ? t1.replace(/\s+/g, " ") + " | " : "") + "ASLP | Asia-Pacific Sharing & Learning Programme";
   window.scrollTo(0, 0);
 }
-window.addEventListener("hashchange", route);
-load().then(() => { buildMenus(); route(); }).catch(e => { $("view").innerHTML = `<div class="wrap loading">The site couldn't load its content. Check your connection and refresh the page.</div>`; console.error(e); });
+window.addEventListener("hashchange", () => { route(); updateAuthLinks(); });
+function updateAuthLinks() { const t = V().email ? "Console" : "Sign in"; ["ft-console", "tb-auth"].forEach(id => { const l = $(id); if (l) l.textContent = t; }); }
+const fromLink = /access_token=|error_description=/.test(location.hash);
+load().then(async () => {
+  try { await db.auth.getSession(); } catch (e) {}
+  const qp = new URLSearchParams(location.search), th = qp.get("token_hash");
+  if (th) { await db.auth.verifyOtp({ token_hash: th, type: "email" }).catch(() => {}); history.replaceState(null, "", location.pathname + "#/console"); }
+  if (fromLink) history.replaceState(null, "", location.pathname + "#/console");
+  if (fromLink || th) await refresh();
+  db.auth.onAuthStateChange(evt => { if (evt === "SIGNED_IN" || evt === "SIGNED_OUT") refresh().then(route); });
+  buildMenus(); route(); updateAuthLinks();
+}).catch(e => { $("view").innerHTML = `<div class="wrap loading">The site couldn't load its content. Check your connection and refresh the page.</div>`; console.error(e); });
 </script>
 </body>
 </html>
