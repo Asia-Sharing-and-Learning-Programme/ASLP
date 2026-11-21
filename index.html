@@ -258,12 +258,13 @@
 
   /* CWGs overview */
   .zone-sec { position: relative; margin-top: var(--g6); border-radius: 28px; overflow: hidden; padding: var(--g6) clamp(20px, 3.4vw, 44px); background: color-mix(in srgb, var(--cwg-b) 8%, var(--paper)); }
-  .zone-sec > :not(.decor):not(.zmap) { position: relative; z-index: 1; }
-  .zone-sec .zmap { position: absolute; right: 3%; top: 12px; height: 340px; width: auto; opacity: .34; pointer-events: none; }
-  .zone-sec-head { display: flex; justify-content: space-between; gap: var(--g4); align-items: center; min-height: 210px; margin-bottom: var(--g4); }
-  @media (max-width: 760px) { .zone-sec-head { min-height: 150px; align-items: flex-start; } }
-  .zone-sec-head .zl { width: min(360px, 78vw); display: block; }
+  .zone-sec > * { position: relative; z-index: 1; }
+  .zone-sec .zmap { height: 380px; width: auto; max-width: 100%; opacity: .55; pointer-events: none; justify-self: start; }
+  .zone-sec-head { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr); gap: var(--g4); align-items: center; margin-bottom: var(--g5); }
+  @media (max-width: 760px) { .zone-sec-head { grid-template-columns: 1fr; gap: var(--g3); } .zone-sec .zmap { height: 220px; justify-self: center; } }
+  .zone-sec-head .zl { width: 100%; max-width: 560px; display: block; justify-self: end; }
   .zone-sec-head .zl img { width: 100%; display: block; }
+  .zone-sec-head .paper-panel { display: block; }
   .cwg-pair { display: grid; grid-template-columns: 1fr 1fr; gap: var(--g4); }
   .cwg-panel { background: var(--paper); border-radius: 20px; padding: var(--g5); text-decoration: none; display: block; border-top: 6px solid var(--cwg-a); }
   .cwg-panel img.lh { height: 46px; width: auto; display: block; }
@@ -271,11 +272,11 @@
   .cwg-panel .ld b { color: var(--ink); }
   .cwg-panel ul { list-style: none; padding: 0; margin: var(--g3) 0 0; font-size: 15px; }
   .cwg-panel li { padding: 7px 0; border-top: 1px solid var(--line); line-height: 1.4; }
-  @media (max-width: 760px) { .cwg-pair { grid-template-columns: 1fr; } .zone-sec .zmap { height: 220px; right: -6%; opacity: .28; } }
+  @media (max-width: 760px) { .cwg-pair { grid-template-columns: 1fr; }  }
   .paper-panel { display: inline-block; }
-  @media (prefers-color-scheme: dark) { :root:where(:not([data-theme="light"])) .paper-panel { background: #fff; border-radius: 12px; padding: 10px 14px; } :root:where(:not([data-theme="light"])) .zone-sec .zmap, :root:where(:not([data-theme="light"])) .map-bg { opacity: .22 !important; } }
+  @media (prefers-color-scheme: dark) { :root:where(:not([data-theme="light"])) .paper-panel { background: #fff; border-radius: 12px; padding: 10px 14px; } :root:where(:not([data-theme="light"])) .map-bg { opacity: .22 !important; } :root:where(:not([data-theme="light"])) .zone-sec .zmap { opacity: .4 !important; } }
   :root[data-theme="dark"] .paper-panel { background: #fff; border-radius: 12px; padding: 10px 14px; }
-  :root[data-theme="dark"] .zone-sec .zmap, :root[data-theme="dark"] .map-bg { opacity: .22 !important; }
+  :root[data-theme="dark"] .map-bg { opacity: .22 !important; } :root[data-theme="dark"] .zone-sec .zmap { opacity: .4 !important; }
 
   /* CWG explainer */
   .explain { margin-bottom: var(--g7); }
@@ -729,12 +730,10 @@ function cwgExplainer() {
       </ul></div>
   </section>`;
 }
-const ZSET = { SPEA: [["spe-20", "top:150px;left:41%", 96]], SASIA: [["sas-03", "top:140px;left:41%", 84]] };
 function zoneSection(z) {
   const zc = cwgList().filter(c => zoneOf(c) === z.key);
-  return `<section class="zone-sec" style="${zoneVars(z.key)}" aria-label="${esc(z.label)}">${tintMap(ZMAP[z.key], MAPR["zone-" + z.key.toLowerCase()], "zmap")}
-    ${decor(ZSET[z.key].map(a => el(a[0], a[1], a[2], 0, "hm")))}
-    <div class="zone-sec-head"><a class="zl" href="#/zone/${z.key.toLowerCase()}"><span class="paper-panel"><img src="brand/zone-${z.key.toLowerCase()}.webp" alt="${esc(z.label)}"></span></a></div>
+  return `<section class="zone-sec" style="${zoneVars(z.key)}" aria-label="${esc(z.label)}">
+    <div class="zone-sec-head"><a class="zl" href="#/zone/${z.key.toLowerCase()}"><span class="paper-panel"><img src="brand/zone-${z.key.toLowerCase()}.webp" alt="${esc(z.label)}"></span></a>${tintMap(ZMAP[z.key], MAPR["zone-" + z.key.toLowerCase()], "zmap")}</div>
     <div class="cwg-pair">${zc.map(c => { const l = leadOf(c);
       return `<a class="cwg-panel" style="${cwgVars(c)}" href="#/cwg/${cwgSlug(c)}">${ART(c) ? `<img class="lh" src="${ART(c).h}" alt="${esc(c)} Cluster Working Group">` : `<div class="h2">${esc(c)}</div>`}
         ${l ? `<p class="ld">Led by <b>${esc(l.name || "")}</b>${l.role ? `, ${esc(l.role)}` : ""}${l.territory && terrName(l.territory) ? `, ${esc(shortName(terrName(l.territory)))}` : ""}</p>` : ""}
