@@ -1170,7 +1170,7 @@ function pageGroup(key) {
   const gs = data.groups || [], i = gs.findIndex(x => x.key === key), g = gs[i]; if (!g) return notFound();
   return `${crumbs([["Home", "#/"], ["ASLP Groups", "#/groups"], [g.short]])}
     <div class="wrap"><div class="grp-hero" style="background:${GBG[i % 4]};${i % 4 === 2 ? "color:#000" : ""}">${decor(GSHAPES[i % 4])}<h1><b>${esc(g.short)}</b></h1><div class="gn">${esc(g.name)}</div></div></div>
-    <div class="wrap page-body"><div class="grp-actions"><button type="button" class="btn fill" data-grp-pdf="${esc(g.key)}">Download one-page summary (PDF)</button></div><div class="two-col">
+    <div class="wrap page-body">${DIAGRAMS[g.key] ? `<div class="grp-actions"><button type="button" class="btn fill" data-grp-pdf="${esc(g.key)}">Download one-page summary (PDF)</button></div>` : ""}<div class="two-col">
       <div class="stack"><h2 class="h2">About the ${esc(g.short)}</h2>${g.description ? g.description.split(/\n\s*\n/).map(paraHtml).join("") : `<p class="empty">A description of the ${esc(g.name)} is coming soon.</p>`}</div>
       <div class="aside-box"><h2 class="h3">Members</h2>${(g.members || []).length ? `<div>${g.members.map(m => contactHtml({ ...m, role: [m.role, m.territory && (terrName(m.territory) || m.territory)].filter(Boolean).join(", ") })).join("")}</div>` : `<p class="empty">Members will be listed here.</p>`}</div>
     </div>${(g.key === "apsg" ? apsgPurpose() : "") + (DIAGRAMS[g.key] ? (pendingMaps.push(() => mountDiagram(g.key)), diagramHtml(g.key)) : "")}</div>`;
@@ -1183,138 +1183,172 @@ const loadScript = src => loadedJs[src] || (loadedJs[src] = new Promise((res, re
 const pdfSafe = t => String(t ?? "").replace(/[ ‑]/g, m => m === " " ? " " : "-").replace(/[‘’]/g, "'").replace(/[“”]/g, '"');
 const hexRgb = h => [1, 3, 5].map(i => parseInt(h.slice(i, i + 2), 16));
 const mixW = (h, a) => hexRgb(h).map(c => Math.round(c * a + 255 * (1 - a)));
-async function imgData(src) {
-  const im = new Image(); im.src = src; await im.decode();
-  const c = document.createElement("canvas"); c.width = im.naturalWidth; c.height = im.naturalHeight; c.getContext("2d").drawImage(im, 0, 0);
-  return { url: c.toDataURL("image/png"), w: im.naturalWidth, h: im.naturalHeight };
+// ---- PDF drawing: Archivo type, brand shapes, oval structure diagrams ----
+async function pdfFonts(doc) {
+  const b64 = async u => { const buf = await (await fetch(u)).arrayBuffer(); let s = ""; const a = new Uint8Array(buf); for (let i = 0; i < a.length; i += 0x8000) s += String.fromCharCode.apply(null, a.subarray(i, i + 0x8000)); return btoa(s); };
+  if (!pdfFonts.cache) pdfFonts.cache = Promise.all(["Regular", "SemiBold", "Display"].map(n => b64(`fonts/pdf/Archivo-${n}.ttf`)));
+  const [r, sb, d] = await pdfFonts.cache;
+  doc.addFileToVFS("Archivo-Regular.ttf", r); doc.addFont("Archivo-Regular.ttf", "Archivo", "normal");
+  doc.addFileToVFS("Archivo-SemiBold.ttf", sb); doc.addFont("Archivo-SemiBold.ttf", "Archivo", "bold");
+  doc.addFileToVFS("Archivo-Display.ttf", d); doc.addFont("Archivo-Display.ttf", "ArchivoX", "normal");
 }
-function pdfDiagram(doc, key, X, Y, W) {
-  const D = DIAGRAMS[key], L = D.layouts.wide, k = W / L.W, geo = dgGeo(D, L), P = (x, y) => [X + x * k, Y + y * k];
-  const pt = mm => mm * 2.835;   // mm to points for font sizes
-  // links
-  doc.setDrawColor(70, 70, 70); doc.setLineWidth(0.45); doc.setLineDashPattern([1.6, 1.3], 0);
-  const head = (x, y, ux, uy) => { const s = 2.2, px = -uy, py = ux; doc.setFillColor(70, 70, 70); doc.triangle(x, y, x - ux * s + px * s * .55, y - uy * s + py * s * .55, x - ux * s - px * s * .55, y - uy * s - py * s * .55, "F"); };
-  L.links.forEach(([a, b, type, extra, opt]) => {
-    if (opt === "hover") return;
-    const A = geo[a], B = geo[b], g2 = (typeof opt === "number" ? opt : 34);
-    if (type === "arrow") {
-      const dx = B.x - A.x, dy = B.y - A.y, len = Math.hypot(dx, dy), ux = dx / len, uy = dy / len;
-      const [x1, y1] = P(A.x + ux * (A.r + g2), A.y + uy * (A.r + g2)), [x2, y2] = P(B.x - ux * (B.r + g2), B.y - uy * (B.r + g2));
-      doc.line(x1, y1, x2, y2); doc.setLineDashPattern([], 0); head(x2, y2, ux, uy); head(x1, y1, -ux, -uy); doc.setLineDashPattern([1.6, 1.3], 0);
-    } else if (type === "curve") {
-      const t = 52 * Math.PI / 180, ra = A.r + g2, rb = B.r + g2;
-      const p0 = P(A.x + ra * Math.cos(t), A.y + ra * Math.sin(t)), q = P(L.W / 2, extra), p2 = P(B.x - rb * Math.cos(t), B.y + rb * Math.sin(t));
-      const c1 = [p0[0] + 2 / 3 * (q[0] - p0[0]), p0[1] + 2 / 3 * (q[1] - p0[1])], c2 = [p2[0] + 2 / 3 * (q[0] - p2[0]), p2[1] + 2 / 3 * (q[1] - p2[1])];
-      doc.lines([[c1[0] - p0[0], c1[1] - p0[1], c2[0] - p0[0], c2[1] - p0[1], p2[0] - p0[0], p2[1] - p0[1]]], p0[0], p0[1], [1, 1], "S");
-      doc.setLineDashPattern([], 0);
-      const e1 = [p2[0] - q[0], p2[1] - q[1]], l1 = Math.hypot(...e1), e0 = [p0[0] - q[0], p0[1] - q[1]], l0 = Math.hypot(...e0);
-      head(p2[0], p2[1], e1[0] / l1, e1[1] / l1); head(p0[0], p0[1], e0[0] / l0, e0[1] / l0); doc.setLineDashPattern([1.6, 1.3], 0);
-    }
+const imgCache = {};
+function imgData(src, white) {
+  const key = src + (white ? "|w" : "");
+  return imgCache[key] || (imgCache[key] = (async () => {
+    const im = new Image(); im.src = src; await im.decode();
+    const c = document.createElement("canvas"); c.width = im.naturalWidth; c.height = im.naturalHeight; const x = c.getContext("2d");
+    if (white) x.filter = "brightness(0) invert(1)";
+    x.drawImage(im, 0, 0);
+    return { url: c.toDataURL("image/png"), w: im.naturalWidth, h: im.naturalHeight };
+  })());
+}
+// brand shapes for each group's page: [element, white on the colour band?]
+const PDF_SHAPES = [
+  { band: ["g11-02", "g7-05", "g2-01"], foot: ["g11-01", "g8-05", "g6-08"] },      // ASC
+  { band: ["spe1-07", "spe1-06", "spe1-12"], foot: ["spe2-04", "sas1-13", "g11-01"] }, // APSG
+  { band: ["g8-03", "g7-06", "g2-06"], foot: ["g11-02", "g8-02", "g6-06"] },       // SOG
+  { band: ["g11-02", "g8-08", "g2-03"], foot: ["g7-01", "g11-05", "g8-04"] },      // FCG
+];
+// the structure diagram for the PDF: members as tiles in two columns either side of the group (left and right of the circle on the website),
+// each tied to the centre; linked bodies sit below with the same two-way arrows. Symmetric, so it sits evenly across the page. Returns its height.
+function pdfDiagram(doc, key, X, Y, W, vs = 1) {
+  const D = DIAGRAMS[key], L = D.layouts.wide, s = W / 180, ink = [70, 70, 70];   // vs: vertical squeeze so the page fits, keeping the full width
+  const center = D.nodes.find(n => n.kind === "center"), sides = D.nodes.filter(n => n.kind === "side");
+  const ang = n => (L.start + n.ring * 360 / L.n) * Math.PI / 180;
+  const ring = D.nodes.filter(n => !n.kind || n.kind === "ring");
+  const left = ring.filter(n => Math.sin(ang(n)) < 0).sort((a, b) => -Math.cos(ang(a)) - -Math.cos(ang(b)));
+  const right = ring.filter(n => Math.sin(ang(n)) >= 0).sort((a, b) => -Math.cos(ang(a)) - -Math.cos(ang(b)));
+  const rows = Math.max(left.length, right.length), pad = 4.5 * s * vs, tw = 58 * s, th = Math.max(6.6, 9.5 * s * vs), gap = Math.max(1.8, 2.8 * s * vs);
+  const innerH = rows * th + (rows - 1) * gap, frameH = innerH + 2 * pad;
+  const cw = W - 2 * 4.5 * s - 2 * tw - 2 * 9 * s, cxL = X + W / 2 - cw / 2;   // centre box
+  const head = (x, y, ux, uy) => { const h = 2.1 * s, w = 1.2 * s; doc.setFillColor(...ink); doc.triangle(x, y, x - ux * h - uy * w, y - uy * h + ux * w, x - ux * h + uy * w, y - uy * h - ux * w, "F"); };
+  const arrow = (x1, y1, x2, y2) => { const Ln = Math.hypot(x2 - x1, y2 - y1), ux = (x2 - x1) / Ln, uy = (y2 - y1) / Ln;
+    doc.setDrawColor(...ink); doc.setLineWidth(0.45 * s); doc.setLineDashPattern([1.5 * s, 1.2 * s], 0); doc.line(x1 + ux * 2, y1 + uy * 2, x2 - ux * 2, y2 - uy * 2); doc.setLineDashPattern([], 0);
+    head(x2, y2, ux, uy); head(x1, y1, -ux, -uy); };
+  const tile = (n, x, y, w, h) => {
+    doc.setFillColor(...hexRgb(n.bg)); doc.roundedRect(x, y, w, h, 2 * s, 2 * s, "F");
+    if (n.outline) { doc.setDrawColor(0, 0, 0); doc.setLineWidth(0.4 * s); doc.roundedRect(x, y, w, h, 2 * s, 2 * s, "S"); }
+    if (n.br) { doc.setDrawColor(...(n.outline ? [0, 0, 0] : hexRgb(n.bg))); doc.setLineWidth(0.35 * s); doc.setLineDashPattern([0.9 * s, 0.7 * s], 0); doc.roundedRect(x - 1 * s, y - 1 * s, w + 2 * s, h + 2 * s, 2.6 * s, 2.6 * s, "S"); doc.setLineDashPattern([], 0); }
+    doc.setTextColor(...(n.ink === "#000" ? [0, 0, 0] : [255, 255, 255]));
+    // one line: the role in bold, its detail in regular, centred together
+    const lab = pdfSafe(n.label).replace(/\s+/g, " "), sub = pdfSafe(n.sub || "").replace(/\s+/g, " ");
+    let fs = 7.6 * s; const widthAt = f => { doc.setFont("Archivo", "bold"); doc.setFontSize(f); const a = doc.getTextWidth(lab + (sub ? "  " : "")); doc.setFont("Archivo", "normal"); doc.setFontSize(f * .86); return [a, sub ? doc.getTextWidth(sub) : 0]; };
+    let [wa, wb] = widthAt(fs); while (wa + wb > w - 5 * s && fs > 5 * s) { fs -= 0.2 * s; [wa, wb] = widthAt(fs); }
+    const x0 = x + (w - wa - wb) / 2, ty = y + h / 2 + fs * 0.12;
+    doc.setFont("Archivo", "bold"); doc.setFontSize(fs); doc.text(lab, x0, ty);
+    if (sub) { doc.setFont("Archivo", "normal"); doc.setFontSize(fs * .86); doc.text(sub, x0 + wa, ty); }
+  };
+  // the group's frame
+  doc.setFillColor(...mixW(D.color, .08)); doc.setDrawColor(...mixW(D.color, .32)); doc.setLineWidth(0.6 * s); doc.roundedRect(X, Y, W, frameH, 5 * s, 5 * s, "FD");
+  // centre box with the acronym
+  doc.setFillColor(255, 255, 255); doc.setDrawColor(...mixW(D.color, .32)); doc.roundedRect(cxL, Y + pad, cw, innerH, 4 * s, 4 * s, "FD");
+  doc.setFont("ArchivoX", "normal"); doc.setTextColor(...hexRgb(D.color)); let fs = 30 * s; doc.setFontSize(fs);
+  const tw2 = doc.getTextWidth(pdfSafe(center.label)); if (tw2 > cw - 8 * s) { fs *= (cw - 8 * s) / tw2; doc.setFontSize(fs); }
+  const cy = Y + pad + innerH / 2; doc.text(pdfSafe(center.label), X + W / 2, cy + fs * 0.12, { align: "center" });
+  doc.setFont("Archivo", "normal"); doc.setTextColor(70, 70, 70); doc.setFontSize(6.8 * s);
+  doc.text(doc.splitTextToSize(pdfSafe(center.sub), cw - 8 * s), X + W / 2, cy + fs * 0.12 + 5 * s, { align: "center" });
+  // member tiles, each tied to the centre
+  const colY = k => Y + pad + k * (th + gap);
+  [[left, X + 4.5 * s, cxL], [right, X + W - 4.5 * s - tw, cxL + cw]].forEach(([list, tx, edge]) => {
+    const off = (rows - list.length) * (th + gap) / 2;
+    list.forEach((n, k) => { const ty = colY(k) + off, my = ty + th / 2, fromX = tx < edge ? tx + tw : tx;
+      doc.setDrawColor(...mixW(D.color, .45)); doc.setLineWidth(0.4 * s); doc.line(fromX, my, edge, my); doc.setFillColor(...mixW(D.color, .45)); doc.circle(edge, my, 0.8 * s, "F");
+      tile(n, tx, ty, tw, th); });
   });
-  doc.setLineDashPattern([], 0);
-  // circles
-  D.nodes.forEach(n => {
-    const g = geo[n.id]; if (g.w) return;
-    const [cx, cy] = P(g.x, g.y), r = g.r * k;
-    if (n.kind === "center") {
-      doc.setFillColor(...mixW(D.color, .09)); doc.setDrawColor(...mixW(D.color, .3)); doc.setLineWidth(0.6); doc.circle(cx, cy, r, "FD");
-      doc.setFont("helvetica", "bold"); doc.setTextColor(...hexRgb(D.color)); let fs = pt(r * 0.3); doc.setFontSize(fs);
-      const tw = doc.getTextWidth(pdfSafe(n.label)); if (tw > r * 0.78) { fs *= r * 0.78 / tw; doc.setFontSize(fs); }
-      doc.text(pdfSafe(n.label), cx, cy + r * 0.08, { align: "center" });
-      doc.setFont("helvetica", "normal"); doc.setTextColor(70, 70, 70); doc.setFontSize(pt(r * 0.055));
-      doc.text(doc.splitTextToSize(pdfSafe(n.sub), r * 0.8), cx, cy + r * 0.22, { align: "center" });
-      return;
-    }
-    doc.setFillColor(...hexRgb(n.bg)); doc.setDrawColor(255, 255, 255); doc.setLineWidth(0.5); doc.circle(cx, cy, r, "FD");
-    if (n.outline) { doc.setDrawColor(0, 0, 0); doc.setLineWidth(0.4); doc.circle(cx, cy, r, "S"); }
-    if (n.br) { doc.setDrawColor(...(n.outline ? [0, 0, 0] : hexRgb(n.bg))); doc.setLineWidth(0.35); doc.setLineDashPattern([0.9, 0.7], 0); doc.circle(cx, cy, r + 1.1, "S"); doc.setLineDashPattern([], 0); }
-    const ink = n.ink === "#000" ? [0, 0, 0] : [255, 255, 255]; doc.setTextColor(...ink);
-    const fs = pt(r * (n.kind === "side" ? 0.2 : 0.25)), subFs = fs * 0.82;
-    doc.setFont("helvetica", n.br ? "bolditalic" : "bold"); doc.setFontSize(fs);
-    const lab = doc.splitTextToSize(pdfSafe(n.label), r * 1.62), lh = fs / 2.835 * 1.12;
-    doc.setFont("helvetica", n.br ? "italic" : "normal"); doc.setFontSize(subFs);
-    const sub = n.sub ? doc.splitTextToSize(pdfSafe(n.sub), r * 1.62) : [], slh = subFs / 2.835 * 1.15;
-    doc.setFont("helvetica", n.br ? "bolditalic" : "bold"); doc.setFontSize(fs);
-    let ty = cy - (lab.length * lh + sub.length * slh) / 2 + lh * 0.8;
-    lab.forEach(line => { doc.text(line, cx, ty, { align: "center" }); ty += lh; });
-    doc.setFont("helvetica", n.br ? "italic" : "normal"); doc.setFontSize(subFs);
-    sub.forEach(line => { doc.text(line, cx, ty, { align: "center" }); ty += slh; });
-  });
-  return L.H * k;
+  // linked bodies below the frame
+  const bw = 54 * s, bh = 12.5 * s * Math.max(vs, .85), by = Y + frameH + 11 * s * vs;
+  if (sides.length === 1) { const bx = X + W / 2 - bw / 2; arrow(X + W / 2, Y + frameH, X + W / 2, by); tile(sides[0], bx, by, bw, bh); }
+  else if (sides.length >= 2) {
+    const bxL = X + 4.5 * s, bxR = X + W - 4.5 * s - bw;
+    arrow(bxL + bw / 2, Y + frameH, bxL + bw / 2, by); arrow(bxR + bw / 2, Y + frameH, bxR + bw / 2, by);
+    arrow(bxL + bw, by + bh / 2, bxR, by + bh / 2);
+    tile(sides[0], bxL, by, bw, bh); tile(sides[1], bxR, by, bw, bh);
+  }
+  return (sides.length ? by + bh : Y + frameH) - Y + 2 * s;
 }
 async function groupPDF(key, btn) {
   const gs = data.groups || [], i = gs.findIndex(x => x.key === key), g = gs[i]; if (!g) return;
   const label = btn.textContent; btn.disabled = true; btn.textContent = "Preparing…";
   try {
     await loadScript("vendor/jspdf.umd.min.js");
-    const { jsPDF } = window.jspdf, logo = await imgData("brand/fullname-h-pdf.png").catch(() => null);
-    const col = GBG[i % 4], onCol = i % 4 === 2 ? [0, 0, 0] : [255, 255, 255];
+    const { jsPDF } = window.jspdf, gi = i % 4, col = GBG[gi], dark = gi === 2, onCol = dark ? [0, 0, 0] : [255, 255, 255];
+    const accent = dark ? [138, 109, 0] : hexRgb(col), sh = PDF_SHAPES[gi];
+    const [logo, ...pics] = await Promise.all([imgData("brand/fullname-h-pdf.png"), ...sh.band.map(n => imgData(`brand/el/${n}.webp`, !dark)), ...sh.foot.map(n => imgData(`brand/el/${n}.webp`))].map(p => p.catch(() => null)));
+    const bandPics = pics.slice(0, 3), footPics = pics.slice(3);
     const paras = (g.description || "").split(/\n\s*\n/).map(t => t.trim()).filter(Boolean).map(t => { const m = t.match(/^([A-Z][^:]{2,40}):\s+([\s\S]+)$/); return m ? { h: m[1], t: m[2].charAt(0).toUpperCase() + m[2].slice(1) } : { t }; });
-    const build = (sc, dW) => {
-      const doc = new jsPDF({ unit: "mm", format: "a4" }), M = 15, PW = 210, CW = PW - 2 * M;
-      let y = 12;
-      if (logo) { const lw = 78; doc.addImage(logo.url, "PNG", M, y, lw, lw * logo.h / logo.w); }
-      doc.setFont("helvetica", "normal"); doc.setFontSize(8); doc.setTextColor(120, 120, 115);
-      doc.text(pdfSafe(`Summary as of ${new Date().toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })}`), PW - M, y + 5, { align: "right" });
-      y += 18;
-      // coloured band with the group's name
-      doc.setFillColor(...hexRgb(col)); doc.roundedRect(M, y, CW, 26, 4, 4, "F");
-      doc.setTextColor(...onCol); doc.setFont("helvetica", "bold"); doc.setFontSize(30); doc.text(pdfSafe(g.short), M + 7, y + 15.5);
-      const sw = doc.getTextWidth(pdfSafe(g.short)); doc.setFontSize(13); doc.setFont("helvetica", "normal");
-      doc.text(doc.splitTextToSize(pdfSafe(g.name), CW - sw - 22), M + 7 + sw + 6, y + 14.5);
-      y += 34;
-      const para = (t, size, color = [40, 40, 38], font = "normal", w = CW, x = M) => { doc.setFont("helvetica", font); doc.setFontSize(size * sc); doc.setTextColor(...color);
-        const lines = doc.splitTextToSize(pdfSafe(t), w); doc.text(lines, x, y, { lineHeightFactor: 1.38 }); y += lines.length * size * sc * 0.3528 * 1.38; };
-      const headH = t => { doc.setFont("helvetica", "bold"); doc.setFontSize(10.5 * sc); doc.setTextColor(...hexRgb(i % 4 === 2 ? "#8a6d00" : col)); doc.text(pdfSafe(t), M, y); y += 5 * sc; };
-      paras.forEach((p, n) => { if (p.h) headH(p.h); para(p.t, n === 0 && !p.h ? 11.5 : 9.6, n === 0 && !p.h ? [20, 20, 20] : [55, 55, 52]); y += 3.2 * sc; });
+    const pic = (doc, im, x, y, w, rot = 0) => { if (im) doc.addImage(im.url, "PNG", x, y, w, w * im.h / im.w, undefined, "FAST", rot); };
+    const build = async (sc, dW) => {
+      const doc = new jsPDF({ unit: "mm", format: "a4" }); await pdfFonts(doc);
+      const M = 15, PW = 210, CW = PW - 2 * M;
+      // tagline colours across the top edge
+      [[10, 132, 255], [245, 196, 0], [225, 75, 30]].forEach((c, k) => { doc.setFillColor(...c); doc.rect(k * PW / 3, 0, PW / 3 + 0.2, 2.2, "F"); });
+      let y = 11;
+      if (logo) doc.addImage(logo.url, "PNG", M, y, 70, 70 * logo.h / logo.w);
+      doc.setFont("Archivo", "normal"); doc.setFontSize(8); doc.setTextColor(120, 120, 115);
+      doc.text(pdfSafe(`Summary as of ${new Date().toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })}`), PW - M, y + 4.5, { align: "right" });
+      y += 15;
+      // colour band: big acronym, full name, brand shapes
+      const bh = 34; doc.setFillColor(...hexRgb(col)); doc.roundedRect(M, y, CW, bh, 5, 5, "F");
+      pic(doc, bandPics[0], M + CW - 40, y - 7, 34); pic(doc, bandPics[1], M + CW - 62, y + bh - 15, 14); pic(doc, bandPics[2], M + CW - 76, y + 5, 8);
+      doc.setTextColor(...onCol); doc.setFont("ArchivoX", "normal"); doc.setFontSize(44); doc.text(pdfSafe(g.short), M + 8, y + 21.5);
+      doc.setFont("Archivo", "bold"); doc.setFontSize(12.5); doc.text(doc.splitTextToSize(pdfSafe(g.name), CW - 90), M + 8, y + 28.5);
+      y += bh + 9;
+      const para = (t, size, color = [55, 55, 52], font = "normal", w = CW, x = M) => { doc.setFont("Archivo", font); doc.setFontSize(size * sc); doc.setTextColor(...color);
+        const lines = doc.splitTextToSize(pdfSafe(t), w); doc.text(lines, x, y, { lineHeightFactor: 1.4 }); y += lines.length * size * sc * 0.3528 * 1.4; };
+      const headH = t => { doc.setFont("Archivo", "bold"); doc.setFontSize(10.6 * sc); doc.setTextColor(...accent); doc.text(pdfSafe(t), M, y); y += 5 * sc; };
+      paras.forEach((p, n) => { if (p.h) headH(p.h); para(p.t, n === 0 && !p.h ? 11.6 : 9.5, n === 0 && !p.h ? [20, 20, 20] : [55, 55, 52]); y += 3.4 * sc; });
       if (key === "apsg") {
-        headH("Purpose"); para("To guide, support, bring together and quality-assure a coherent, values-based Asia Pacific Community Development Strategy, through a collaborative, bottom-up regional process.", 9.6, [55, 55, 52]); y += 3.2 * sc;
-        headH("Mandate: the APSG makes sure the regional strategy"); APSG_MANDATE.forEach((m, n) => { const yy = y; doc.setFont("helvetica", "bold"); doc.setFontSize(9.6 * sc); doc.setTextColor(...hexRgb(col)); doc.text(String(n + 1), M, yy); para(m, 9.6, [55, 55, 52], "normal", CW - 6, M + 6); y += 0.8 * sc; });
-        y += 2.4 * sc;
+        headH("Purpose"); para("To guide, support, bring together and quality-assure a coherent, values-based Asia Pacific Community Development Strategy, through a collaborative, bottom-up regional process.", 9.5); y += 3.4 * sc;
+        headH("Mandate: the APSG makes sure the regional strategy");
+        APSG_MANDATE.forEach((m, n) => { doc.setFont("ArchivoX", "normal"); doc.setFontSize(9.5 * sc); doc.setTextColor(...accent); doc.text(String(n + 1), M, y); para(m, 9.5, [55, 55, 52], "normal", CW - 6, M + 6); y += 0.8 * sc; });
+        y += 2.6 * sc;
       }
       if ((g.members || []).length) {
         headH("Members");
-        g.members.forEach(m => para([[m.rank, m.name].filter(Boolean).join(" "), m.role, m.territory && (terrName(m.territory) || m.territory), m.email].filter(Boolean).join(", "), 9.2, [55, 55, 52]));
+        g.members.forEach(m => para([[m.rank, m.name].filter(Boolean).join(" "), m.role, m.territory && (terrName(m.territory) || m.territory), m.email].filter(Boolean).join(", "), 9.2));
         y += 3 * sc;
       }
       if (DIAGRAMS[key]) {
-        headH(DIAGRAMS[key].heading); y += 2;
-        const L = DIAGRAMS[key].layouts.wide, h = dW * L.H / L.W;
-        pdfDiagram(doc, key, M + (CW - dW) / 2, y, dW); y += h + 2;
-        para(DIAGRAMS[key].note.replace(/^Hover[^.]*\.\s*/, ""), 7.8, [120, 120, 115]);
+        const DD = DIAGRAMS[key];
+        headH(DD.heading); y += 3;
+        y += pdfDiagram(doc, key, M, y, CW, dW) + 1;
+        para(DD.note.replace(/^Hover[^.]*\.\s*/, ""), 7.6, [120, 120, 115]);
         y += 3 * sc; headH(key === "asc" ? "Roles and links to the groups" : "Roles and links"); y += 1;
-        // merge roles that share the same wording (for example the four CWG leads)
         const roles = [];
-        DIAGRAMS[key].nodes.filter(n => n.kind !== "center").forEach(n => {
+        DD.nodes.filter(n => n.kind !== "center").forEach(n => {
           const k2 = (n.gText || n.text || "") + "|" + (n.how || ""), same = roles.find(r => r.k === k2);
           if (same) { same.titles.push(n.title); same.text = n.gText || n.text; same.toTitle = n.gTo || n.toTitle; }
           else roles.push({ k: k2, titles: [n.title], text: n.text, how: n.how, toTitle: n.toTitle, color: n.bg });
         });
         const join = a => a.length < 2 ? a[0] : a.slice(0, -1).join(", ") + " and " + a[a.length - 1];
         const merged = r => r.titles.length < 2 ? r.titles[0] : join(r.titles.map((t, n) => n === r.titles.length - 1 ? t : t.replace(/ (CWG|Cluster Working Group) (lead|representative)$/, ""))).replace(/ (lead|representative)$/, " $1s");
-        const gap = 6, colW = (CW - gap) / 2, ys = [y, y], fsz = 7.7 * sc, lhm = fsz * 0.3528 * 1.32;
+        const gap = 7, colW = (CW - gap) / 2, ys = [y, y], fsz = 7.7 * sc, lhm = fsz * 0.3528 * 1.34;
         roles.forEach(r => {
           const c = ys[0] <= ys[1] ? 0 : 1, x = M + c * (colW + gap); let yy = ys[c];
           doc.setFillColor(...hexRgb(r.color && r.color !== "#ffffff" ? r.color : "#24215f")); doc.circle(x + 1.3, yy - 1.1, 1.3, "F");
-          doc.setFont("helvetica", "bold"); doc.setFontSize(fsz); doc.setTextColor(25, 25, 25);
-          const tl = doc.splitTextToSize(pdfSafe(merged(r)), colW - 4); doc.text(tl, x + 4, yy, { lineHeightFactor: 1.32 }); yy += tl.length * lhm;
-          doc.setFont("helvetica", "normal"); doc.setTextColor(60, 60, 58);
-          const bl = doc.splitTextToSize(pdfSafe(r.text), colW - 4); doc.text(bl, x + 4, yy, { lineHeightFactor: 1.32 }); yy += bl.length * lhm;
-          if (r.how) { doc.setFont("helvetica", "italic"); doc.setTextColor(90, 90, 86);
-            const hl = doc.splitTextToSize(pdfSafe(`Link to the ${r.toTitle}: ${r.how}`), colW - 4); doc.text(hl, x + 4, yy, { lineHeightFactor: 1.32 }); yy += hl.length * lhm; }
+          doc.setFont("Archivo", "bold"); doc.setFontSize(fsz); doc.setTextColor(25, 25, 25);
+          const tl = doc.splitTextToSize(pdfSafe(merged(r)), colW - 4); doc.text(tl, x + 4, yy, { lineHeightFactor: 1.34 }); yy += tl.length * lhm;
+          doc.setFont("Archivo", "normal"); doc.setTextColor(60, 60, 58);
+          const bl = doc.splitTextToSize(pdfSafe(r.text), colW - 4); doc.text(bl, x + 4, yy, { lineHeightFactor: 1.34 }); yy += bl.length * lhm;
+          if (r.how) { doc.setTextColor(...accent);
+            const hl = doc.splitTextToSize(pdfSafe(`Link to the ${r.toTitle}: ${r.how}`), colW - 4); doc.text(hl, x + 4, yy, { lineHeightFactor: 1.34 }); yy += hl.length * lhm; }
           ys[c] = yy + 2.6 * sc;
         });
         y = Math.max(...ys);
       }
-      // footer
+      // footer: brand shapes, then the programme line and the page link
+      pic(doc, footPics[0], PW - M - 15, 266, 12, 12); pic(doc, footPics[1], PW - M - 31, 271, 13); pic(doc, footPics[2], PW - M - 40, 268, 6);
       doc.setDrawColor(225, 224, 220); doc.setLineWidth(0.3); doc.line(M, 284, PW - M, 284);
-      doc.setFont("helvetica", "normal"); doc.setFontSize(7.5); doc.setTextColor(120, 120, 115);
-      doc.text("Asia-Pacific Sharing & Learning Programme, The Salvation Army", M, 289); doc.text(SITE_URL + "#/group/" + key, PW - M, 289, { align: "right" });
+      doc.setFont("Archivo", "bold"); doc.setFontSize(7.6); doc.setTextColor(10, 132, 255); doc.text("LISTEN.", M, 289);
+      let fx = M + doc.getTextWidth("LISTEN. "); doc.setTextColor(200, 160, 0); doc.text("LEARN.", fx, 289); fx += doc.getTextWidth("LEARN. "); doc.setTextColor(225, 75, 30); doc.text("LEAD.", fx, 289);
+      doc.setFont("Archivo", "normal"); doc.setTextColor(120, 120, 115); doc.text("The Salvation Army", fx + doc.getTextWidth("LEAD.  "), 289);
+      doc.text(SITE_URL.replace(/^https:\/\//, "") + "#/group/" + key, PW - M, 289, { align: "right" });
       return { doc, y };
     };
-    // shrink text and diagram until everything fits on one page
+    // shrink text and diagram until everything fits on one page (clear of the footer shapes)
     let out;
-    for (const [sc, dW] of [[1, 150], [1, 132], [.95, 120], [.92, 108], [.88, 98], [.85, 90], [.82, 84], [.78, 78], [.74, 72], [.7, 66]]) { out = build(sc, dW); if (out.y <= 280) break; }
+    for (const [sc, dW] of [[1, 1], [1, .9], [.97, .82], [.94, .76], [.91, .72], [.88, .68], [.85, .64], [.82, .6], [.78, .58], [.74, .56]]) { out = await build(sc, dW); if (out.y <= 263) break; }
     out.doc.save(`ASLP_${g.short}_summary.pdf`);
   } catch (e) { console.error(e); alert("The PDF couldn't be made. Please try again."); }
   btn.disabled = false; btn.textContent = label;
