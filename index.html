@@ -844,14 +844,14 @@ const APSG_NODES = [
     text: "One Chief Secretary represents territorial leadership in the APSG, one at a time, rotating across the zones." },
   { id: "asc", label: "ASLP Steering Committee", sub: "ASC", side: "l", bg: "#e14b1e", title: "ASLP Steering Committee (ASC)",
     text: "The APSG shares its minutes with the ASC. The ASC helps when delays fall outside the APSG's control, receives dissenting views where needed and can ask for the ToR to be reviewed.", link: ["#/group/asc", "About the ASLP Steering Committee"] },
-  { id: "tf", label: "ASLF 2027", sub: "Task Force", side: "r", bg: "#ffffff", ink: "#000", br: true, title: "ASLF 2027 Task Force",
+  { id: "tf", label: "ASLF 2027", sub: "Task\u00a0Force", side: "r", bg: "#ffffff", ink: "#000", br: true, title: "ASLF 2027 Task Force",
     text: "The APSG helps the Task Force prepare the strategy session at the Asia-Pacific Sharing and Learning Forum 2027, where the draft Asia Pacific Community Development Strategy is presented for endorsement." },
 ];
 APSG_NODES.forEach(n => { if (n.cwg) { n.title = `${n.cwg} CWG representative`; n.text = `An experienced or emerging Development Officer, nominated by the ${n.cwg} CWG lead. Brings the CWG's territories' perspectives to the APSG and represents the CWG accurately and objectively.`; n.link = [`#/cwg/${cwgSlug(n.cwg)}`, `About ${n.cwg}`]; } });
 // two layouts in stage units: wide screens and phones
 const APSG_LAYOUT = {
-  wide: { W: 1100, H: 700, c: [550, 300, 292], ring: 196, d: 136, l: [128, 560, 120], r: [972, 560, 120], bar: 670, fs: 1.6, cfs: 5 },
-  narrow: { W: 400, H: 760, c: [200, 238, 196], ring: 134, d: 94, l: [96, 636, 88], r: [304, 636, 88], bar: null, fs: 3.1, cfs: 10.5 },
+  wide: { W: 1100, H: 790, c: [550, 300, 292], ring: 196, d: 136, l: [112, 600, 110], r: [988, 600, 110], bar: 850, fs: 1.6, cfs: 5 },
+  narrow: { W: 400, H: 760, c: [200, 238, 196], ring: 134, d: 94, l: [84, 636, 76], r: [316, 636, 76], bar: null, fs: 3.1, cfs: 10.5 },
 };
 function apsgStructure() {
   return `<section class="apsg-wrap" aria-labelledby="apsg-st-h">
@@ -890,15 +890,19 @@ function apsgLayout() {
     else if (n.side) { const s = n.side === "l" ? L.l : L.r; place(el, s[0], s[1], s[2] * 2); }
     else { const a = (-22.5 + n.ring * 45) * Math.PI / 180; place(el, L.c[0] + L.ring * Math.sin(a), L.c[1] - L.ring * Math.cos(a), L.d); }
   });
-  // two-way dashed arrows between circles
-  const edge = (a, b, ra, rb, gap = 14) => { const dx = b[0] - a[0], dy = b[1] - a[1], len = Math.hypot(dx, dy), ux = dx / len, uy = dy / len;
-    return [a[0] + ux * (ra + gap), a[1] + uy * (ra + gap), b[0] - ux * (rb + gap), b[1] - uy * (rb + gap)]; };
-  const lines = [edge(L.l, L.c, L.l[2], L.c[2]), edge(L.r, L.c, L.r[2], L.c[2])];
-  if (L.bar) { const dy = L.bar - L.l[1], dx = Math.sqrt(Math.max(0, L.l[2] ** 2 - dy ** 2)); lines.push([L.l[0] + dx + 16, L.bar, L.r[0] - dx - 16, L.bar]); }
-  else lines.push([L.l[0] + L.l[2] + 6, L.l[1], L.r[0] - L.r[2] - 6, L.r[1]]);
+  // two-way dashed arrows between circles, kept clear of the dashed rings and of a circle that grows on hover
+  const g = L.W > 600 ? 34 : 18;
+  const edge = (a, b, ra, rb) => { const dx = b[0] - a[0], dy = b[1] - a[1], len = Math.hypot(dx, dy), ux = dx / len, uy = dy / len;
+    return `M${a[0] + ux * (ra + g)} ${a[1] + uy * (ra + g)} L${b[0] - ux * (rb + g)} ${b[1] - uy * (rb + g)}`; };
+  const paths = [edge(L.l, L.c, L.l[2], L.c[2]), edge(L.r, L.c, L.r[2], L.c[2])];
+  if (L.bar) { // a gentle curve under the APSG circle, from the ASC to the Task Force
+    const a = 52 * Math.PI / 180, rl = L.l[2] + g, rr = L.r[2] + g;
+    const x1 = L.l[0] + rl * Math.cos(a), y1 = L.l[1] + rl * Math.sin(a), x2 = L.r[0] - rr * Math.cos(a), y2 = L.r[1] + rr * Math.sin(a);
+    paths.push(`M${x1} ${y1} Q${L.W / 2} ${L.bar} ${x2} ${y2}`);
+  } else paths.push(`M${L.l[0] + L.l[2] + g} ${L.l[1]} L${L.r[0] - L.r[2] - g} ${L.r[1]}`);
   const svg = $("apsg-lines"); svg.setAttribute("viewBox", `0 0 ${L.W} ${L.H}`);
   svg.innerHTML = `<defs><marker id="ah" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="${L.W > 600 ? 7 : 5}" markerHeight="${L.W > 600 ? 7 : 5}" orient="auto-start-reverse"><path d="M0 0 10 5 0 10z" fill="currentColor"/></marker></defs>` +
-    lines.map(([x1, y1, x2, y2]) => `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="currentColor" stroke-width="${L.W > 600 ? 3 : 2.4}" stroke-dasharray="9 8" marker-start="url(#ah)" marker-end="url(#ah)"/>`).join("");
+    paths.map(d => `<path d="${d}" fill="none" stroke="currentColor" stroke-width="${L.W > 600 ? 3 : 2.4}" stroke-dasharray="9 8" marker-start="url(#ah)" marker-end="url(#ah)"/>`).join("");
 }
 function mountApsg() {
   const st = $("apsg-stage"); if (!st) return;
