@@ -372,7 +372,7 @@
   .apsg-grid { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: var(--g5); align-items: center; margin-top: var(--g2); }
   @media (max-width: 1000px) { .apsg-grid { grid-template-columns: 1fr; } }
   .apsg-stage { position: relative; container-type: inline-size; width: 100%; color: var(--ink-2); }
-  .apsg-lines { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+  .apsg-lines { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; z-index: 1; }
   .apsg-node { position: absolute; border-radius: 50%; transform: translate(-50%, -50%) scale(var(--z, 1)); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: .15em;
     border: 0; padding: 6%; background: var(--bg); color: var(--fg); font-family: var(--font); line-height: 1.12; text-align: center; cursor: pointer; z-index: 2;
     box-shadow: 0 0 0 .3cqw var(--paper); transition: transform .35s cubic-bezier(.2,.8,.2,1), opacity .3s, box-shadow .3s; }
@@ -381,13 +381,16 @@
   .apsg-node.is-center .ns { color: var(--ink-2); }
   .apsg-node.is-br .nl, .apsg-node.is-br .ns { font-style: italic; }
   .apsg-node.is-br { outline: .3cqw dashed var(--bg); outline-offset: .55cqw; }
-  .apsg-node[data-node="tf"] { outline-color: #000; border: .25cqw solid #000; }
+  .apsg-node.is-outline { outline-color: #000; border: .25cqw solid #000; }
+  .apsg-node.is-pill { border-radius: 999px; padding: 0 4%; }
+  .apsg-node.is-pill .ns { font-size: .78em; }
   .apsg-node.is-side .nl { font-size: 1.2em; }
-  .apsg-node.is-center { z-index: 1; cursor: default; background: color-mix(in srgb, #005fc0 10%, var(--paper)); color: var(--ink); box-shadow: inset 0 0 0 .35cqw color-mix(in srgb, #005fc0 30%, var(--paper)); justify-content: center; padding: 22%; }
-  .apsg-node.is-center .nl { font-weight: 900; font-stretch: 115%; letter-spacing: -.04em; color: #005fc0; line-height: .9; }
-  .apsg-node.is-center .ns { font-size: .26em; font-weight: 650; font-style: normal; max-width: 12em; margin-top: .4em; }
-  @media (prefers-color-scheme: dark) { :root:where(:not([data-theme="light"])) .apsg-node.is-center .nl { color: #5b9cf0; } :root:where(:not([data-theme="light"])) .apsg-node[data-node="tf"] { border-color: #fff; outline-color: #fff; } }
-  :root[data-theme="dark"] .apsg-node.is-center .nl { color: #5b9cf0; } :root[data-theme="dark"] .apsg-node[data-node="tf"] { border-color: #fff; outline-color: #fff; }
+  .apsg-node.is-center { z-index: 0; cursor: default; background: color-mix(in srgb, var(--dc) 9%, var(--paper)); color: var(--ink); box-shadow: inset 0 0 0 .35cqw color-mix(in srgb, var(--dc) 28%, var(--paper)); padding: 0; display: block; }
+  /* the acronym sits exactly at the centre; the full name hangs just below it */
+  .apsg-node.is-center .nl { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); font-weight: 900; font-stretch: 115%; letter-spacing: -.04em; color: var(--dc); line-height: 1; white-space: nowrap; }
+  .apsg-node.is-center .ns { position: absolute; left: 50%; top: calc(50% + 2.3em); transform: translateX(-50%); font-size: .26em; font-weight: 650; font-style: normal; width: 9.5em; line-height: 1.25; }
+  @media (prefers-color-scheme: dark) { :root:where(:not([data-theme="light"])) .apsg-node.is-center .nl { color: var(--dcd); } :root:where(:not([data-theme="light"])) .apsg-node.is-outline { border-color: #fff; outline-color: #fff; } }
+  :root[data-theme="dark"] .apsg-node.is-center .nl { color: var(--dcd); } :root[data-theme="dark"] .apsg-node.is-outline { border-color: #fff; outline-color: #fff; }
   /* zoom: the circle you point at grows, the rest step back */
   @media (hover: hover) {
     .apsg-stage:has(.apsg-node:not(.is-center):hover) .apsg-node:not(.is-center):not(:hover) { --z: .9; opacity: .5; }
@@ -826,95 +829,160 @@ function pageGroups() {
     <div class="wrap page-body"><div class="grp-grid">${(data.groups || []).map((g, i) => `<a class="grp-card ${GCLS[i % 4]}" href="#/group/${esc(g.key)}">${decor(GSHAPES[i % 4])}<b>${esc(g.short)}</b><div class="gn">${esc(g.name)}</div>
       ${g.description ? `<div class="gd">${esc(g.description.split(/\n/)[0])}</div>` : ""}</a>`).join("")}</div></div>`;
 }
-// ---- APSG: structure diagram + Terms of Reference (approved ToR, effective July 2026 – December 2027) ----
-const APSG_NODES = [
-  { id: "apsg", label: "APSG", sub: "Asia and the Pacific Strategy Group", center: true,
-    title: "Asia and the Pacific Strategy Group (APSG)", text: "Guides, supports, brings together and quality-assures the Asia Pacific Community Development Strategy. The strategy is built from the bottom up, from territories' approved strategies and the thematic priorities their CWGs have verified." },
-  { id: "co-spea", label: "ASLP Coordinator", sub: "SPEA", ring: 0, bg: "#c0391e", br: true, title: "ASLP Coordinator, SPEA",
-    text: "Chairs the APSG with the South Asia coordinator. One coordinator leads on strategic direction and synthesis; the other leads on coordination and documentation. Together they keep deliverables to the agreed timeline." },
-  { id: "co-sasia", label: "ASLP Coordinator", sub: "SASIA", ring: 1, bg: "#c0391e", title: "ASLP Coordinator, South Asia",
-    text: "Chairs the APSG with the SPEA coordinator: sets agendas, follows milestones, represents the APSG within ASLP, leads the synthesis work and makes sure meetings, decisions and outputs are documented." },
-  { id: "sog", label: "SOG", sub: "Representative", ring: 2, bg: "#f5c400", ink: "#000", title: "Support Office Group representative",
-    text: "One Support Office representative with a focus on monitoring, evaluation, accountability and learning (MEAL), nominated by the ASC Chair.", link: ["#/group/sog", "About the Support Office Group"] },
-  { id: "spea2", label: "SPEA\u00a02", sub: "CWG rep.", ring: 3, bg: "#2e6be0", cwg: "SPEA 2" },
-  { id: "spea1", label: "SPEA\u00a01", sub: "CWG rep.", ring: 4, bg: "#188afd", cwg: "SPEA 1" },
-  { id: "sasia2", label: "SASIA\u00a02", sub: "CWG rep.", ring: 5, bg: "#ff8228", ink: "#000", cwg: "SASIA 2" },
-  { id: "sasia1", label: "SASIA\u00a01", sub: "CWG rep.", ring: 6, bg: "#fe6809", ink: "#000", cwg: "SASIA 1" },
-  { id: "cs", label: "Chief Secretary", sub: "Rotating", ring: 7, bg: "#24215f", br: true, title: "Rotating Chief Secretary representative",
-    text: "One Chief Secretary represents territorial leadership in the APSG, one at a time, rotating across the zones." },
-  { id: "asc", label: "ASLP Steering Committee", sub: "ASC", side: "l", bg: "#e14b1e", title: "ASLP Steering Committee (ASC)",
-    text: "The APSG shares its minutes with the ASC. The ASC helps when delays fall outside the APSG's control, receives dissenting views where needed and can ask for the ToR to be reviewed.", link: ["#/group/asc", "About the ASLP Steering Committee"] },
-  { id: "tf", label: "ASLF 2027", sub: "Task\u00a0Force", side: "r", bg: "#ffffff", ink: "#000", br: true, title: "ASLF 2027 Task Force",
-    text: "The APSG helps the Task Force prepare the strategy session at the Asia-Pacific Sharing and Learning Forum 2027, where the draft Asia Pacific Community Development Strategy is presented for endorsement." },
-];
-APSG_NODES.forEach(n => { if (n.cwg) { n.title = `${n.cwg} CWG representative`; n.text = `An experienced or emerging Development Officer, nominated by the ${n.cwg} CWG lead. Brings the CWG's territories' perspectives to the APSG and represents the CWG accurately and objectively.`; n.link = [`#/cwg/${cwgSlug(n.cwg)}`, `About ${n.cwg}`]; } });
-// two layouts in stage units: wide screens and phones
-const APSG_LAYOUT = {
-  wide: { W: 1100, H: 790, c: [550, 300, 292], ring: 196, d: 136, l: [112, 600, 110], r: [988, 600, 110], bar: 850, fs: 1.6, cfs: 5 },
-  narrow: { W: 400, H: 760, c: [200, 238, 196], ring: 134, d: 94, l: [84, 636, 76], r: [316, 636, 76], bar: null, fs: 3.1, cfs: 10.5 },
+// ---- Group structure diagrams (APSG, ASC): circles you can hover over or click ----
+const CWG_COL = { "SPEA 1": "#188afd", "SPEA 2": "#2e6be0", "SASIA 1": "#fe6809", "SASIA 2": "#ff8228" };
+const CWG_INK = { "SASIA 1": "#000", "SASIA 2": "#000" };
+const nb = s => s.replace(/ (\d)/g, " $1");
+const DIAGRAMS = {
+  apsg: {
+    heading: "How the APSG is made up", color: "#005fc0", dark: "#5b9cf0",
+    note: "Dashed rings show the roles that appear in brackets in the approved structure. Arrows show the two-way links between groups.",
+    nodes: [
+      { id: "apsg", kind: "center", label: "APSG", sub: "Asia and the Pacific Strategy Group",
+        title: "Asia and the Pacific Strategy Group (APSG)", text: "Guides, supports, brings together and quality-assures the Asia Pacific Community Development Strategy. The strategy is built from the bottom up, from territories' approved strategies and the thematic priorities their CWGs have verified." },
+      { id: "co-spea", ring: 0, label: "ASLP Coordinator", sub: "SPEA", bg: "#c0391e", br: true, title: "ASLP Coordinator, SPEA",
+        text: "Chairs the APSG with the South Asia coordinator. One coordinator leads on strategic direction and synthesis; the other leads on coordination and documentation. Together they keep deliverables to the agreed timeline." },
+      { id: "co-sasia", ring: 1, label: "ASLP Coordinator", sub: "SASIA", bg: "#c0391e", title: "ASLP Coordinator, South Asia",
+        text: "Chairs the APSG with the SPEA coordinator: sets agendas, follows milestones, represents the APSG within ASLP, leads the synthesis work and makes sure meetings, decisions and outputs are documented." },
+      { id: "sog", ring: 2, label: "SOG", sub: "Representative", bg: "#f5c400", ink: "#000", title: "Support Office Group representative",
+        text: "One Support Office representative with a focus on monitoring, evaluation, accountability and learning (MEAL), nominated by the ASC Chair.", link: ["#/group/sog", "About the Support Office Group"] },
+      { id: "spea2", ring: 3, cwg: "SPEA 2", sub: "CWG rep." }, { id: "spea1", ring: 4, cwg: "SPEA 1", sub: "CWG rep." },
+      { id: "sasia2", ring: 5, cwg: "SASIA 2", sub: "CWG rep." }, { id: "sasia1", ring: 6, cwg: "SASIA 1", sub: "CWG rep." },
+      { id: "cs", ring: 7, label: "Chief Secretary", sub: "Rotating", bg: "#24215f", br: true, title: "Rotating Chief Secretary representative",
+        text: "One Chief Secretary represents territorial leadership in the APSG, one at a time, rotating across the zones." },
+      { id: "asc", kind: "side", label: "ASLP Steering Committee", sub: "ASC", bg: "#e14b1e", title: "ASLP Steering Committee (ASC)",
+        text: "The APSG shares its minutes with the ASC. The ASC helps when delays fall outside the APSG's control, receives dissenting views where needed and can ask for the ToR to be reviewed.", link: ["#/group/asc", "About the ASLP Steering Committee"] },
+      { id: "tf", kind: "side", label: "ASLF 2027", sub: "Task Force", bg: "#ffffff", ink: "#000", br: true, outline: true, title: "ASLF 2027 Task Force",
+        text: "The APSG helps the Task Force prepare the strategy session at the Asia-Pacific Sharing and Learning Forum 2027, where the draft Asia Pacific Community Development Strategy is presented for endorsement." },
+    ],
+    cwgText: c => `An experienced or emerging Development Officer, nominated by the ${c} CWG lead. Brings the CWG's territories' perspectives to the APSG and represents the CWG accurately and objectively.`,
+    cwgTitle: c => `${c} CWG representative`,
+    layouts: {
+      wide: { W: 1100, H: 790, c: [550, 300, 292], ring: 196, d: 136, n: 8, start: -22.5, fs: 1.6, cfs: 5, pos: { asc: [112, 600, 110], tf: [988, 600, 110] },
+        links: [["asc", "apsg", "arrow"], ["tf", "apsg", "arrow"], ["asc", "tf", "curve", 850]] },
+      narrow: { W: 400, H: 760, c: [200, 238, 196], ring: 134, d: 94, n: 8, start: -22.5, fs: 3.1, cfs: 10.5, pos: { asc: [84, 636, 76], tf: [316, 636, 76] },
+        links: [["asc", "apsg", "arrow"], ["tf", "apsg", "arrow"], ["asc", "tf", "arrow"]] },
+    },
+  },
+  asc: {
+    heading: "How the ASC is made up", color: "#e14b1e", dark: "#f0703f",
+    note: "Each CWG lead, and the leads of the Finance Coordination Group and the Support Office Group, link their group to the Steering Committee. The SPEA coordinator role appears in brackets in the approved structure.",
+    nodes: [
+      { id: "ascc", kind: "center", label: "ASC", sub: "ASLP Steering Committee", title: "ASLP Steering Committee (ASC)",
+        text: "Oversees ASLP as a whole: it keeps the programme on track, makes sure risks are managed and adjusts plans as the programme learns. It meets every month." },
+      { id: "co-sasia", ring: 0, label: "ASLP Coordinator", sub: "SASIA", bg: "#c0391e", title: "ASLP Coordinator, South Asia",
+        text: "Reports to the committee each month on how the programme is going, with updates from every ASLP group. The ASLP Coordinator sits on the ASC as a non-voting member." },
+      { id: "co-spea", ring: 1, label: "ASLP Coordinator", sub: "SPEA", bg: "#c0391e", br: true, title: "ASLP Coordinator, SPEA",
+        text: "Brings the programme's coordination for South Pacific and East Asia to the committee, as a non-voting member." },
+      { id: "l-spea1", ring: 2, lead: "SPEA 1" }, { id: "l-spea2", ring: 3, lead: "SPEA 2" },
+      { id: "us-spea", ring: 4, label: "SPEA Zone", sub: "Under Secretary", bg: "#1a5cba", title: "Under Secretary for South Pacific and East Asia",
+        text: "Represents the South Pacific and East Asia Zone at International Headquarters on the committee." },
+      { id: "l-sog", ring: 5, label: "SOG", sub: "Lead", bg: "#f5c400", ink: "#000", title: "Support Office Group lead",
+        text: "The Netherlands, as lead support office, leads the Support Office Group and chairs the Steering Committee.", link: ["#/group/sog", "About the Support Office Group"] },
+      { id: "l-fcg", ring: 6, label: "FCG", sub: "Lead", bg: "#f5c400", ink: "#000", title: "Finance Coordination Group lead",
+        text: "Switzerland leads the Finance Coordination Group and brings its view of ASLP's money to the committee. Spending requests go to The Salvation Army Switzerland once the committee has approved them.", link: ["#/group/fcg", "About the Finance Coordination Group"] },
+      { id: "us-sasia", ring: 7, label: "SASIA Zone", sub: "Under Secretary", bg: "#e24a1b", title: "Under Secretary for South Asia",
+        text: "Represents the South Asia Zone at International Headquarters on the committee." },
+      { id: "l-sasia2", ring: 8, lead: "SASIA 2" }, { id: "l-sasia1", ring: 9, lead: "SASIA 1" },
+      { id: "g-sasia1", kind: "pill", group: "SASIA 1" }, { id: "g-spea1", kind: "pill", group: "SPEA 1" },
+      { id: "g-sasia2", kind: "pill", group: "SASIA 2" }, { id: "g-spea2", kind: "pill", group: "SPEA 2" },
+      { id: "g-fcg", kind: "pill", label: "FCG", sub: "Finance Coordination Group", bg: "#f5c400", ink: "#000", title: "Finance Coordination Group (FCG)",
+        text: "Keeps a close watch on ASLP's money, from support office transfers to territories' finance reports. Its support offices are Switzerland and the Netherlands.", link: ["#/group/fcg", "About the Finance Coordination Group"] },
+      { id: "g-sog", kind: "pill", label: "SOG", sub: "Support Office Group", bg: "#f5c400", ink: "#000", title: "Support Office Group (SOG)",
+        text: "Brings together the Salvation Army offices that fund ASLP: Australia, the Netherlands, Norway, SAWSO (USA), Switzerland, and the United Kingdom and Ireland.", link: ["#/group/sog", "About the Support Office Group"] },
+    ],
+    layouts: {
+      wide: { W: 1100, H: 800, c: [550, 380, 300], ring: 212, d: 122, n: 10, start: -18, fs: 1.45, cfs: 6.4,
+        pos: { "g-sasia1": [130, 150, 210, 74], "g-spea1": [970, 150, 210, 74], "g-sasia2": [130, 480, 210, 74], "g-spea2": [970, 480, 210, 74], "g-fcg": [300, 750, 230, 74], "g-sog": [800, 750, 230, 74] },
+        links: [["l-sasia1", "g-sasia1", "h"], ["l-spea1", "g-spea1", "h"], ["l-sasia2", "g-sasia2", "h"], ["l-spea2", "g-spea2", "h"], ["l-fcg", "g-fcg", "vh"], ["l-sog", "g-sog", "vh"]] },
+      narrow: { W: 400, H: 700, c: [200, 356, 192], ring: 138, d: 82, n: 10, start: -18, fs: 2.75, cfs: 13,
+        pos: { "g-sasia2": [50, 62, 92, 56], "g-sasia1": [149, 62, 92, 56], "g-spea1": [251, 62, 92, 56], "g-spea2": [350, 62, 92, 56], "g-fcg": [100, 650, 170, 54], "g-sog": [300, 650, 170, 54] },
+        links: [["l-sasia2", "g-sasia2", "v", 128], ["l-sasia1", "g-sasia1", "v", 128], ["l-spea1", "g-spea1", "v", 128], ["l-spea2", "g-spea2", "v", 128], ["l-fcg", "g-fcg", "v", 606], ["l-sog", "g-sog", "v", 606]] },
+    },
+  },
 };
-function apsgStructure() {
-  return `<section class="apsg-wrap" aria-labelledby="apsg-st-h">
-    <h2 class="h3 apsg-h" id="apsg-st-h">How the APSG is made up</h2>
+// fill in the CWG-based nodes
+Object.values(DIAGRAMS).forEach(D => D.nodes.forEach(n => {
+  const c = n.cwg || n.lead || n.group; if (!c) return;
+  Object.assign(n, { bg: CWG_COL[c], ink: CWG_INK[c] || "#fff", link: [`#/cwg/${cwgSlug(c)}`, `About ${c}`] });
+  if (n.cwg) Object.assign(n, { label: nb(c), title: D.cwgTitle(c), text: D.cwgText(c) });
+  if (n.lead) Object.assign(n, { label: nb(c), sub: "CWG lead", title: `${c} CWG lead`, text: `Leads the ${c} Cluster Working Group and brings its territories' voice to the Steering Committee.` });
+  if (n.group) Object.assign(n, { label: `${nb(c)} CWG`, sub: "", title: `${c} Cluster Working Group`, text: `The ${c} Cluster Working Group. Its lead sits on the Steering Committee.` });
+}));
+function diagramHtml(key) {
+  const D = DIAGRAMS[key];
+  return `<section class="apsg-wrap" aria-labelledby="dg-h-${key}" style="--dc:${D.color};--dcd:${D.dark}">
+    <h2 class="h3 apsg-h" id="dg-h-${key}">${esc(D.heading)}</h2>
     <p class="small apsg-hint">Hover over a circle to see the role. Click to keep it open.</p>
     <div class="apsg-grid">
-      <div class="apsg-stage" id="apsg-stage">
-        <svg class="apsg-lines" id="apsg-lines" aria-hidden="true"></svg>
-        ${APSG_NODES.map(n => `<button type="button" class="apsg-node${n.center ? " is-center" : ""}${n.br ? " is-br" : ""}${n.side ? " is-side" : ""}" data-node="${n.id}" aria-describedby="apsg-info"
-          style="--bg:${n.bg || "transparent"};--fg:${n.ink || "#fff"}"><span class="nl">${esc(n.label)}</span><span class="ns">${esc(n.sub)}</span></button>`).join("")}
+      <div class="apsg-stage" id="dg-stage-${key}" data-dg="${key}">
+        <svg class="apsg-lines" aria-hidden="true"></svg>
+        ${D.nodes.map(n => `<button type="button" class="apsg-node is-${n.kind || "ring"}${n.br ? " is-br" : ""}${n.outline ? " is-outline" : ""}" data-node="${n.id}" aria-describedby="dg-info-${key}"
+          style="--bg:${n.bg || "transparent"};--fg:${n.ink || "#fff"}"><span class="nl">${esc(n.label)}</span>${n.sub ? `<span class="ns">${esc(n.sub)}</span>` : ""}</button>`).join("")}
       </div>
-      <div class="apsg-info" id="apsg-info" aria-live="polite"></div>
+      <div class="apsg-info" id="dg-info-${key}" aria-live="polite"></div>
     </div>
-    <p class="small" style="margin-top:var(--g3)">Dashed rings show the roles that appear in brackets in the approved structure. Arrows show the two-way links between groups.</p>
+    <p class="small" style="margin-top:var(--g3)">${esc(D.note)}</p>
   </section>`;
 }
-function apsgInfo(id) {
-  const n = APSG_NODES.find(x => x.id === id) || APSG_NODES[0], box = $("apsg-info"); if (!box) return;
-  box.style.setProperty("--bg", n.center ? "#005fc0" : n.bg); 
+const dgPinned = {};
+function dgInfo(key, id) {
+  const D = DIAGRAMS[key], n = D.nodes.find(x => x.id === id) || D.nodes[0], box = $(`dg-info-${key}`); if (!box) return;
+  box.style.setProperty("--bg", n.kind === "center" ? D.color : n.bg);
   box.innerHTML = `<div class="ai-dot"></div><h3 class="h3">${esc(n.title)}</h3><p>${esc(n.text)}</p>${n.link ? `<a class="textlink" href="${n.link[0]}">${esc(n.link[1])}</a>` : ""}`;
 }
-let apsgPinned = null;
-function apsgPin(id) {
-  apsgPinned = id && id !== "apsg" && id !== apsgPinned ? id : null;
-  document.querySelectorAll(".apsg-node").forEach(b => { b.classList.toggle("on", b.dataset.node === apsgPinned); b.setAttribute("aria-pressed", b.dataset.node === apsgPinned); });
-  apsgInfo(apsgPinned || "apsg");
+function dgPin(key, id) {
+  const D = DIAGRAMS[key], center = D.nodes[0].id, st = $(`dg-stage-${key}`);
+  dgPinned[key] = id && id !== center && id !== dgPinned[key] ? id : null;
+  st.querySelectorAll(".apsg-node").forEach(b => { b.classList.toggle("on", b.dataset.node === dgPinned[key]); b.setAttribute("aria-pressed", b.dataset.node === dgPinned[key]); });
+  dgInfo(key, dgPinned[key] || center);
 }
-function apsgLayout() {
-  const st = $("apsg-stage"); if (!st) return;
-  const L = APSG_LAYOUT[st.clientWidth < 620 ? "narrow" : "wide"], pct = (v, t) => `${v / t * 100}%`;
-  const k = st.clientWidth / L.W; st.style.height = `${L.H * k}px`;
-  const place = (el, x, y, d) => { el.style.left = `${x * k}px`; el.style.top = `${y * k}px`; el.style.width = el.style.height = `${d * k}px`; };
-  APSG_NODES.forEach(n => {
-    const el = st.querySelector(`[data-node="${n.id}"]`); el.style.fontSize = `${n.center ? L.cfs : n.side ? L.fs * 1.25 : L.fs}cqw`;
-    if (n.center) place(el, L.c[0], L.c[1], L.c[2] * 2);
-    else if (n.side) { const s = n.side === "l" ? L.l : L.r; place(el, s[0], s[1], s[2] * 2); }
-    else { const a = (-22.5 + n.ring * 45) * Math.PI / 180; place(el, L.c[0] + L.ring * Math.sin(a), L.c[1] - L.ring * Math.cos(a), L.d); }
+function dgLayout(key) {
+  const st = $(`dg-stage-${key}`); if (!st) return;
+  const D = DIAGRAMS[key], L = D.layouts[st.clientWidth < 620 ? "narrow" : "wide"], k = st.clientWidth / L.W;
+  st.style.height = `${L.H * k}px`;
+  const geo = {};   // where each node sits, in layout units
+  D.nodes.forEach(n => {
+    const el = st.querySelector(`[data-node="${n.id}"]`); let g;
+    if (n.kind === "center") g = { x: L.c[0], y: L.c[1], r: L.c[2] };
+    else if (n.kind === "side") { const p = L.pos[n.id]; g = { x: p[0], y: p[1], r: p[2] }; }
+    else if (n.kind === "pill") { const p = L.pos[n.id]; g = { x: p[0], y: p[1], w: p[2], h: p[3] }; }
+    else { const a = (L.start + n.ring * 360 / L.n) * Math.PI / 180; g = { x: L.c[0] + L.ring * Math.sin(a), y: L.c[1] - L.ring * Math.cos(a), r: L.d / 2 }; }
+    geo[n.id] = g;
+    el.style.left = `${g.x * k}px`; el.style.top = `${g.y * k}px`;
+    el.style.width = `${(g.w || g.r * 2) * k}px`; el.style.height = `${(g.h || g.r * 2) * k}px`;
+    el.style.fontSize = `${n.kind === "center" ? L.cfs : n.kind === "side" ? L.fs * 1.25 : L.fs}cqw`;
   });
-  // two-way dashed arrows between circles, kept clear of the dashed rings and of a circle that grows on hover
-  const g = L.W > 600 ? 34 : 18;
-  const edge = (a, b, ra, rb) => { const dx = b[0] - a[0], dy = b[1] - a[1], len = Math.hypot(dx, dy), ux = dx / len, uy = dy / len;
-    return `M${a[0] + ux * (ra + g)} ${a[1] + uy * (ra + g)} L${b[0] - ux * (rb + g)} ${b[1] - uy * (rb + g)}`; };
-  const paths = [edge(L.l, L.c, L.l[2], L.c[2]), edge(L.r, L.c, L.r[2], L.c[2])];
-  if (L.bar) { // a gentle curve under the APSG circle, from the ASC to the Task Force
-    const a = 52 * Math.PI / 180, rl = L.l[2] + g, rr = L.r[2] + g;
-    const x1 = L.l[0] + rl * Math.cos(a), y1 = L.l[1] + rl * Math.sin(a), x2 = L.r[0] - rr * Math.cos(a), y2 = L.r[1] + rr * Math.sin(a);
-    paths.push(`M${x1} ${y1} Q${L.W / 2} ${L.bar} ${x2} ${y2}`);
-  } else paths.push(`M${L.l[0] + L.l[2] + g} ${L.l[1]} L${L.r[0] - L.r[2] - g} ${L.r[1]}`);
-  const svg = $("apsg-lines"); svg.setAttribute("viewBox", `0 0 ${L.W} ${L.H}`);
-  svg.innerHTML = `<defs><marker id="ah" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="${L.W > 600 ? 7 : 5}" markerHeight="${L.W > 600 ? 7 : 5}" orient="auto-start-reverse"><path d="M0 0 10 5 0 10z" fill="currentColor"/></marker></defs>` +
-    paths.map(d => `<path d="${d}" fill="none" stroke="currentColor" stroke-width="${L.W > 600 ? 3 : 2.4}" stroke-dasharray="9 8" marker-start="url(#ah)" marker-end="url(#ah)"/>`).join("");
+  const wide = L.W > 600, gap = wide ? 34 : 18, paths = [];
+  L.links.forEach(([a, b, type, extra]) => {
+    const A = geo[a], B = geo[b];
+    if (type === "arrow") { const dx = B.x - A.x, dy = B.y - A.y, len = Math.hypot(dx, dy), ux = dx / len, uy = dy / len;
+      paths.push([`M${A.x + ux * (A.r + gap)} ${A.y + uy * (A.r + gap)} L${B.x - ux * (B.r + gap)} ${B.y - uy * (B.r + gap)}`, true]); }
+    else if (type === "curve") { const t = 52 * Math.PI / 180, ra = A.r + gap, rb = B.r + gap;
+      paths.push([`M${A.x + ra * Math.cos(t)} ${A.y + ra * Math.sin(t)} Q${L.W / 2} ${extra} ${B.x - rb * Math.cos(t)} ${B.y + rb * Math.sin(t)}`, true]); }
+    else if (type === "h") { const s = B.x < A.x ? -1 : 1, x1 = A.x + s * A.r, x2 = B.x - s * B.w / 2, mx = (x1 + x2) / 2;
+      paths.push([`M${x1} ${A.y} H${mx} V${B.y} H${x2}`, false]); }
+    else if (type === "vh") { const s = B.x < A.x ? -1 : 1;
+      paths.push([`M${A.x} ${A.y + A.r} V${B.y} H${B.x - s * B.w / 2}`, false]); }
+    else if (type === "v") { const up = B.y < A.y, y1 = A.y + (up ? -A.r : A.r), y2 = B.y + (up ? B.h / 2 : -B.h / 2);
+      paths.push([`M${A.x} ${y1} V${extra} H${B.x} V${y2}`, false]); }
+  });
+  const svg = st.querySelector(".apsg-lines"); svg.setAttribute("viewBox", `0 0 ${L.W} ${L.H}`);
+  svg.innerHTML = `<defs><marker id="ah-${key}" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="${wide ? 7 : 5}" markerHeight="${wide ? 7 : 5}" orient="auto-start-reverse"><path d="M0 0 10 5 0 10z" fill="currentColor"/></marker></defs>` +
+    paths.map(([d, arrow]) => arrow ? `<path d="${d}" fill="none" stroke="currentColor" stroke-width="${wide ? 3 : 2.4}" stroke-dasharray="9 8" marker-start="url(#ah-${key})" marker-end="url(#ah-${key})"/>`
+      : `<path d="${d}" fill="none" stroke="currentColor" stroke-width="${wide ? 2.6 : 2}" stroke-linejoin="round"/>`).join("");
 }
-function mountApsg() {
-  const st = $("apsg-stage"); if (!st) return;
-  apsgPinned = null; apsgLayout(); apsgInfo("apsg");
-  const back = () => apsgInfo(apsgPinned || "apsg");
-  st.addEventListener("mouseover", e => { const b = e.target.closest(".apsg-node"); if (b && !b.classList.contains("is-center")) apsgInfo(b.dataset.node); else back(); });
+function mountDiagram(key) {
+  const st = $(`dg-stage-${key}`); if (!st) return;
+  const center = DIAGRAMS[key].nodes[0].id, back = () => dgInfo(key, dgPinned[key] || center);
+  dgPinned[key] = null; dgLayout(key); back();
+  st.addEventListener("mouseover", e => { const b = e.target.closest(".apsg-node"); if (b && !b.classList.contains("is-center")) dgInfo(key, b.dataset.node); else back(); });
   st.addEventListener("mouseleave", back);
-  st.addEventListener("focusin", e => { const b = e.target.closest(".apsg-node"); if (b) apsgInfo(b.dataset.node); });
+  st.addEventListener("focusin", e => { const b = e.target.closest(".apsg-node"); if (b) dgInfo(key, b.dataset.node); });
   st.addEventListener("focusout", back);
-  st.addEventListener("click", e => { const b = e.target.closest(".apsg-node"); if (b) apsgPin(b.dataset.node); });
+  st.addEventListener("click", e => { const b = e.target.closest(".apsg-node"); if (b) dgPin(key, b.dataset.node); });
 }
-window.addEventListener("resize", () => { if ($("apsg-stage")) apsgLayout(); });
+window.addEventListener("resize", () => document.querySelectorAll("[data-dg]").forEach(st => dgLayout(st.dataset.dg)));
 
 const APSG_MANDATE = ["Emerges from territory-approved Community Development Strategies and the thematic priorities verified by the Cluster Working Groups.",
   "Provides technical support to territories developing or refining their territorial strategies.",
@@ -932,7 +1000,7 @@ function pageGroup(key) {
     <div class="wrap page-body"><div class="two-col">
       <div class="stack"><h2 class="h2">About the ${esc(g.short)}</h2>${g.description ? g.description.split(/\n\s*\n/).map(paraHtml).join("") : `<p class="empty">A description of the ${esc(g.name)} is coming soon.</p>`}</div>
       <div class="aside-box"><h2 class="h3">Members</h2>${(g.members || []).length ? `<div>${g.members.map(m => contactHtml({ ...m, role: [m.role, m.territory && (terrName(m.territory) || m.territory)].filter(Boolean).join(", ") })).join("")}</div>` : `<p class="empty">Members will be listed here.</p>`}</div>
-    </div>${g.key === "apsg" ? (pendingMaps.push(mountApsg), apsgPurpose() + apsgStructure()) : ""}</div>`;
+    </div>${(g.key === "apsg" ? apsgPurpose() : "") + (DIAGRAMS[g.key] ? (pendingMaps.push(() => mountDiagram(g.key)), diagramHtml(g.key)) : "")}</div>`;
 }
 
 // ---- NEWSLETTER ----
