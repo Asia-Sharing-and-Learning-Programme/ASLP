@@ -2414,7 +2414,7 @@ function welcomeRo(v, tabs, roles, go) {
   if (has("cc-units")) steps.push(["toggle", "See regions and countries", "Open <b>Regions and countries</b> to see which have a profile on the website, and their CWG.", go("cc-units")]);
   if (has("cc-groups")) steps.push(["group", "See group pages", "Open <b>ASLP Groups</b> to see each group's description and members.", go("cc-groups")]);
   if (has("cc-pages")) steps.push(["page", "See pages and the newsletter", "Open <b>Pages and newsletter</b> to see the About text, home page introduction and newsletter issues.", go("cc-pages")]);
-  if (has("cc-access")) steps.push(["key", "See who can do what", "Open <b>Access</b> to see the admins, viewers, zone coordinators and who edits each page.", go("cc-access")]);
+  if (has("cc-access")) steps.push(["key", "See who can do what", "Open <b>Access</b> to see which roles can edit, the zone coordinators and who edits each page.", go("cc-access")]);
   steps.push(["cal", "See the Calendar", "On the <b>Calendar</b> you see every entry with its full details. You're already signed in there.", `<a class="btn sm" href="/Calendar-2027-2028/">Open</a>`]);
   steps.push(["chart", "See CD Strategies", "On <b>CD Strategies</b> you see every territory's details, contacts and history, as admins do.", `<a class="btn sm" href="/cd-strategy/">Open</a>`]);
   return welcomeHtml(v, tabs, steps, roles);
@@ -2561,7 +2561,7 @@ const TOURS = {
     { el: "#pg-save", wait: "click", delay: 900, title: "Save", text: "Select <b>Save</b>. In this test run nothing is saved." } ],
   key: () => [
     { tab: "cc-access", el: "#ac-lead", title: "Switch access on or off", text: "Each switch turns editing on or off for a whole role, such as CWG leads or contact persons." },
-    { el: () => findEl(".xa-rows"), title: "Admins and viewers", text: "Add up to 3 more admins, and up to 5 view-only accounts that can see everything but change nothing. Type a name and email, then save." },
+    { el: () => findEl(".xa-rows"), title: "Admins and viewers", text: "All admins are listed here with their name and email, up to 6. Below them are up to 5 view-only accounts that can see everything but change nothing. Change a row, or clear it to remove someone, then save." },
     { el: "#ac-zc-SPEA", title: "Zone coordinators", text: "Type the email of a zone coordinator. They get the same access as the CWG leads of their zone." },
     { el: ".ge-table", title: "Who edits each group page", text: "Tick who can edit each ASLP Group page, besides admins." },
     { el: "#ac-save", wait: "click", delay: 900, title: "Save access", text: "Select <b>Save access</b>. In this test run nothing is saved." } ] };
@@ -3030,7 +3030,7 @@ async function accessEditor() {
   const { data: a, error } = await db.rpc("aslp_get_access");
   if (error || !a) { box.innerHTML = `<p class="small">Couldn't load the access settings. ${esc((error && error.message) || "")}</p>`; return; }
   const st = a.settings || {}, ge = st.group_editors || {}, on = k => st[k] !== false;
-  const xa = (k, i) => (a.extra || []).find(x => x.kind === k && x.slot === i) || {};
+  const xa = (k, i) => k === "admin" ? (a.mainAdmins || []).map(x => typeof x === "string" ? { email: x } : x)[i - 1] || {} : (a.extra || []).find(x => x.kind === k && x.slot === i) || {};
   const xaRow = (k, i, l) => `<div class="xa-row"><span class="xa-n">${l} ${i}</span><label><span>Name</span><input type="text" data-xa="${k}" data-xf="name" value="${esc(xa(k, i).name || "")}" placeholder="Name" autocomplete="off"></label>
     <label><span>Email</span><input type="email" data-xa="${k}" data-xf="email" value="${esc(xa(k, i).email || "")}" placeholder="Empty slot" autocomplete="off"></label></div>`;
   const roleOpts = [["coordinators", "ASLP Coordinators"], ["all_leads", "All CWG leads"], ...(a.leads || []).map(l => [`lead:${l.cwg}`, `${l.cwg} CWG lead${l.name ? ` (now ${l.name})` : ""}`])];
@@ -3038,13 +3038,12 @@ async function accessEditor() {
     <label class="toggle"><input type="checkbox" id="ac-lead" ${on("lead_web") ? "checked" : ""}><div><b>CWG leads edit their CWG on this website</b><span>Their CWG's members, and the profiles and contacts of its territories.</span></div></label>
     <label class="toggle"><input type="checkbox" id="ac-member" ${on("member_web") ? "checked" : ""}><div><b>Contact persons edit their territory's profile</b><span>People listed as a territory's (or region's) contact persons, with an email, can sign in and edit that profile only. Admins and CWG leads choose the contact persons. CWG members not listed as contacts can't edit profiles.</span></div></label>
     <label class="toggle"><input type="checkbox" id="ac-focal" ${on("focal_cds") ? "checked" : ""}><div><b>CD focal persons update their territory's CD Strategy</b><span>The person named as focal person in the CD Strategies (${a.focalCount || 0} territories). CWG leads and admins keep their access either way.</span></div></label>
-    <h3 class="h3" style="margin-top:var(--g4)">Admins</h3>
-    <p class="small">Admins can see and change everything on this website, the Calendar and CD Strategies. They sign in with their email like everyone else.</p>
-    ${(a.mainAdmins || []).length ? `<p class="small" style="margin-top:6px">Main admins: ${(a.mainAdmins || []).map(esc).join(", ")}</p>` : ""}
-    <div class="xa-rows">${[1, 2, 3].map(i => xaRow("admin", i, "Admin")).join("")}</div>
+    ${V().ro ? "" : `<h3 class="h3" style="margin-top:var(--g4)">Admins</h3>
+    <p class="small">Admins can see and change everything on this website, the Calendar and CD Strategies. They sign in with their email like everyone else, and the site greets them by name. Up to 6 admins. To remove one, clear their row. You can't remove yourself.</p>
+    <div class="xa-rows">${[1, 2, 3, 4, 5, 6].map(i => xaRow("admin", i, "Admin")).join("")}</div>
     <h3 class="h3" style="margin-top:var(--g4)">View-only accounts</h3>
-    <p class="small">A viewer can sign in and see everything an admin sees, on this website, the Calendar and CD Strategies, but can't change, post, approve or delete anything.</p>
-    <div class="xa-rows">${[1, 2, 3, 4, 5].map(i => xaRow("viewer", i, "Viewer")).join("")}</div>
+    <p class="small">A viewer can sign in and see everything an admin sees, on this website, the Calendar and CD Strategies, except who the admins and viewers are. They can't change, post, approve or delete anything.</p>
+    <div class="xa-rows">${[1, 2, 3, 4, 5].map(i => xaRow("viewer", i, "Viewer")).join("")}</div>`}
     <h3 class="h3" style="margin-top:var(--g4)">Zone coordinators</h3>
     <p class="small">A zone coordinator has the same access as the CWG leads of every CWG in their zone: posting CWG updates, territory and region profiles, CWG members, the zone's CD Strategies, and the calendar for those CWGs. Leave empty until there's someone in the role. Separate several emails with commas.</p>
     <div class="ed-grid">${["SPEA", "SASIA"].map(z => `<label><span>${z} coordinator</span><input type="text" id="ac-zc-${z}" value="${esc(((st.zone_coordinators || {})[z] || []).join(", "))}" placeholder="No ${z} coordinator yet" autocomplete="off"></label>`).join("")}</div>
@@ -3060,11 +3059,14 @@ async function accessEditor() {
     const xrows = k => [...box.querySelectorAll(`.xa-row`)].map(r => ({ name: (r.querySelector(`[data-xa="${k}"][data-xf=name]`) || {}).value, email: (r.querySelector(`[data-xa="${k}"][data-xf=email]`) || {}).value }))
       .filter(r => r.email !== undefined).map(r => ({ name: (r.name || "").trim(), email: (r.email || "").trim().toLowerCase() })).filter(r => r.email || r.name);
     const nameless = [...xrows("admin"), ...xrows("viewer")].find(r => !r.email);
+    if (!V().ro && !xrows("admin").length) return Promise.resolve({ error: { message: "Keep at least one admin." } });
+    const dup = [...xrows("admin"), ...xrows("viewer")].map(r => r.email).find((e, i, all) => all.indexOf(e) !== i);
+    if (dup) return Promise.resolve({ error: { message: `${dup} is listed twice. Each email can be an admin or a viewer, not both.` } });
     if (nameless) return Promise.resolve({ error: { message: `Add an email for ${nameless.name}, or clear the name.` } });
     const bad = [...zc("SPEA"), ...zc("SASIA"), ...xrows("admin").map(r => r.email), ...xrows("viewer").map(r => r.email)].find(x => !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(x));
     if (bad) return Promise.resolve({ error: { message: `This email doesn't look right: ${bad}` } });
     return db.rpc("aslp_set_access", { p_settings: { lead_web: $("ac-lead").checked, member_web: $("ac-member").checked, focal_cds: $("ac-focal").checked, group_editors: groupsSel, zone_coordinators: { SPEA: zc("SPEA"), SASIA: zc("SASIA") },
-      extra_admins: xrows("admin"), viewers: xrows("viewer") } });
+      ...(V().ro ? {} : { admins: xrows("admin"), viewers: xrows("viewer") }) } });
   }, "Access saved. It applies straight away. New admins and viewers can sign in with their email now."));
 }
 // the countries, regions and divisions inside a territory, using The Salvation Army's own terms
