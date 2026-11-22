@@ -593,7 +593,7 @@
   .mg-place { display: inline-block; font-size: 12.5px; font-weight: 700; color: var(--cwg-a, var(--blue)); background: color-mix(in srgb, var(--cwg-a, var(--blue)) 10%, transparent); border-radius: 999px; padding: 2px 10px; margin-bottom: 8px; }
   .ut-group { margin-top: var(--g4); } .ut-group .h3 { font-size: 17px; margin-bottom: var(--g2); }
   .ut-row { margin: 0 0 8px; }
-  .unit-of { font-size: 18px; margin: 0; color: var(--ink-2); } .unit-row .nm::before { content: "↳ "; color: var(--ink-3); }
+  .unit-of { font-size: 18px; margin: 0; color: var(--ink-2); } .unit-tag { font-size: 13px; font-weight: 500; color: var(--ink-3); white-space: nowrap; margin-left: 6px; letter-spacing: 0; }
   .ed-grid .ed-field { display: grid; gap: 6px; font-size: 12.5px; font-weight: 700; color: var(--ink-2); }
   .synced { background: var(--paper); border-radius: 16px; padding: var(--g4); margin-top: var(--g3); border-left: 5px solid var(--blue); }
   .synced-h { display: flex; flex-wrap: wrap; gap: 4px var(--g2); align-items: baseline; }
@@ -1129,7 +1129,7 @@ function pageHome() {
       <div class="wrap">
         <div class="sec-head"><div class="stack"><h2 class="h2" id="finder-h">Find a territory</h2><p class="lede">See where each territory works, what it's strong in, the support it can offer others and who to contact.</p></div></div>
         <div class="finder-grid">${cls.map(c => `<div class="fcol" style="${cwgVars(c)}"><a class="fl" href="#/cwg/${cwgSlug(c)}">${ART(c) ? `<img src="${ART(c).h}" alt="${esc(c)} Cluster Working Group">` : esc(c)}</a>
-          <ul>${terrsOf(c).map(t => `<li><a href="#/territory/${esc(t.id)}">${esc(t.name)}</a></li>`).join("")}</ul></div>`).join("")}</div>
+          <ul>${cwgPlaces(c).map(x => placeLi(x, true)).join("")}</ul></div>`).join("")}</div>
       </div></section>
     <section class="sec cds-band" aria-labelledby="cds-h">${decor([el("g8-05", "top:64px;right:6%", 112, 0, "hm"), el("g2-03", "top:46%;right:1.5%", 40, 0, "hm")])}
       <div class="wrap">
@@ -1370,7 +1370,7 @@ function zoneSection(z) {
     <div class="cwg-pair">${zc.map(c => { const l = leadOf(c);
       return `<a class="cwg-panel" style="${cwgVars(c)}" href="#/cwg/${cwgSlug(c)}">${ART(c) ? `<img class="lh" src="${ART(c).h}" alt="${esc(c)} Cluster Working Group">` : `<div class="h2">${esc(c)}</div>`}
         ${l ? `<p class="ld">Led by <b>${esc(l.name || "")}</b>${l.role ? `, ${esc(l.role)}` : ""}${l.territory && terrName(l.territory) ? `, ${esc(shortName(terrName(l.territory)))}` : ""}</p>` : ""}
-        <ul>${terrsOf(c).map(t => `<li>${esc(t.name)}</li>`).join("")}</ul></a>`; }).join("")}</div>
+        <ul>${cwgPlaces(c).map(x => placeLi(x, false)).join("")}</ul></a>`; }).join("")}</div>
   </section>`;
 }
 function pageCwgs() {
@@ -1538,8 +1538,8 @@ function memberGroups(ms, c) {
         return `<div class="member">${place ? `<span class="mg-place">${esc(place)}</span>` : ""}${contactHtml({ ...m, role: m.role || "" })}</div>`; }).join("")}</div></section>`; }).join("")}</div>`;
 }
 const unitRows = us => us.map(u => { const p = u.profile || {}, t = terrs().find(x => x.id === u.parent) || {};
-  return `<a class="terr-row unit-row" href="#/territory/${esc(u.id)}"><div class="nm">${esc(u.name)}</div>
-    <div class="where">Part of the ${esc(shortName(OFFICIAL_NAME[t.id] || t.name || ""))} Territory${u.location ? ` · ${esc(u.location)}` : ""}</div>
+  return `<a class="terr-row unit-row" href="#/territory/${esc(u.id)}"><div class="nm">${esc(u.name)} <span class="unit-tag">${esc(unitTag(u))}</span></div>
+    ${u.location ? `<div class="where">Based in ${esc(u.location)}</div>` : ""}
     ${(p.thematic || []).length ? tags(p.thematic.slice(0, 4)) : `<span class="small">Profile coming soon</span>`}</a>`; }).join("");
 // console: CWG leads and admins switch sub-unit profiles on or off
 function unitsToggles() {
@@ -2481,6 +2481,16 @@ const TERR_UNITS = {
   "india-eastern": ["India (Territorial Headquarters)", "Nepal"],
   "middle-east": ["Kuwait (Regional Headquarters)", "Bahrain", "Oman", "United Arab Emirates"] };
 const OFFICIAL_NAME = { "new-zealand": "New Zealand, Fiji, Tonga and Samoa Territory" };
+// short "which territory" tag shown beside a region/division/country profile
+const TERR_TAG = { smmt: "SMMT Territory", "new-zealand": "New Zealand Territory" };
+const unitTag = u => TERR_TAG[u.parent] || (terrs().find(x => x.id === u.parent) || {}).name || "";
+// a CWG's territories with its switched-on regions/divisions/countries after their territory
+const cwgPlaces = c => { const ts = terrsOf(c), out = [];
+  ts.forEach(t => { out.push({ t }); units().filter(u => u.cwg === c && u.parent === t.id).forEach(u => out.push({ u })); });
+  units().filter(u => u.cwg === c && !ts.some(t => t.id === u.parent)).forEach(u => out.push({ u }));
+  return out; };
+const placeLi = (x, link) => x.t ? `<li>${link ? `<a href="#/territory/${esc(x.t.id)}">${esc(x.t.name)}</a>` : esc(x.t.name)}</li>`
+  : (n => `<li>${link ? `<a href="#/territory/${esc(x.u.id)}">${n}</a>` : n}</li>`)(`${esc(x.u.name)} <span class="unit-tag">${esc(unitTag(x.u))}</span>`);
 const terrLabel = t => OFFICIAL_NAME[t.id] || t.name;
 // a member's territory, or the country/region/division within it
 const memberPlace = m => m.unit || (m.territory && shortName(OFFICIAL_NAME[m.territory] || terrName(m.territory))) || "";
