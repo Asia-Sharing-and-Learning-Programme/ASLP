@@ -853,6 +853,27 @@
   .seg-pick { display: flex; flex-wrap: wrap; gap: 8px; } .seg-pick .chip-btn.on { background: var(--ink); color: var(--paper); border-color: var(--ink); }
   .drop { border: 2px dashed var(--line); border-radius: 16px; padding: var(--g4); text-align: center; display: grid; gap: 8px; justify-items: center; }
   .drop.over { border-color: var(--blue); background: color-mix(in srgb, var(--blue) 6%, transparent); }
+  .sec-eds { margin-top: var(--g4); display: grid; gap: var(--g2); }
+  .sec-eds-h { display: grid; gap: 2px; } .sec-eds-h b { font-size: 16px; }
+  .sec-ed { background: var(--paper); border: 1px solid var(--line); border-radius: 14px; padding: 12px 14px; display: grid; gap: 8px; }
+  .sec-ed-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; font-size: 13px; font-weight: 700; color: var(--ink-3); }
+  .sec-ed-btns { display: flex; gap: 4px; }
+  .ed-mini { border: 1px solid var(--line); background: none; border-radius: 8px; padding: 3px 9px; font: inherit; font-size: 13px; cursor: pointer; color: var(--ink); }
+  .ed-mini:disabled { opacity: .3; cursor: default; } .ed-mini.del { color: #c0391e; } .ed-mini.del.sure { background: #c0391e; color: #fff; border-color: #c0391e; }
+  .sec-ed input[data-sf="h"] { font-weight: 700; font-size: 16px; }
+  .sec-ed-imgs { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  .sec-ed-img { position: relative; } .sec-ed-img img { height: 70px; border-radius: 8px; display: block; }
+  .sec-ed-img button { position: absolute; top: -6px; right: -6px; width: 22px; height: 22px; border-radius: 50%; border: 0; background: #000; color: #fff; font-size: 14px; line-height: 1; cursor: pointer; }
+  .sec-ed-addimg { height: 70px; padding: 0 14px; border: 1.5px dashed var(--line); border-radius: 8px; display: inline-flex; align-items: center; font-size: 13px; font-weight: 700; cursor: pointer; color: var(--ink-2); }
+  .ua { max-width: 860px; margin: var(--g4) 0 var(--g5); }
+  .ua-sec { margin-top: var(--g6); } .ua-sec:first-child { margin-top: var(--g4); }
+  .ua-h { font-size: clamp(22px, 2.2vw, 28px); font-weight: 800; letter-spacing: -.015em; line-height: 1.2; margin-bottom: var(--g3); padding-left: 14px; border-left: 5px solid var(--cwg-a, var(--orange)); }
+  .ua-imgs { display: grid; gap: var(--g2); margin-top: var(--g3); }
+  .ua-imgs.n2 { grid-template-columns: 1fr 1fr; } .ua-imgs.n3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .ua-imgs button { padding: 0; border: 0; background: var(--paper-2); cursor: zoom-in; border-radius: 16px; overflow: hidden; }
+  .ua-imgs.n1 button img { width: 100%; max-height: 520px; object-fit: cover; display: block; }
+  .ua-imgs.n2 button, .ua-imgs.n3 button { aspect-ratio: 4 / 3; } .ua-imgs.n2 img, .ua-imgs.n3 img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  @media (max-width: 600px) { .ua-imgs.n3 { grid-template-columns: 1fr 1fr; } }
   .prev-strip { display: flex; gap: 8px; overflow-x: auto; margin-top: var(--g3); padding-bottom: 4px; }
   .prev-strip img { height: 92px; border-radius: 6px; background: #fff; box-shadow: 0 1px 4px rgba(0,0,0,.15); }
   .prev-slide { flex: 0 0 180px; background: var(--paper-2); border-radius: 10px; padding: 10px; font-size: 13px; line-height: 1.35; }
@@ -2318,6 +2339,28 @@ async function processPptx(file, folder, note) {
   const o = await keepOriginal(file, folder, file.type || "application/vnd.openxmlformats-officedocument.presentationml.presentation", "PowerPoint", note);
   return { file: { name: file.name, type: "pptx", ...o }, slides, title: (slides[0] || {}).title || "" };
 }
+// a PowerPoint becomes a short article: the title slide gives the title and introduction,
+// each later slide a section (heading, text, pictures) that the poster can then edit
+function slidesToSections(slides) {
+  const head = p => p && !p.b && p.t.length <= 70 && !/[.!?:;,]$/.test(p.t);
+  const textOf = ps => { let out = "", prevB = null;
+    ps.forEach(p => { const line = p.b ? `- ${p.t}` : p.t; out += out ? (p.b && prevB ? "\n" : "\n\n") + line : line; prevB = p.b; });
+    return out; };
+  const res = { title: "", intro: "", sections: [], cover: "" };
+  (slides || []).forEach((sl, n) => {
+    const ps = [...(sl.paras || [])], imgs = [...(sl.images || [])];
+    let h = (sl.title || "").trim();
+    if (/^untitled/i.test(h)) h = "";
+    if (n === 0) { res.title = h || (ps.length && head(ps[0]) ? ps.shift().t : ""); res.intro = textOf(ps); res.cover = imgs[0] || ""; if (imgs.length) res.sections.push({ h: "", t: "", images: imgs }); return; }
+    if (!h && ps.length && head(ps[0])) h = ps.shift().t;
+    const t = textOf(ps), last = res.sections[res.sections.length - 1];
+    if (last && ((!h && !t) || (h && last.h && h.toLowerCase() === last.h.toLowerCase()))) {   // pictures-only slide, or "Title (cont.)": add to the section before
+      if (t) last.t = last.t ? last.t + "\n\n" + t : t; last.images.push(...imgs); return; }
+    res.sections.push({ h, t, images: imgs });
+  });
+  res.sections = res.sections.filter(x => x.h || x.t || x.images.length);
+  return res;
+}
 function updatesConsole(sel) {
   const list = $("up-list"); if (!list) return;
   const mine = () => (updates || []).filter(canPost);
@@ -2335,7 +2378,7 @@ function updatesConsole(sel) {
     const u = mine().find(x => x.id === del.dataset.ud); del.disabled = true; del.textContent = "Deleting…";
     const { error } = await db.rpc("aslp_delete_update", { p_id: u.id });
     if (error) { del.textContent = error.message || "Couldn't delete"; return; }
-    const ps = [u.file && u.file.url, ...(u.pages || []), ...(u.photos || []), ...(u.slides || []).flatMap(s => s.images || [])].map(pathOf).filter(Boolean);
+    const ps = [u.file && u.file.url, ...(u.pages || []), ...(u.photos || []), ...(u.slides || []).flatMap(s => s.images || []), ...(u.sections || []).flatMap(s => s.images || [])].map(pathOf).filter(Boolean);
     if (ps.length) UPB().remove(ps).catch(() => {});
     if (u.file && u.file.drive) db.functions.invoke("drive-upload", { body: { action: "delete", fileId: u.file.drive } }).catch(() => {});
     await loadUpdates(true); draw();
@@ -2356,6 +2399,7 @@ function updateEditor(u, redraw) {
   const fixSrc = v => !v ? "" : v.includes("|") ? v : "cwg|" + v;   // older drafts kept just the CWG name
   const srcs = [...cwgs.map(c => "cwg|" + c), ...grps.map(k => "group|" + k)];
   const st = { id: u.id || null, src: fixSrc(u.src) || (u.cwg ? (isGrp(u) ? "group|" : "cwg|") + u.cwg : "") || srcs[0], kind: u.kind || "text", file: u.file || null, pages: u.pages || [], slides: u.slides || [], photos: [...(u.photos || [])], busy: false,
+    sections: Array.isArray(u.sections) ? JSON.parse(JSON.stringify(u.sections)) : (u.kind === "pptx" && (u.slides || []).length ? slidesToSections(u.slides).sections : []),
     folder: (u.file && pathOf(u.file.url).replace(/\/[^/]+$/, "")) || "" };
   const srcSlugOf = v => { const [t, x] = v.split("|"); return t === "group" ? x : cwgSlug(x); };
   const folder = () => st.folder || (st.folder = `${srcSlugOf($("ue-cwg").value)}/${newId()}`);
@@ -2368,8 +2412,8 @@ function updateEditor(u, redraw) {
       <label class="full"><span>Title</span><input id="ue-title" value="${esc(u.title || "")}" placeholder="e.g. SASIA 1 meeting on disaster response, Dhaka; or ASC decisions, March 2027"></label>
       <div class="full ed-field"><span>How do you want to share it?</span><div class="seg-pick" role="radiogroup">
         ${[["text", "Write it here"], ["pdf", "Upload a PDF"], ["pptx", "Upload a PowerPoint"]].map(([k, l]) => `<button type="button" class="chip-btn${st.kind === k ? " on" : ""}" role="radio" aria-checked="${st.kind === k}" data-kind="${k}">${l}</button>`).join("")}</div></div>
-      <div class="full" id="ue-file"></div>
       <label class="full"><span id="ue-body-l"></span><textarea id="ue-body" rows="8">${esc(u.body || "")}</textarea></label>
+      <div class="full" id="ue-file"></div>
       <div class="full ed-field"><span>Photos <span class="ed-hint">optional, shown with the update</span></span>
         <div id="ue-photos"></div><label class="btn sm" style="justify-self:start;cursor:pointer;margin-top:6px">Add photos<input type="file" id="ue-ph-in" accept="image/*" multiple hidden></label></div>
     </div>
@@ -2377,23 +2421,25 @@ function updateEditor(u, redraw) {
   const msg = (t, c = "") => { const m = $("ue-msg"); m.className = "ed-msg " + c; m.innerHTML = t; };
   const dkey = `upd:${st.id || "new"}`; box.dataset.draft = dkey;
   const fieldsNow = () => ({ cwg: $("ue-cwg").value, title: $("ue-title").value, date: $("ue-date").value, body: $("ue-body").value });
-  const base = JSON.stringify({ f: fieldsNow(), kind: st.kind, file: st.file, photos: st.photos });
+  const base = JSON.stringify({ f: fieldsNow(), kind: st.kind, file: st.file, photos: st.photos, sections: st.sections });
   let kt = 0;
   const keep = () => { clearTimeout(kt); kt = setTimeout(() => { if (box.dataset.draft !== dkey || !$("ue-title")) return;
-    const now = { f: fieldsNow(), kind: st.kind, file: st.file, photos: st.photos };
+    const now = { f: fieldsNow(), kind: st.kind, file: st.file, photos: st.photos, sections: st.sections };
     putDraft(dkey, JSON.stringify(now) === base ? null : { at: Date.now(), ...now, pages: st.pages, slides: st.slides, folder: st.folder }); }, 500); };
   box.oninput = keep; box.onchange = keep;
   const drawKind = () => {
     box.querySelectorAll("[data-kind]").forEach(b => { b.classList.toggle("on", b.dataset.kind === st.kind); b.setAttribute("aria-checked", b.dataset.kind === st.kind); });
-    $("ue-body-l").innerHTML = st.kind === "text" ? `Your update <span class="ed-hint">Leave a blank line between paragraphs. Start a line with "-" to make a list.</span>` : `Short introduction <span class="ed-hint">optional, shown above the ${st.kind === "pdf" ? "pages" : "slides"}</span>`;
-    $("ue-body").rows = st.kind === "text" ? 10 : 3;
+    $("ue-body-l").innerHTML = st.kind === "text" ? `Your update <span class="ed-hint">Leave a blank line between paragraphs. Start a line with "-" to make a list.</span>` : st.kind === "pdf" ? `Short introduction <span class="ed-hint">optional, shown above the pages</span>` : `Introduction <span class="ed-hint">the opening paragraph of the article</span>`;
+    $("ue-body").rows = st.kind === "text" ? 10 : st.kind === "pptx" ? 4 : 3;
     const f = $("ue-file");
     if (st.kind === "text") { f.innerHTML = ""; return; }
     const has = st.file && st.file.type === st.kind;
-    f.innerHTML = `<div class="drop" id="ue-drop">${has ? `<b>${esc(st.file.name)}</b><span class="small">${st.kind === "pdf" ? `${st.pages.length} pages ready` : `${st.slides.length} slides ready`}</span>` : `<b>Drop your ${st.kind === "pdf" ? "PDF" : "PowerPoint (.pptx)"} here</b><span class="small">The website ${st.kind === "pdf" ? "shows each page" : "lays out each slide's title, text and pictures"} for you.</span>`}
+    f.innerHTML = `<div class="drop" id="ue-drop">${has ? `<b>${esc(st.file.name)}</b><span class="small">${st.kind === "pdf" ? `${st.pages.length} pages ready` : `${st.slides.length} slides ready`}</span>` : `<b>Drop your ${st.kind === "pdf" ? "PDF" : "PowerPoint (.pptx)"} here</b><span class="small">${st.kind === "pdf" ? "The website shows each page for you." : "The website turns the slides into a short article, with sections you can then edit."}</span>`}
         <label class="btn sm" style="cursor:pointer">${has ? "Choose a different file" : "Choose a file"}<input type="file" id="ue-f-in" accept="${st.kind === "pdf" ? ".pdf,application/pdf" : ".pptx,.ppt"}" hidden></label><div id="ue-prog"></div></div>
-      ${has ? `<div class="prev-strip">${st.kind === "pdf" ? st.pages.slice(0, 12).map(p => `<img src="${esc(p)}" alt="">`).join("")
-        : st.slides.slice(0, 12).map((s, n) => `<div class="prev-slide"><b>${n + 1}. ${esc(s.title || "Untitled slide")}</b>${esc((s.paras || []).slice(0, 2).map(p => p.t).join(" · ").slice(0, 90))}${(s.images || [])[0] ? `<br><img src="${esc(s.images[0])}" alt="">` : ""}</div>`).join("")}</div>` : ""}`;
+      ${has && st.kind === "pdf" ? `<div class="prev-strip">${st.pages.slice(0, 12).map(p => `<img src="${esc(p)}" alt="">`).join("")}</div>` : ""}
+      ${has && st.kind === "pptx" ? `<div class="sec-eds"><div class="sec-eds-h"><b>Article sections</b><span class="ed-hint">Made from your slides. Edit the headings and text, remove or add pictures, reorder or delete sections. The introduction is above.</span></div>
+        <div id="ue-secs"></div><button type="button" class="btn sm" id="ue-sec-add">Add a section</button></div>` : ""}`;
+    if (has && st.kind === "pptx") drawSections();
     if (has && st.file.big && !st.file.drive) { f.insertAdjacentHTML("beforeend", `<label class="ed-field" style="margin-top:var(--g3);display:grid;gap:6px"><span>Link for downloading the full file <span class="ed-hint">optional: a OneDrive, SharePoint or Google Drive link anyone can open</span></span><input type="url" id="ue-link" placeholder="https://…" value="${esc(st.file.link || "")}"></label>`);
       $("ue-link").oninput = e => { st.file.link = e.target.value.trim(); }; }
     $("ue-f-in").onchange = e => takeFile(e.target.files[0]);
@@ -2401,6 +2447,37 @@ function updateEditor(u, redraw) {
     d.ondragover = e => { e.preventDefault(); d.classList.add("over"); }; d.ondragleave = () => d.classList.remove("over");
     d.ondrop = e => { e.preventDefault(); d.classList.remove("over"); takeFile(e.dataTransfer.files[0]); };
   };
+  function drawSections() {
+    const box2 = $("ue-secs"); if (!box2) return; const n = st.sections.length;
+    box2.innerHTML = n ? st.sections.map((x, i) => `<div class="sec-ed" data-si="${i}">
+      <div class="sec-ed-top"><span>Section ${i + 1}</span><div class="sec-ed-btns"><button type="button" class="ed-mini" data-smv="-1" ${i ? "" : "disabled"} aria-label="Move section up">↑</button><button type="button" class="ed-mini" data-smv="1" ${i < n - 1 ? "" : "disabled"} aria-label="Move section down">↓</button><button type="button" class="ed-mini del" data-sdel>Remove</button></div></div>
+      <input data-sf="h" value="${esc(x.h || "")}" placeholder="Section heading (optional)" aria-label="Section ${i + 1} heading">
+      <textarea data-sf="t" rows="${Math.min(10, Math.max(3, Math.ceil((x.t || "").length / 90) + 1))}" placeholder="Text for this section. Leave a blank line between paragraphs; start a line with &quot;-&quot; for a list." aria-label="Section ${i + 1} text">${esc(x.t || "")}</textarea>
+      <div class="sec-ed-imgs">${(x.images || []).map((src, k) => `<span class="sec-ed-img"><img src="${esc(src)}" alt=""><button type="button" data-simg="${k}" aria-label="Remove picture">×</button></span>`).join("")}
+        <label class="sec-ed-addimg">+ Pictures<input type="file" accept="image/*" multiple hidden data-sadd></label></div></div>`).join("")
+      : `<p class="small">No sections yet. Add one below.</p>`;
+  }
+  $("ue-file").addEventListener("input", e => { const f = e.target.closest("[data-sf]"); if (!f) return; const i = +f.closest("[data-si]").dataset.si; st.sections[i][f.dataset.sf] = f.value; keep(); });
+  $("ue-file").addEventListener("click", e => {
+    if (e.target.id === "ue-sec-add") { st.sections.push({ h: "", t: "", images: [] }); drawSections(); keep(); const l = $("ue-secs").lastElementChild; l && l.querySelector("input").focus(); return; }
+    const card = e.target.closest("[data-si]"); if (!card) return; const i = +card.dataset.si;
+    const mv = e.target.closest("[data-smv]");
+    if (mv) { const j = i + +mv.dataset.smv; [st.sections[i], st.sections[j]] = [st.sections[j], st.sections[i]]; drawSections(); keep(); return; }
+    const del = e.target.closest("[data-sdel]");
+    if (del) { if (!del.classList.contains("sure")) { del.classList.add("sure"); del.textContent = "Select again to remove"; setTimeout(() => { if (del.isConnected) { del.classList.remove("sure"); del.textContent = "Remove"; } }, 4000); return; }
+      st.sections.splice(i, 1); drawSections(); keep(); return; }
+    const ri = e.target.closest("[data-simg]"); if (ri) { st.sections[i].images.splice(+ri.dataset.simg, 1); drawSections(); keep(); }
+  });
+  $("ue-file").addEventListener("change", async e => {
+    const inp = e.target.closest("[data-sadd]"); if (!inp) return; e.stopPropagation();
+    const i = +inp.closest("[data-si]").dataset.si, fs = [...inp.files]; inp.value = ""; if (!fs.length || st.busy) return;
+    st.busy = true; $("ue-save").disabled = true;
+    try { for (let k = 0; k < fs.length; k++) { msg(loader(`Uploading picture ${k + 1} of ${fs.length}…`, "sm inline"));
+        const im = await shrinkImage(fs[k]); st.sections[i].images.push(await upPut(`${folder()}/sec-${newId().slice(0, 8)}.${im.ext}`, im.blob, im.blob.type)); drawSections(); }
+      keep(); msg("Pictures added.", "ok");
+    } catch (er) { msg(esc(er && er.message) || "A picture couldn't be uploaded.", "err"); }
+    st.busy = false; $("ue-save").disabled = false;
+  });
   const drawPhotos = () => { $("ue-photos").innerHTML = st.photos.length ? `<div class="prev-strip">${st.photos.map((p, k) => `<span style="position:relative;flex:0 0 auto"><img src="${esc(p)}" alt=""><button type="button" class="md-x" data-rmph="${k}" aria-label="Remove photo" style="position:absolute;top:2px;right:2px;background:#fff;border-radius:50%;width:26px;height:26px;line-height:1">×</button></span>`).join("")}</div>` : ""; };
   async function takeFile(file) {
     if (!file || st.busy) return;
@@ -2415,11 +2492,12 @@ function updateEditor(u, redraw) {
       st.folder = `${srcSlugOf($("ue-cwg").value)}/${newId()}`;
       const r = isPdf ? await processPdf(file, folder(), note) : await processPptx(file, folder(), note);
       st.file = r.file; st.pages = r.pages || []; st.slides = r.slides || [];
+      if (isPptx) { const a = slidesToSections(st.slides); st.sections = a.sections; if (a.title) r.title = a.title; if (a.intro && !$("ue-body").value.trim()) $("ue-body").value = a.intro; }
       if (!$("ue-title").value.trim()) $("ue-title").value = r.title || file.name.replace(/\.[^.]+$/, "").replace(/[_-]+/g, " ");
       drawKind(); keep();
       msg(r.file.drive ? `Ready. The full file is saved in the ASLP Google Drive, so people can download it. Check the title, then publish.`
         : r.file.big ? `Ready, but the full file couldn't be saved to Google Drive${r.file.driveError ? ` (${esc(r.file.driveError)})` : ""}. The ${st.kind === "pdf" ? "pages" : "slides"} are kept. To let people download the file, paste a link to it below.`
-        : r.more ? `Ready. Only the first 60 pages are shown on the website; the full PDF stays downloadable.` : "Ready. Check the title, then publish.", "ok");
+        : r.more ? `Ready. Only the first 60 pages are shown on the website; the full PDF stays downloadable.` : isPptx ? "Ready. Your slides are now an article: check the title, introduction and sections below, then publish." : "Ready. Check the title, then publish.", "ok");
     } catch (e) { console.error(e); drawKind(); msg(esc(e && e.message) || "The file couldn't be read. Try saving it again, or upload it as a PDF.", "err"); }
     st.busy = false; $("ue-save").disabled = false;
   }
@@ -2444,7 +2522,8 @@ function updateEditor(u, redraw) {
     const keep = st.kind !== "text";
     const [ptype, psrc] = $("ue-cwg").value.split("|");
     const p = { type: ptype === "group" ? "group" : "cwg", cwg: psrc, title, date: $("ue-date").value, kind: st.kind, body, photos: st.photos,
-      file: keep ? st.file : null, pages: st.kind === "pdf" ? st.pages : [], slides: st.kind === "pptx" ? st.slides : [] };
+      file: keep ? st.file : null, pages: st.kind === "pdf" ? st.pages : [], slides: st.kind === "pptx" ? st.slides : [],
+      sections: st.kind === "pptx" ? st.sections.map(x => ({ h: (x.h || "").trim(), t: (x.t || "").trim(), images: x.images || [] })).filter(x => x.h || x.t || x.images.length) : null };
     $("ue-save").disabled = true; msg(loader("Saving…", "sm inline"));
     const { data: id, error } = await db.rpc("aslp_save_update", { p_id: st.id, p_update: p });
     $("ue-save").disabled = false;
@@ -2461,6 +2540,7 @@ function updateEditor(u, redraw) {
     const f = d.f, sv = fixSrc(f.cwg); if ([...$("ue-cwg").options].some(o => o.value === sv)) $("ue-cwg").value = sv;
     $("ue-title").value = f.title || ""; $("ue-date").value = f.date || $("ue-date").value; $("ue-body").value = f.body || "";
     Object.assign(st, { kind: d.kind || st.kind, file: d.file || null, pages: d.pages || [], slides: d.slides || [], photos: d.photos || [], folder: d.folder || st.folder });
+    if (Array.isArray(d.sections)) st.sections = d.sections;
     drawKind(); drawPhotos();
     box.querySelector(".up-ed").insertAdjacentHTML("afterbegin", draftNote(d.at, st.id ? "" : "An unpublished update"));
     box.querySelector("[data-draft-discard]").onclick = () => { clearTimeout(kt); putDraft(dkey, null); delete box.dataset.draft; updateEditor(u, redraw); };
@@ -2743,9 +2823,9 @@ function needUpdates() {
   loadUpdates().then(() => { if (location.hash === h) route(); }).catch(() => { if (location.hash === h) $("view").innerHTML = `<div class="wrap loading">The updates couldn't load. Check your connection and refresh the page.</div>`; });
   return `<div class="lll page" role="status"><div class="lll-w" aria-hidden="true"><span style="--c:#0a84ff">Listen.</span><span style="--c:#f5c400">Learn.</span><span style="--c:#e14b1e">Lead.</span></div><div class="lll-l">Loading programme updates…</div></div>`;
 }
-const UKIND = { pdf: "PDF", pptx: "Slides" };
+const UKIND = { pdf: "PDF", pptx: "Article" };
 const fmtDate = d => { if (!d) return ""; const x = new Date(String(d).slice(0, 10) + "T00:00:00"); return isNaN(x) ? "" : x.toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" }); };
-const upCover = u => u.cover || (u.photos || [])[0] || (u.pages || [])[0] || ((u.slides || []).find(s => (s.images || []).length) || { images: [] }).images[0] || "";
+const upCover = u => u.cover || (u.photos || [])[0] || ((u.sections || []).find(s => (s.images || []).length) || { images: [] }).images[0] || (u.pages || [])[0] || ((u.slides || []).find(s => (s.images || []).length) || { images: [] }).images[0] || "";
 const upExcerpt = u => { const t = (u.body || "").trim() || (u.slides || []).flatMap(s => s.paras || []).map(p => p.t || p).slice(0, 4).join(" · "); return t.replace(/^[-•]\s*/gm, "").replace(/\s+/g, " ").slice(0, 220); };
 const linkify = t => esc(t).replace(/(https?:\/\/[^\s<]+[^\s<.,;:)])/g, '<a class="textlink" href="$1" target="_blank" rel="noopener noreferrer">$1</a>');
 // typed text: a blank line starts a new paragraph; lines starting with "-" or "•" become a list
@@ -2833,6 +2913,9 @@ function pageUpdate(id) {
   const pics = list => list.map(s => ({ src: s, cap: u.title }));
   galleries[u.id + ":photos"] = pics(photos);
   galleries[u.id + ":slides"] = pics(slides.flatMap(s => s.images || []));
+  const secs = u.kind === "pptx" && Array.isArray(u.sections) ? u.sections : null;
+  if (secs) galleries[u.id + ":sec"] = pics(secs.flatMap(s => s.images || []));
+  let gi = 0;
   let si = 0;
   return `<div style="${srcVars(u)}">${crumbs([["Home", "#/"], sec, [lab, srcList(u)], [u.title]])}
     <div class="wrap ud-head"><div class="up-meta"><a class="ud-cwg" href="${srcList(u)}">${esc(lab)}</a>${u.date ? `<span>${esc(fmtDate(u.date))}</span>` : ""}${UKIND[u.kind] ? `<span class="up-kind">${UKIND[u.kind]}</span>` : ""}</div>
@@ -2841,7 +2924,10 @@ function pageUpdate(id) {
       ${u.body ? `<div class="ud-body">${fmtBody(u.body)}</div>` : ""}
       ${photos.length ? `<div class="ud-photos">${photos.map((p, k) => `<button type="button" data-gal="${esc(u.id)}:photos" data-k="${k}" aria-label="Open photo ${k + 1}"><img src="${esc(p)}" alt="" loading="lazy"></button>`).join("")}</div>` : ""}
       ${pages.length ? `<div class="reader" id="reader"></div>` : ""}
-      ${slides.length ? `<div class="slides">${slides.map((s, n) => { const imgs = s.images || [], paras = s.paras || [];
+      ${secs ? `<div class="ua">${secs.map(x => { const im = x.images || [];
+          return `<section class="ua-sec">${x.h ? `<h2 class="ua-h">${esc(x.h)}</h2>` : ""}${x.t ? `<div class="ud-body">${fmtBody(x.t)}</div>` : ""}
+            ${im.length ? `<div class="ua-imgs n${Math.min(im.length, 3)}">${im.map(src => `<button type="button" data-gal="${esc(u.id)}:sec" data-k="${gi++}" aria-label="Open picture"><img src="${esc(src)}" alt="" loading="lazy"></button>`).join("")}</div>` : ""}</section>`; }).join("")}</div>` : ""}
+      ${slides.length && !secs ? `<div class="slides">${slides.map((s, n) => { const imgs = s.images || [], paras = s.paras || [];
           const txt = x => x && !(x.images || []).length && (x.paras || []).length, pos = (() => { if (!txt(s)) return 0; let i = n; while (i > 0 && txt(slides[i - 1])) i--; let j = n; while (j < slides.length - 1 && txt(slides[j + 1])) j++; const len = j - i + 1, k = n - i; return len % 2 && k === len - 1 ? 0 : 1; })();
           const cls = (!paras.length && !imgs.length ? "divider" : !paras.length ? "img-only" : imgs.length ? "has-img" : "") + (pos ? " half" : "");
           return `<article class="slide ${cls}"><div><div class="sl-n">Slide ${n + 1}</div>${s.title ? `<h2 class="sl-t">${esc(s.title)}</h2>` : ""}
