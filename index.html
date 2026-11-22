@@ -488,18 +488,26 @@
   .book-wrap:fullscreen { border-radius: 0; display: flex; flex-direction: column; justify-content: center; background: #1d1c2e; color: #fff; }
   .book-wrap:fullscreen .bk-hint { display: none; }
   .book-stage { display: grid; place-items: center; min-height: 360px; perspective: 2600px; user-select: none; touch-action: pan-y; }
-  .bk { position: relative; display: flex; cursor: pointer; transition: transform .45s ease; }
+  .bk { position: relative; display: flex; cursor: pointer; transition: transform .9s cubic-bezier(.45, .05, .25, 1); touch-action: pan-y; }
   .bk.two.cover { transform: translateX(-25%); } .bk.two.end { transform: translateX(25%); }
   .bk-pg { background: #fff; overflow: hidden; box-shadow: 0 6px 22px rgba(0,0,0,.16); flex: none; }
   .bk.two .bk-pg.l:empty, .bk.two .bk-pg.r:empty { background: transparent; box-shadow: none; }
   .bk-pg img { width: 100%; height: 100%; display: block; pointer-events: none; }
   .bk-spine { position: absolute; left: 50%; top: 0; bottom: 0; width: 46px; margin-left: -23px; pointer-events: none; background: linear-gradient(90deg, transparent, rgba(0,0,0,.13) 48%, rgba(0,0,0,.2) 50%, rgba(0,0,0,.13) 52%, transparent); }
   .bk.cover .bk-spine, .bk.end .bk-spine { display: none; }
-  .bk-leaf { position: absolute; top: 0; transform-style: preserve-3d; transition: transform .62s cubic-bezier(.45, .05, .25, 1); z-index: 3; pointer-events: none; }
-  .bk-leaf.fwd { transform-origin: left center; } .bk-leaf.back { transform-origin: right center; }
-  .bk-leaf.fwd.go { transform: rotateY(-180deg); } .bk-leaf.back.go { transform: rotateY(180deg); }
-  .bk-leaf .lf { position: absolute; inset: 0; background: #fff; backface-visibility: hidden; overflow: hidden; box-shadow: 0 6px 22px rgba(0,0,0,.18); }
-  .bk-leaf .lf img { width: 100%; height: 100%; display: block; } .bk-leaf .backs { transform: rotateY(180deg); }
+  .bk { perspective: 4200px; }
+  .book-bar { position: relative; z-index: 4; }
+  .bk.dragging, .bk.dragging * { cursor: grabbing; user-select: none; }
+  /* the turning leaf: a chain of thin strips, each bent a little more, so the paper curves like a real page */
+  .bk-leaf { position: absolute; top: 0; z-index: 3; pointer-events: none; transform-style: preserve-3d; }
+  .bk-strip { position: absolute; top: 0; left: 0; height: 100%; transform-origin: left center; transform-style: preserve-3d; }
+  .bk-strip > .sf, .bk-strip > .sb { position: absolute; inset: 0 -1.5px 0 0; backface-visibility: hidden; background-color: #fff; background-repeat: no-repeat; }
+  .bk-strip > .sb { transform: rotateY(180deg); background-color: #f7f5f1; }
+  .bk-strip > .sf::after { content: ""; position: absolute; inset: 0; background: linear-gradient(90deg, rgba(0,0,0,var(--sa, 0)), rgba(0,0,0,var(--sb, 0))); }
+  .bk-strip > .sb::after { content: ""; position: absolute; inset: 0; background: linear-gradient(270deg, rgba(0,0,0,var(--sa, 0)), rgba(0,0,0,var(--sb, 0))); }
+  .bk-cast { position: absolute; top: 0; height: 100%; pointer-events: none; z-index: 2; opacity: 0; }
+  .bk-cast.r { background: linear-gradient(90deg, rgba(0,0,0,.38), rgba(0,0,0,.08) 40%, rgba(0,0,0,0) 75%); }
+  .bk-cast.l { background: linear-gradient(270deg, rgba(0,0,0,.32), rgba(0,0,0,.06) 40%, rgba(0,0,0,0) 75%); }
   .bk-pg.s { transition: transform .22s ease, opacity .22s ease; }
   .bk-pg.out-l { transform: translateX(-30px) rotateY(25deg); opacity: 0; } .bk-pg.out-r { transform: translateX(30px) rotateY(-25deg); opacity: 0; }
   .bk-pg.in-r { animation: bkInR .25s ease; } .bk-pg.in-l { animation: bkInL .25s ease; }
@@ -2972,31 +2980,117 @@ async function mountBook(issue) {
       ${two ? face(ps[0] <= n ? srcs[0] : "", "l") + face(ps[1] <= n ? srcs[1] : "", "r") : face(srcs[0], "s")}${two ? `<div class="bk-spine"></div>` : ""}</div>`;
     bar(); [cur - 1, cur + 1, cur + 2].forEach(c => c >= 0 && c <= last() && pagesOf(c).forEach(img));   // get the next pages ready
   }
-  async function turn(dir) {
-    const to = cur + dir; if (busy || to < 0 || to > last() || !live()) return;
-    busy = true; const bk = $("bk");
-    if (!bk || matchMedia("(prefers-reduced-motion: reduce)").matches) { cur = to; await draw(); busy = false; return; }
-    const a = pagesOf(cur), b = pagesOf(to), [s0, s1] = await Promise.all([img(a[dir > 0 ? 1 : 0]), img(b[dir > 0 ? 0 : 1])]); if (!live()) return;
-    if (two) {   // a leaf lifts from one side and lands on the other
-      const under = await img(b[dir > 0 ? 1 : 0]);
-      const side = bk.querySelector(dir > 0 ? ".bk-pg.r" : ".bk-pg.l"); if (side) side.innerHTML = under && b[dir > 0 ? 1 : 0] <= n ? `<img src="${under}" alt="" draggable="false">` : "";
-      bk.classList.toggle("cover", to === 0 && dir < 0 ? false : bk.classList.contains("cover"));
-      const leaf = document.createElement("div"); leaf.className = "bk-leaf " + (dir > 0 ? "fwd" : "back");
-      leaf.style.cssText = `width:${pw}px;height:${ph}px;${dir > 0 ? `left:${pw}px` : "left:0"}`;
-      leaf.innerHTML = `<div class="lf front">${s0 ? `<img src="${s0}" alt="">` : ""}</div><div class="lf backs">${s1 && b[dir > 0 ? 0 : 1] <= n ? `<img src="${s1}" alt="">` : ""}</div>`;
-      bk.appendChild(leaf); void leaf.offsetWidth; leaf.classList.add("go");
-      await new Promise(r => setTimeout(r, 640));
-    } else {
-      const pg = bk.querySelector(".bk-pg"); pg.classList.add(dir > 0 ? "out-l" : "out-r"); await new Promise(r => setTimeout(r, 220));
+  // ---- page turning: a curved, shaded leaf you can click, drag or swipe ----
+  const ease = t => t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+  const STRIPS = 12;
+  // leaf hinged at its left edge; front = page facing up before (p=0), back = page facing up after (p=1)
+  function buildLeaf(bk, front, back, left) {
+    const leaf = document.createElement("div"); leaf.className = "bk-leaf"; leaf.style.cssText = `width:${pw}px;height:${ph}px;left:${left}px`;
+    const sw = pw / STRIPS, bg = (src, x) => src ? `background-image:url(${src});background-size:${pw}px ${ph}px;background-position:${-x}px 0;` : "";
+    let host = leaf; const strips = [];
+    for (let i = 0; i < STRIPS; i++) {
+      const st = document.createElement("div"); st.className = "bk-strip"; st.style.width = sw + "px";
+      st.innerHTML = `<div class="sf" style="${bg(front, i * sw)}"></div><div class="sb" style="${bg(back, pw - (i + 1) * sw)}"></div>`;
+      host.appendChild(st); strips.push(st); host = st;
     }
-    cur = to; await draw(); const pg2 = !two && $("bk") && $("bk").querySelector(".bk-pg"); if (pg2) { pg2.classList.add(dir > 0 ? "in-r" : "in-l"); }
-    busy = false;
+    const castR = document.createElement("div"), castL = document.createElement("div");
+    castR.className = "bk-cast r"; castL.className = "bk-cast l";
+    castR.style.cssText = `left:${left}px;width:${pw}px`; castL.style.cssText = `left:${left - pw}px;width:${pw}px`;
+    bk.append(castR, castL, leaf);
+    return { leaf, strips, castR, castL, sw };
+  }
+  // p: 0 = lying on the right, 1 = turned over to the left. lag: +1 turning forward, -1 turning back (the free edge trails)
+  function setLeaf(L, p, lag) {
+    const th = -180 * p, bend = 38 * Math.sin(Math.PI * p) * lag, step = bend / STRIPS, lift = Math.sin(Math.PI * p);
+    // light falls from the front: a page turned edge-on is darkest; shade is blended across each strip so there are no bands
+    const shadeAt = k => { const c = Math.cos((th + k * step) * Math.PI / 180); return [Math.min(.45, (1 - Math.abs(c)) * .4), c]; };
+    L.strips.forEach((st, i) => {
+      const a = i === 0 ? th : step, [s0, c0] = shadeAt(i), [s1] = shadeAt(i + 1);
+      st.style.transform = i === 0 ? `rotateY(${a}deg)` : `translateX(${L.sw - .02}px) rotateY(${a}deg)`;
+      const f = st.firstChild.style, b = st.lastChild.style;
+      f.setProperty("--sa", c0 > 0 ? s0 : 0); f.setProperty("--sb", c0 > 0 ? s1 : 0);
+      b.setProperty("--sa", c0 < 0 ? s0 : 0); b.setProperty("--sb", c0 < 0 ? s1 : 0);
+    });
+    if (two) { L.castR.style.opacity = (1 - p) * lift * 1.1; L.castL.style.opacity = p * lift * 1.1; }
+    else { L.leaf.style.opacity = p < .55 ? 1 : Math.max(0, 1 - (p - .55) / .45); L.castR.style.opacity = (1 - p) * lift; L.castL.style.opacity = 0; }
+  }
+  const tween = (from, to, ms, fn) => new Promise(r => { const t0 = performance.now(); const f = now => { const t = Math.min(1, (now - t0) / ms); fn(from + (to - from) * ease(t)); t < 1 ? requestAnimationFrame(f) : r(); }; requestAnimationFrame(f); });
+  // set up a turn in direction dir; returns the leaf, ready at its starting position
+  async function prepTurn(dir) {
+    const to = cur + dir, bk = $("bk"); if (!bk || to < 0 || to > last()) return null;
+    const a = pagesOf(cur), b = pagesOf(to), ok = p => p >= 1 && p <= n;
+    let front, back, under, left;
+    if (two) {
+      // the leaf is the sheet between the two spreads: right page before / left page after
+      const fp = dir > 0 ? a[1] : b[1], bp = dir > 0 ? b[0] : a[0];
+      [front, back, under] = await Promise.all([img(ok(fp) ? fp : 0), img(ok(bp) ? bp : 0), img(dir > 0 ? (ok(b[1]) ? b[1] : 0) : (ok(b[0]) ? b[0] : 0))]);
+      if (!live() || $("bk") !== bk) return null;
+      const side = bk.querySelector(dir > 0 ? ".bk-pg.r" : ".bk-pg.l");
+      if (side) { side.innerHTML = under ? `<img src="${under}" alt="" draggable="false">` : ""; side.style.background = under ? "" : "transparent"; side.style.boxShadow = under ? "" : "none"; }
+      left = pw;
+      bk.classList.toggle("cover", to === 0); bk.classList.toggle("end", b[1] > n);
+    } else {
+      // single page: the current page lifts away to the left, or the previous one comes back over it
+      const fp = dir > 0 ? a[0] : b[0];
+      [front, under] = await Promise.all([img(fp), img(dir > 0 ? b[0] : a[0])]);
+      if (!live() || $("bk") !== bk) return null;
+      back = ""; left = 0;
+      const pg = bk.querySelector(".bk-pg"); if (pg) pg.innerHTML = `<img src="${under}" alt="" draggable="false">`;
+    }
+    const L = buildLeaf(bk, front, back, left); L.to = to; L.dir = dir;
+    if (two) {   // no shadow on a side where there's no page (cover and back cover)
+      if (!ok(dir > 0 ? a[0] : b[0])) L.castL.style.display = "none";
+      if (!ok(dir > 0 ? b[1] : a[1])) L.castR.style.display = "none";
+    }
+    setLeaf(L, dir > 0 ? 0 : 1, dir); return L;
+  }
+  async function finish(L, fromP, done) {
+    const target = done ? (L.dir > 0 ? 1 : 0) : (L.dir > 0 ? 0 : 1);
+    await tween(fromP, target, Math.max(260, 1000 * Math.abs(target - fromP)), p => setLeaf(L, p, L.dir));
+    if (done) cur = L.to;
+    await draw(); busy = false;
+  }
+  async function turn(dir) {
+    if (busy || cur + dir < 0 || cur + dir > last() || !live()) return;
+    busy = true;
+    if (matchMedia("(prefers-reduced-motion: reduce)").matches) { cur += dir; await draw(); busy = false; return; }
+    const L = await prepTurn(dir); if (!L) { busy = false; return; }
+    await finish(L, dir > 0 ? 0 : 1, true);
   }
   size(); await draw();
   $("bk-prev").onclick = () => turn(-1); $("bk-next").onclick = () => turn(1);
-  $("bk-range").oninput = e => { cur = +e.target.value; draw(); };
-  stage.onclick = e => { const bk = $("bk"); if (!bk || !bk.contains(e.target)) return; const r = bk.getBoundingClientRect(); turn(e.clientX - r.left < r.width / 2 ? -1 : 1); };
-  let sx = null; stage.onpointerdown = e => { sx = e.clientX; }; stage.onpointerup = e => { if (sx != null && Math.abs(e.clientX - sx) > 50) { stage.onclick = stage.onclick; turn(e.clientX < sx ? 1 : -1); sx = null; e.preventDefault(); } sx = null; };
+  $("bk-range").oninput = e => { if (busy) return; cur = +e.target.value; draw(); };
+  // click a page edge to turn; or grab a page and drag it over like a real magazine
+  let drag = null, moved = false;
+  stage.onclick = e => { if (moved) { moved = false; return; } const bk = $("bk"); if (!bk || !bk.contains(e.target)) return; const r = bk.getBoundingClientRect(); turn(e.clientX - r.left < r.width / 2 ? -1 : 1); };
+  stage.onpointerdown = async e => {
+    const bk = $("bk"); if (busy || !bk || !bk.contains(e.target) || e.button > 0) return;
+    const r = bk.getBoundingClientRect(), dir = e.clientX - r.left < r.width / 2 ? -1 : 1;
+    if (cur + dir < 0 || cur + dir > last()) return;
+    drag = { x0: e.clientX, dir, L: null, p: dir > 0 ? 0 : 1, id: e.pointerId, t: performance.now(), lastX: e.clientX, v: 0 }; moved = false;
+  };
+  stage.onpointermove = async e => {
+    const d = drag; if (!d || e.pointerId !== d.id) return;
+    const dx = e.clientX - d.x0; if (!d.L && Math.abs(dx) < 8) return;
+    if (!d.L) {
+      if (d.starting) return; d.starting = true; busy = true; moved = true;
+      try { stage.setPointerCapture(e.pointerId); } catch (x) {}
+      d.L = await prepTurn(d.dir); if (!d.L) { busy = false; drag = null; return; }
+      $("bk") && $("bk").classList.add("dragging");
+    }
+    const span = (two ? pw * 2 : pw * 1.4);
+    const prog = Math.max(0, Math.min(1, (d.dir > 0 ? -dx : dx) / span));
+    d.p = d.dir > 0 ? prog : 1 - prog;
+    const now = performance.now(); d.v = (e.clientX - d.lastX) / Math.max(1, now - d.t); d.lastX = e.clientX; d.t = now;
+    setLeaf(d.L, d.p, d.dir);
+  };
+  const endDrag = async e => {
+    const d = drag; if (!d || (e && e.pointerId !== d.id)) return; drag = null;
+    if (!d.L) { if (d.starting) { const wait = () => new Promise(r => setTimeout(r, 30)); while (busy && !d.L) await wait(); } if (!d.L) return; }
+    const prog = d.dir > 0 ? d.p : 1 - d.p, flick = (d.dir > 0 ? -d.v : d.v) > .45;
+    await finish(d.L, d.p, prog > .28 || flick);
+  };
+  stage.onpointerup = endDrag; stage.onpointercancel = endDrag;
   const key = e => { if (!live()) return document.removeEventListener("keydown", key); if (/input|textarea|select/i.test(e.target.tagName)) return;
     if (e.key === "ArrowRight") turn(1); if (e.key === "ArrowLeft") turn(-1); };
   document.addEventListener("keydown", key);
