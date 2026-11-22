@@ -553,6 +553,11 @@
   .ab-how > div { background: var(--paper-2); border-radius: 18px; padding: var(--g4); } .ab-how p, .ab-out p { margin-top: 6px; font-size: 15.5px; color: var(--ink-2); }
   .ab-out { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--g4) var(--g5); }
   .ab-out > div { border-left: 3px solid #005fc0; padding-left: var(--g3); }
+  .ab-theme { display: grid; grid-template-columns: minmax(0, .8fr) minmax(0, 1.4fr); gap: var(--g6); align-items: center; }
+  .ab-tt { display: grid; font-size: clamp(48px, 7vw, 92px); font-weight: 900; font-stretch: 115%; letter-spacing: -.035em; line-height: .95; text-transform: uppercase; }
+  .ab-tt .a { color: #0a84ff; } .ab-tt .b { color: #f5c400; } .ab-tt .c { color: #e14b1e; }
+  .ab-theme .stack p { color: var(--ink-2); }
+  @media (max-width: 900px) { .ab-theme { grid-template-columns: 1fr; gap: var(--g4); } }
   .ab-25 { background: var(--paper-2); border-radius: 30px; padding: var(--g6) clamp(20px, 4vw, 48px); }
   .ab-25-head { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); gap: var(--g5); align-items: center; }
   .ab-25-ph { position: relative; padding: 0; border: 0; border-radius: 20px; overflow: hidden; cursor: zoom-in; aspect-ratio: 16 / 10; }
@@ -995,6 +1000,11 @@ function pageAbout() {
         <aside class="ab-goal"><div class="ab-k">Overall goal</div><p>To embed community development as an integral part of The Salvation Army's mission in Asia and the Pacific, properly resourced and supported.</p>
           <div class="ab-tag"><span class="a">LISTEN.</span> <span class="b">LEARN.</span> <span class="c">LEAD.</span></div></aside></div>
 
+      <section class="ab-sec ab-theme"><div class="ab-tt"><span class="a">Listen.</span><span class="b">Learn.</span><span class="c">Lead.</span></div>
+        <div class="stack"><h2 class="h2">More than capacity building</h2>
+          <p>Since the first forum in 2018, ASLP has worked under one theme. It is about everyone learning from one another, based on the diverse voices and experiences around the table: a space for implementing and supporting territories alike to share knowledge and stories and to shape the way forward together.</p>
+          <p>From the start, it was key for the programme to be shaped by Asian voices and practitioners. Taskforces of project office staff from across the region planned and facilitated the forums themselves, and by 2021 the forum had become, in its own words, a community and an Asian voice within the international Salvation Army.</p></div></section>
+
       <section class="ab-sec"><h2 class="h2">Three focus areas</h2>
         <div class="ab-aims">${ABOUT_AIMS.map(([h, c, t], n) => `<div class="ab-aim" style="--ac:${c}"><span class="ab-n">${n + 1}</span><h3 class="h3">${esc(h)}</h3><p>${esc(t)}</p></div>`).join("")}</div></section>
 
@@ -1037,19 +1047,35 @@ function pageAbout() {
 // ---- HISTORY: the journey (from "Journey of Hope 2018 to 2024" and the programme proposal) ----
 const HISTORY = [
   { y: "2016", t: "The early beginnings", c: "#24215f", shapes: ["spe1-02"], photos: [["2016-myanmar", "Myanmar, where the first conversations began"]],
-    p: ["The first conversations began between The Salvation Army in Myanmar and the support offices in Norway, Switzerland and Australia: how could territories in Asia learn from each other, rather than development flowing only from North to South?"] },
+    p: ["The idea of an Asia forum took shape. A taskforce from the implementing territories of Bangladesh, Myanmar, Pakistan and the Philippines, supported by International Headquarters and the support offices in Australia, Norway and Switzerland, began planning a space where territories in Asia could learn from each other, rather than development flowing only from North to South.",
+       "Topics were chosen by the members themselves through surveys, and the forum was rooted in Sustainable Development Goal 17: revitalising partnership."] },
   { y: "2018", t: "The first Asia Sharing and Learning Forum", where: "5–9 November, Philippines", c: "#e14b1e", shapes: ["g11-02"],
     photos: [["2018-group", "ASLF 2018 delegates in the Philippines"], ["2018-workshop", "Mapping country strategies into an Asia road map"]],
-    p: ["Development officers and leaders from across Asia met in person for the first time. Together they mapped how each country's projects and strategies could fit into an Asia strategy and The Salvation Army's theory of change, laying out challenges, strengths and where territories could help each other."],
-    li: ["Share examples of community development strategies across territories", "Take the road map and issues such as succession planning to zonal leaders", "Draft a proposal for a continued sharing and learning process in Asia", "Pilot programme-to-programme exchange visits between Asian partners"], lh: "Next steps agreed" },
+    p: ["Development officers and leaders from across Asia met in person for the first time, under a theme that has stayed ever since: Listen, Learn, Lead. Its three aims were to understand the demands placed on Asian development staff, to learn about community development from lectures and from each other, and to create a road map for Asian community development.",
+       "Together they mapped how each country's projects and strategies could fit into an Asia strategy and The Salvation Army's theory of change, laying out challenges, strengths, and where territories could offer or needed help."],
+    more: [
+      ["Learning from each other", "Pakistan, Bangladesh, Myanmar, Indonesia and the Philippines shared stories from their projects. De La Salle University-Dasmariñas gave lectures on community consultation, needs identification, evidence-based programming and monitoring and evaluation, and an MoU was signed with the university. Delegates also visited Kanlungan sa Erma, a faith-based organisation in Manila growing with very little outside funding."],
+      ["Partnership and communication", "Delegates assessed their partnerships against the values in the theory of change: openness, equity, diversity, mutual benefit and courage. Strengths included long-term relationships, committed staff, flexibility and trust; struggles included distance, reporting, limited staff capacity and bureaucracy. They committed to clearer, simpler and more transparent communication."],
+      ["Leadership", "Everyone can be a leader in their own role, whatever their rank or status, and everyone can bring out leadership in their co-workers."]],
+    moreLabel: "More from the 2018 report",
+    li: ["Take the Asia road map to the South Asia and SPEA zonal leaders", "Draft terms of reference and a proposal for a continued process of sharing and learning in Asia", "Pilot programme-to-programme exchange visits", "Set up a social media platform to connect delegates"], lh: "Next steps agreed" },
   { y: "2020", t: "ASLF 2020: Our Call to Mission in Asia", where: "24–26 November, online", c: "#005fc0", shapes: ["spe2-17"],
     photos: [["2020-online", "ASLF 2020 met online during the pandemic"]],
-    p: ["During the COVID-19 pandemic the forum moved online. Over three days, delegates looked at the role of the project office, how partners work together, how to help each other build capacity, and how to connect to communities of learning.",
-       "A survey found that 7 of 21 territories had a territorial strategy and 7 more wanted to develop a separate community development strategy. The message was clear: community development is an integral part of our mission, not something separate."],
+    p: ["During the COVID-19 pandemic the forum moved online, which brought in more voices: seventy delegates from implementing and support offices across both zones. A taskforce of six project office staff from Bangladesh, Pakistan, India, Myanmar, Indonesia and the Philippines spent eight months shaping the forum and facilitated it themselves, so it was formed by Asian voices and practitioners.",
+       "Delegates looked at the role of the project office, how partners work together, how to help each other build capacity, and how to connect to communities of learning. Only 7 of the 21 territories, regions and commands had a community development strategy. The message was clear: community development is an integral part of our mission, not something separate."],
+    more: [
+      ["Recommendation 1: territorial strategy", "Project officers should have clear job descriptions and a dedicated budget for their office, instead of relying on project funding."],
+      ["Recommendation 2: learning together", "All project officers and staff should have viewing access to the Hive, so they can see their own projects and learn from similar projects in the region."],
+      ["Recommendation 3: an Asia strategy", "Build the foundations first: each territory, region and command develops and owns its community development strategy, as the basis for the Asia-wide strategy."]],
+    moreLabel: "The taskforce's recommendations",
     quote: "An Asian strategy that is cohesive, clear and understood by all territories, that helps the region move forward and increases the capacity of territories to deliver effective and impactful community development projects." },
-  { y: "2021", t: "ASLF 2021 and the first clusters", where: "21 November, online", c: "#188afd", shapes: ["sas1-02"],
-    p: ["Territories met in four clusters for the first time, each with its own facilitators: South Asia 1 (India), South Asia 2 (Bangladesh, Sri Lanka, Pakistan and the Middle East), SPEA 1 (South East Asia and the Pacific) and SPEA 2 (East Asia).",
-       "Each cluster named its main thematic areas, its priorities for an Asia strategy and the risks it faces. Common themes included livelihoods, education, health, water and sanitation, anti-trafficking, disaster preparedness and capacity building. The clusters asked for regular meetings of appointed members to keep learning together between forums."] },
+  { y: "2021", t: "ASLF 2021 and the first clusters", where: "25 November, online", c: "#188afd", shapes: ["sas1-02"],
+    p: ["The forum reviewed each territory's progress since 2018 and 2020 and launched the cluster groups: South Asia 1 (India), South Asia 2 (Bangladesh, Sri Lanka, Pakistan and the Middle East), SPEA 1 (South East Asia and the Pacific) and SPEA 2 (East Asia), with support office voices in the conversations.",
+       "Each cluster named its main thematic areas, its priorities for an Asia strategy and the risks it faces. Common themes included livelihoods, education, health, water and sanitation, anti-trafficking, women's empowerment, disaster preparedness and capacity building."],
+    more: [
+      ["A way forward for 2022", "Monthly online meetings for the four cluster groups, facilitated by the taskforce; a second phase in which the clusters work semi-autonomously to support strategy formulation and resource sharing; a funded programme proposal; and an ASLF coordinator who would be an Asian role, based in Asia."],
+      ["What the forum had become", "Development officers were now familiar with each other and comfortable sharing. The report concluded that the ASLF now constitutes a community and an Asian voice within the international Salvation Army."]],
+    moreLabel: "Looking ahead from 2021" },
   { y: "2022", t: "ASLF 2022: the programme takes shape", where: "October, Bali, Indonesia", c: "#fe6809", shapes: ["sas2-02"],
     photos: [["2022-group", "ASLF 2022 delegates in Bali"], ["2022-group-2", "Delegates in their national dress"]],
     p: ["Development officers from both Asia zones, the support offices and zonal representatives spent five days designing the Asia-Pacific Sharing and Learning Programme together, including its logframe, in a truly collaborative and participatory way.",
@@ -1091,7 +1117,7 @@ function pageHistory() {
           <div class="hi-y">${esc(h.y)}</div><h2 class="h3">${esc(h.t)}</h2>${h.where ? `<div class="hi-where">${esc(h.where)}</div>` : ""}
           ${(h.photos || []).length ? `<div class="hi-photos n${Math.min(h.photos.length, 3)}">${h.photos.map(([f, c], k) => `<button type="button" class="hi-ph${k > 2 ? " extra" : ""}" data-lb="${esc(h.y)}" data-k="${k}" aria-label="Open photo: ${esc(c)}"><img src="photos/${f}.webp" alt="${esc(c)}" loading="lazy">${k === 2 && h.photos.length > 3 ? `<span class="hi-more">+${h.photos.length - 3}</span>` : ""}</button>`).join("")}</div>` : ""}
           ${h.p.map(x => `<p>${esc(x)}</p>`).join("")}
-          ${h.more ? `<details class="hi-det"><summary>What the forum agreed</summary>${h.more.map(([a, b]) => `<div class="hi-m"><b>${esc(a)}</b><p>${esc(b)}</p></div>`).join("")}</details>` : ""}
+          ${h.more ? `<details class="hi-det"><summary>${esc(h.moreLabel || "What the forum agreed")}</summary>${h.more.map(([a, b]) => `<div class="hi-m"><b>${esc(a)}</b><p>${esc(b)}</p></div>`).join("")}</details>` : ""}
           ${h.li ? `<div class="hi-lh">${esc(h.lh)}</div><ul>${h.li.map(x => `<li>${esc(x)}</li>`).join("")}</ul>` : ""}
           ${h.quote ? `<blockquote>${esc(h.quote)}${h.cite ? `<cite>${esc(h.cite)}</cite>` : ""}</blockquote>` : ""}
           ${h.link ? `<a class="textlink" href="${h.link[0]}">${esc(h.link[1])}</a>` : ""}</div></li>`).join("")}</ol>`).join("")}</div>
