@@ -628,9 +628,12 @@
   .lb-x { position: fixed; top: 14px; right: 18px; font-size: 36px; color: #fff; background: none; border: 0; cursor: pointer; }
   .lb-nav { position: fixed; top: 50%; transform: translateY(-50%); width: 48px; height: 48px; border-radius: 50%; border: 0; background: rgba(255,255,255,.18); color: #fff; font-size: 30px; cursor: pointer; }
   .lb-nav:hover { background: #f5c400; color: #000; } .lb-nav.prev { left: 14px; } .lb-nav.next { right: 14px; }
-  .hi-mission { margin-top: var(--g6); background: #005fc0; color: #fff; border-radius: 28px; padding: var(--g6) clamp(22px, 4vw, 48px); display: grid; gap: var(--g4); }
-  .hi-mission .statement { max-width: 24ch; } .hi-mission > p { max-width: 68ch; opacity: .92; }
-  .hi-four { display: flex; flex-wrap: wrap; gap: var(--g2); } .hi-four span { background: #fff; color: var(--wc); font-weight: 900; font-stretch: 112%; font-size: 22px; padding: 6px 18px; border-radius: 999px; }
+  .hi-mission { margin-top: var(--g6); background: #005fc0; color: #fff; border-radius: 28px; padding: var(--g5) clamp(22px, 4vw, 48px);
+    display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr); gap: var(--g4) var(--g6); align-items: center; }
+  .hi-mission .statement { max-width: none; font-size: clamp(26px, 2.7vw, 36px); }
+  .hm-r { display: grid; gap: var(--g3); } .hm-r p { max-width: none; opacity: .92; }
+  @media (max-width: 860px) { .hi-mission { grid-template-columns: 1fr; } }
+  .hi-four { display: flex; flex-wrap: wrap; gap: var(--g2); } .hi-four span { background: #fff; color: var(--wc); font-weight: 900; font-stretch: 112%; font-size: 20px; padding: 5px 16px; border-radius: 999px; }
   .hi-next { display: flex; flex-wrap: wrap; gap: var(--g2); margin-top: var(--g6); }
   footer { background: #000; color: #fff; padding: var(--g7) 0 var(--g6); }
   footer .wrap { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: var(--g5); align-items: end; }
@@ -1121,10 +1124,10 @@ function pageHistory() {
           ${h.li ? `<div class="hi-lh">${esc(h.lh)}</div><ul>${h.li.map(x => `<li>${esc(x)}</li>`).join("")}</ul>` : ""}
           ${h.quote ? `<blockquote>${esc(h.quote)}${h.cite ? `<cite>${esc(h.cite)}</cite>` : ""}</blockquote>` : ""}
           ${h.link ? `<a class="textlink" href="${h.link[0]}">${esc(h.link[1])}</a>` : ""}</div></li>`).join("")}</ol>`).join("")}</div>
-      <section class="hi-mission"><div><div class="ab-k">Integrated mission</div>
+      <section class="hi-mission"><div class="hm-q"><div class="ab-k">Integrated mission</div>
         <p class="statement">"I came that they may have life, and have it <b>to the full</b>."</p><p class="small" style="color:inherit;opacity:.8">Jesus, John 10:10</p></div>
-        <div class="hi-four">${[["Care", "#0a84ff"], ["Change", "#e14b1e"], ["Community", "#f5c400"], ["Hope", "#24215f"]].map(([w, c]) => `<span style="--wc:${c}">${w}</span>`).join("")}</div>
-        <p>Through the journey, the forums kept returning to the same calling: the mission of The Salvation Army is to preach the gospel of Jesus Christ and to meet human needs in his name without discrimination. Community development is one way that mission comes alive, with communities' own resources, shared responsibility and hope.</p></section>
+        <div class="hm-r"><div class="hi-four">${[["Care", "#0a84ff"], ["Change", "#e14b1e"], ["Community", "#f5c400"], ["Hope", "#24215f"]].map(([w, c]) => `<span style="--wc:${c}">${w}</span>`).join("")}</div>
+        <p>Through the journey, the forums kept returning to the same calling: the mission of The Salvation Army is to preach the gospel of Jesus Christ and to meet human needs in his name without discrimination. Community development is one way that mission comes alive, with communities' own resources, shared responsibility and hope.</p></div></section>
       <div class="hi-next"><a class="btn fill" href="#/about">About ASLP today</a><a class="btn" href="#/cwgs">Meet the Cluster Working Groups</a></div>
     </div>`;
 }
