@@ -548,8 +548,8 @@
     <div class="dd"><a href="#/cwgs" data-nav="cwgs" class="dd-top" aria-haspopup="true">Cluster Working Groups</a><div class="dd-menu" id="dd-cwgs"></div></div>
     <div class="dd"><a href="#/groups" data-nav="groups" class="dd-top" aria-haspopup="true">ASLP Groups</a><div class="dd-menu" id="dd-groups"></div></div>
     <a href="#/newsletter" data-nav="newsletter">Newsletter</a>
-    <a href="https://asia-sharing-and-learning-programme.github.io/cd-strategy/">CD Strategies</a>
-    <a href="https://asia-sharing-and-learning-programme.github.io/Calendar-2027-2028/">Calendar</a>
+    <a href="/cd-strategy/">CD Strategies</a>
+    <a href="/Calendar-2027-2028/">Calendar</a>
     <div class="theme-in-menu"><div class="seg" role="group" aria-label="Theme"><button data-theme-set="light">Light</button><button data-theme-set="auto">Auto</button><button data-theme-set="dark">Dark</button></div></div>
   </nav>
   <div class="seg theme" role="group" aria-label="Theme"><button data-theme-set="light">Light</button><button data-theme-set="auto">Auto</button><button data-theme-set="dark">Dark</button></div>
@@ -578,7 +578,7 @@
   </div>
   <nav aria-label="Footer">
     <a href="#/about">About ASLP</a><a href="#/cwgs">Cluster Working Groups</a><a href="#/groups">ASLP Groups</a><a href="#/newsletter">Newsletter</a>
-    <a href="https://asia-sharing-and-learning-programme.github.io/cd-strategy/">CD Strategies</a><a href="https://asia-sharing-and-learning-programme.github.io/Calendar-2027-2028/">Calendar</a>
+    <a href="/cd-strategy/">CD Strategies</a><a href="/Calendar-2027-2028/">Calendar</a>
     <a href="#/console" id="ft-console">Sign in</a>
   </nav>
   <div class="copy-line">© 2026 Asia-Pacific Sharing &amp; Learning Programme, The Salvation Army</div>
@@ -604,8 +604,8 @@ document.querySelectorAll("[data-theme-set]").forEach(b => b.addEventListener("c
 $("menu-btn").addEventListener("click", () => { const o = $("menu").classList.toggle("open"); $("menu-btn").setAttribute("aria-expanded", o); });
 
 
-// the CD Strategies and Calendar websites live at their own addresses (this site is at salvationarmy-aslp.org)
-const CDS_URL = "https://asia-sharing-and-learning-programme.github.io/cd-strategy/", CAL_URL = "https://asia-sharing-and-learning-programme.github.io/Calendar-2027-2028/";
+// all three websites share salvationarmy-aslp.org, so one sign-in works across them
+const CDS_URL = "/cd-strategy/", CAL_URL = "/Calendar-2027-2028/";
 // ---- share ----
 const SITE_URL = "https://salvationarmy-aslp.org/";
 $("share-btn").addEventListener("click", () => {
@@ -1382,7 +1382,7 @@ document.addEventListener("click", e => { const b = e.target.closest("[data-grp-
 let signinEmail = "";
 function consoleSignin() {
   return `<div class="console-card"><h2 class="h2">Sign in</h2>
-    <p class="small">CWG leads, admins and CWG members sign in with the same email as on the CD Strategies website.</p>
+    <p class="small">CWG leads, admins and CWG members use the same sign-in as the CD Strategies website. If you're already signed in there, you're signed in here too.</p>
     <form id="si-form" class="si-form" autocomplete="on"><label for="si-email">Your email</label>
       <div class="copy-row"><input type="email" id="si-email" required autocomplete="email" value="${esc(signinEmail)}" placeholder="name@salvationarmy.org"><button class="btn fill sm" id="si-go">Email me a sign-in code</button></div></form>
     <div id="si-code" ${signinEmail ? "" : "hidden"}><label for="si-token">Code from the email</label>
@@ -1402,7 +1402,7 @@ function pageConsole(a, b) {
     <div class="ctabs" role="tablist"><a role="tab" aria-selected="${tab === "website"}" class="${tab === "website" ? "on" : ""}" href="#/console">Website details</a>${v.cds_access ? `<a role="tab" aria-selected="${tab === "strategies"}" class="${tab === "strategies" ? "on" : ""}" href="#/console/strategies">CD Strategies</a>` : ""}</div></div>`;
   if (tab === "strategies" && !v.cds_access) return head + `<div class="wrap page-body"><div class="console-card"><p>This account doesn't use the CD Strategies console. Territories' CD focal persons, CWG leads and admins update the CD Strategies.</p></div></div>`;
   if (tab === "strategies") return head + `<div class="wrap page-body"><div class="console-card"><h2 class="h2">CD Strategies console</h2>
-    <p>Update each territory's CD Strategy status and details, focal persons and approvals on the CD Strategies website. Sign in there with the same email.</p>
+    <p>Update each territory's CD Strategy status and details, focal persons and approvals on the CD Strategies website. You're already signed in there with this account.</p>
     <p class="small">The territory's name, CWG, headquarters, countries, offices, status, strategy period and focal person are kept there and shown on this website automatically.</p>
     <a class="btn fill" href="${CDS_URL}#admin">Open the CD Strategies console</a></div></div>`;
   if (!terrIds.length && !cwgs.length && !groups.length && !v.is_full_admin) return head + `<div class="wrap page-body"><div class="console-card"><p>This account can't edit any website details yet. CWG leads and admins edit their CWGs; CWG members edit their own territory. Ask your CWG lead or the ASLP Coordinator for access.</p></div></div>`;
