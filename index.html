@@ -961,6 +961,41 @@
   .hello-toast.in { transform: translate(-50%, 0); opacity: 1; }
   .hello-toast b { color: #f5c400; } .hello-toast button { border: 0; background: rgba(255,255,255,.15); color: #fff; width: 28px; height: 28px; border-radius: 50%; font-size: 17px; cursor: pointer; flex: none; }
   @media (prefers-reduced-motion: reduce) { .wel-lll span, .wel-hi, .wel-sub, .wel-roles, .wel-steps li { animation: none; opacity: 1; transform: none; } .wi * { animation: none !important; stroke-dashoffset: 0 !important; } .hello-toast { transition: none; } }
+  /* ---------- standard-list picker ---------- */
+  .tp { display: grid; gap: 8px; }
+  .tp-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+  .tp-chip { display: inline-flex; align-items: center; gap: 4px; background: var(--ink); color: var(--paper); border-radius: 999px; padding: 4px 4px 4px 12px; font-size: 13.5px; font-weight: 600; }
+  .tp-chip.old { background: #fff6cc; color: #000; outline: 1.5px dashed #c9a227; }
+  .tp-chip button { border: 0; background: rgba(255,255,255,.2); color: inherit; width: 22px; height: 22px; border-radius: 50%; cursor: pointer; font-size: 14px; line-height: 1; }
+  .tp-chip.old button { background: rgba(0,0,0,.1); }
+  .tp-find { position: relative; }
+  .tp-list { position: absolute; left: 0; right: 0; top: calc(100% + 4px); z-index: 30; max-height: 320px; overflow: auto; background: var(--paper); border: 1px solid var(--line); border-radius: 14px; box-shadow: 0 14px 36px rgba(0,0,0,.14); padding: 6px; }
+  .tp-g { font-size: 12px; font-weight: 800; color: var(--ink-3); padding: 8px 10px 4px; }
+  .tp-opt { display: block; width: 100%; text-align: left; border: 0; background: none; font: inherit; font-size: 14.5px; padding: 7px 10px; border-radius: 8px; cursor: pointer; color: var(--ink); }
+  .tp-opt:hover, .tp-opt:focus { background: var(--paper-2); outline: none; }
+  /* ---------- grouped views (by thematic area / by strength) ---------- */
+  .view-sw { display: inline-flex; gap: 4px; background: var(--paper-2); border-radius: 999px; padding: 4px; margin: var(--g5) 0 var(--g4); }
+  .row-head .view-sw { margin: 0; }
+  .view-sw button { border: 0; background: none; font: inherit; font-weight: 700; font-size: 14.5px; padding: 8px 16px; border-radius: 999px; cursor: pointer; color: var(--ink-2); transition: background-color .35s, color .35s; }
+  .view-sw button.on { background: var(--ink); color: var(--paper); }
+  .gv-lede { margin-bottom: var(--g4); }
+  .gv-flow { columns: 3 320px; column-gap: 16px; margin-top: var(--g4); }
+  .gv-grp { break-inside: avoid; padding-bottom: var(--g4); } .gv-grp > .h3 { margin-bottom: var(--g2); font-size: 17px; }
+  .gv-grid { display: grid; gap: 10px; }
+  .gv-card { background: var(--paper-2); border-radius: 16px; padding: 14px 16px; display: grid; gap: 10px; align-content: start; scroll-margin-top: 90px; }
+  .gv-card.both { box-shadow: inset 0 0 0 2px var(--ink); }
+  .gv-k b { display: block; font-size: 16px; } .gv-k span { font-size: 12.5px; color: var(--ink-3); }
+  .gv-ps, .gv-cols > div { display: flex; flex-wrap: wrap; gap: 6px; align-content: start; }
+  .gv-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .gv-c { width: 100%; font-size: 12px; font-weight: 800; color: var(--c); }
+  .gv-place { display: inline-flex; align-items: center; gap: 6px; background: var(--paper); border-radius: 12px; line-height: 1.3; padding: 4px 11px 4px 8px; font-size: 13.5px; font-weight: 600; text-decoration: none; color: var(--ink); transition: transform .4s cubic-bezier(.16,1,.3,1); }
+  .gv-place:hover { transform: translateY(-2px); }
+  .gv-place i { width: 9px; height: 9px; border-radius: 50%; background: var(--c); flex: none; }
+  .gv-place span { font-size: 11px; color: var(--ink-3); font-weight: 600; }
+  .gv-cols .gv-place span { display: none; }
+  .gv-links { background: var(--paper-2); border-radius: 16px; padding: 16px 18px; display: grid; gap: 10px; }
+  .gv-shared { display: flex; flex-wrap: wrap; gap: 6px; } .gv-sh { text-decoration: none; }
+  @media (max-width: 600px) { .gv-cols { grid-template-columns: 1fr; } .row-head .view-sw { margin-top: var(--g2); } }
 </style>
 </head>
 <body>
@@ -1505,6 +1540,77 @@ function zoneSection(z) {
         <ul>${cwgPlaces(c).map(x => placeLi(x, false)).join("")}</ul></a>`; }).join("")}</div>
   </section>`;
 }
+// ---- standard lists: thematic areas (drawn from The Salvation Army IDS focus areas, OECD-DAC sectors and SDC themes)
+// and strengths (as identified by territories at the ASLFs, 2018 to 2025) ----
+const THEMES = [
+  ["Health and wellbeing", ["Primary health care", "Maternal, newborn and child health", "Nutrition", "HIV and AIDS", "Tuberculosis, malaria and other infectious diseases", "Non-communicable diseases", "Mental health and psychosocial support", "Sexual and reproductive health", "Hospitals and clinics", "Addiction and substance misuse", "Eye and ear health"]],
+  ["Water, sanitation and hygiene (WASH)", ["Safe drinking water", "Sanitation", "Hygiene promotion", "WASH in schools and health facilities"]],
+  ["Education and skills", ["Early childhood development", "Primary and secondary education", "Literacy and adult education", "Vocational and technical training", "Life skills", "Scholarships and school support"]],
+  ["Livelihoods and economic empowerment", ["Self-help groups", "Savings groups and microfinance", "Income generation and small business", "Employment and job placement", "Market access and value chains", "Financial literacy"]],
+  ["Agriculture, food security and environment", ["Food security", "Sustainable agriculture", "Livestock and fisheries", "Climate change adaptation and resilience", "Environmental protection and natural resources", "Renewable energy"]],
+  ["Disasters and emergencies", ["Disaster risk reduction and preparedness", "Emergency response and relief", "Recovery and reconstruction", "Community-based disaster management"]],
+  ["Protection, justice and peace", ["Anti-human trafficking and modern slavery", "Child protection and safeguarding", "Gender-based violence prevention", "Gender equality and women's empowerment", "Human rights and advocacy", "Social justice", "Refugees, migrants and displaced people", "Peacebuilding and social cohesion", "Interfaith relations"]],
+  ["Children, youth and families", ["Vulnerable and street children", "Children's homes and alternative care", "Youth development and leadership", "Family strengthening and parenting"]],
+  ["Inclusion", ["Disability inclusion", "Older people and ageing", "Indigenous and minority communities", "Gender equality, disability and social inclusion (GEDSI)"]],
+  ["Community development", ["Integrated mission", "Community empowerment and participation", "Faith-based facilitation", "Local leadership and governance", "Community-based organisations", "Corps-based community development", "Shelter and housing", "Community infrastructure", "Homelessness and social services"]],
+  ["Ways of working", ["Capacity development", "Monitoring, evaluation, accountability and learning (MEAL)", "Partnerships and networking", "Resource mobilisation and sustainability", "Research and innovation", "Digital and technology"]]];
+// strengths, grouped, with the ASLFs where territories named them
+const STRENGTHS = [
+  ["Faith, values and mission", [["Shared values and faith motivation", "2025"], ["Integrated mission approach", "2021, 2025"], ["Community development in the territory's vision and mission", "2018, 2021"], ["Corps presence in communities", "2018"], ["Prayer and spiritual support", "2018"]]],
+  ["People and leadership", [["Dedicated and committed staff", "2018"], ["Experienced and skilled technical staff", "2018, 2021"], ["Committed officers", "2018"], ["Visionary and supportive leadership", "2018"], ["Skilled community volunteers", "2018"], ["Youth empowerment", "2025"]]],
+  ["Working with communities", [["Community-led and holistic approaches", "2025"], ["People's participation", "2018"], ["Empowered communities", "2018"], ["Self-help groups", "2018, 2021"], ["Community resource persons and village information centres", "2018"], ["Faith-based facilitation", "2018"], ["Adaptive, inclusive approaches that fit different cultures", "2025"]]],
+  ["Partnerships and networks", [["Long-term relationships and trust with partners", "2018"], ["Effective partnerships with government and NGOs", "2018, 2025"], ["Established networks and international connectivity", "2018, 2025"], ["Collaboration with local leaders and other churches", "2025"], ["Technical support from support offices", "2018"]]],
+  ["Systems and governance", [["Collaborative governance structures", "2025"], ["Community voice in advisory boards and committees", "2025"], ["Child protection policy, including in the local language", "2021"], ["Good communication and reporting", "2018"], ["Flexible programme management", "2018"], ["Training facilities and institutions", "2018"]]],
+  ["Expertise to share", [["Proposal development and research", "2018"], ["Monitoring and impact measurement", "2018"], ["Needs assessments", "2018"], ["Accountability training", "2018"], ["Community development tools", "2018"], ["Child protection and parenting training", "2018"], ["Social justice training", "2018"], ["SDG training", "2018"], ["Microfinance programmes", "2018"], ["Rehabilitation programmes", "2018"], ["Disaster risk reduction and emergency response", "2018"], ["Anti-human trafficking", "2021"], ["Climate change and livelihoods", "2021"], ["Peer learning through communities of practice and programme visits", "2025"]]]];
+const STRENGTH_SRC = Object.fromEntries(STRENGTHS.flatMap(([, xs]) => xs.map(([n, y]) => [n, y])));
+const THEME_GROUP = Object.fromEntries(THEMES.flatMap(([g, xs]) => xs.map(x => [x, g])));
+const STRENGTH_GROUP = Object.fromEntries(STRENGTHS.flatMap(([g, xs]) => xs.map(([x]) => [x, g])));
+const strengthsOf = p => String((p && p.strengths) || "").split("\n").map(x => x.trim()).filter(Boolean);
+
+// a searchable multi-pick from a standard list
+function tagPicker(box, groups, selected, label) {
+  const sel = [...selected]; const known = new Set(groups.flatMap(g => g[1]));
+  const draw = () => {
+    box.innerHTML = `<div class="tp-chips">${sel.length ? sel.map((x, i) => `<span class="tp-chip${known.has(x) ? "" : " old"}" title="${known.has(x) ? "" : "Not in the standard list: remove it and pick one from the list"}">${esc(x)}<button type="button" data-tp-rm="${i}" aria-label="Remove ${esc(x)}">×</button></span>`).join("") : `<span class="small">None picked yet.</span>`}</div>
+      <div class="tp-find"><input type="search" class="tp-q" placeholder="Search or browse the list to add ${esc(label)}" aria-label="Add ${esc(label)}" autocomplete="off"><div class="tp-list" hidden></div></div>`;
+    const q = box.querySelector(".tp-q"), list = box.querySelector(".tp-list");
+    const show = () => { const t = q.value.trim().toLowerCase();
+      const html = groups.map(([g, xs]) => { const m = xs.filter(x => !sel.includes(x) && (!t || x.toLowerCase().includes(t) || g.toLowerCase().includes(t)));
+        return m.length ? `<div class="tp-g">${esc(g)}</div>${m.map(x => `<button type="button" class="tp-opt" data-tp-add="${esc(x)}">${esc(x)}</button>`).join("")}` : ""; }).join("");
+      list.innerHTML = html || `<p class="small" style="padding:8px 10px">Nothing matches. Try another word.</p>`; list.hidden = false; };
+    q.onfocus = show; q.oninput = show;
+    q.onkeydown = e => { if (e.key === "Escape") { list.hidden = true; q.blur(); } if (e.key === "Enter") { e.preventDefault(); const f = list.querySelector("[data-tp-add]"); if (f) f.click(); } };
+    box.onclick = e => { const a = e.target.closest("[data-tp-add]"), r = e.target.closest("[data-tp-rm]");
+      if (a) { sel.push(a.dataset.tpAdd); draw(); box.querySelector(".tp-q").focus(); box.dispatchEvent(new Event("input", { bubbles: true })); }
+      if (r) { sel.splice(+r.dataset.tpRm, 1); draw(); box.dispatchEvent(new Event("input", { bubbles: true })); } };
+  };
+  draw();
+  document.addEventListener("click", e => { if (!box.isConnected) return; if (!box.contains(e.target)) { const l = box.querySelector(".tp-list"); if (l) l.hidden = true; } });
+  return { value: () => sel.slice() };
+}
+
+// territories and switched-on regions, for the grouped views
+const placesIn = cwgs => [...terrs().filter(t => cwgs.includes((t.cwg || "").trim())).map(t => ({ id: t.id, name: shortName(OFFICIAL_NAME[t.id] || t.name), cwg: (t.cwg || "").trim(), p: t.profile || {} })),
+  ...units().filter(u => cwgs.includes(u.cwg)).map(u => ({ id: u.id, name: u.name, cwg: u.cwg, p: u.profile || {}, unit: true }))];
+const placeChip = x => `<a class="gv-place" href="#/territory/${esc(x.id)}" style="--c:${CWG_COL[x.cwg] || "var(--ink-3)"}"><i></i>${esc(x.name)}<span>${esc(x.cwg)}</span></a>`;
+// group places by a standard list; with two CWGs, show what links them
+function groupedView(places, groups, pick, cwgPair, emptyMsg) {
+  const by = {}; places.forEach(x => pick(x).forEach(k => (by[k] = by[k] || []).push(x)));
+  const used = groups.map(([g, xs]) => [g, xs.filter(k => by[k])]).filter(([, xs]) => xs.length);
+  if (!used.length) return `<p class="empty">${esc(emptyMsg)}</p>`;
+  const shared = cwgPair ? used.flatMap(([, xs]) => xs).filter(k => cwgPair.every(c => by[k].some(x => x.cwg === c))) : [];
+  const head = cwgPair ? `<div class="gv-links"><b>${shared.length ? `${shared.length} ${shared.length === 1 ? "area links" : "areas link"} ${esc(cwgPair[0])} and ${esc(cwgPair[1])}` : `No shared areas between ${esc(cwgPair[0])} and ${esc(cwgPair[1])} yet`}</b>
+      ${shared.length ? `<div class="gv-shared">${shared.map(k => `<a href="#gv-${esc(k.replace(/\W+/g, "-").toLowerCase())}" class="tag gv-sh">${esc(k)}</a>`).join("")}</div>` : ""}</div>` : "";
+  return head + `<div class="gv-flow">` + used.map(([g, xs]) => `<section class="gv-grp"><h3 class="h3">${esc(g)}</h3><div class="gv-grid">${xs.map(k => {
+      const ps = by[k], both = cwgPair && cwgPair.every(c => ps.some(x => x.cwg === c));
+      return `<div class="gv-card${both ? " both" : ""}" id="gv-${esc(k.replace(/\W+/g, "-").toLowerCase())}"><div class="gv-k"><b>${esc(k)}</b><span>${ps.length} ${ps.length === 1 ? "place" : "places"}${both ? ` · links ${esc(cwgPair.join(" and "))}` : ""}</span></div>
+        ${cwgPair ? `<div class="gv-cols">${cwgPair.map(c => `<div><div class="gv-c" style="--c:${CWG_COL[c]}">${esc(c)}</div>${ps.filter(x => x.cwg === c).map(placeChip).join("") || `<span class="small">None yet</span>`}</div>`).join("")}</div>`
+          : `<div class="gv-ps">${ps.map(placeChip).join("")}</div>`}</div>`; }).join("")}</div></section>`).join("") + `</div>`;
+}
+const viewSwitch = (id, opts) => `<div class="view-sw" role="tablist" data-vs="${id}">${opts.map(([k, l], i) => `<button type="button" role="tab" data-vk="${k}" class="${i ? "" : "on"}" aria-selected="${!i}">${esc(l)}</button>`).join("")}</div>`;
+document.addEventListener("click", e => { const b = e.target.closest("[data-vk]"); if (!b) return; const sw = b.closest("[data-vs]");
+  sw.querySelectorAll("[data-vk]").forEach(x => { x.classList.toggle("on", x === b); x.setAttribute("aria-selected", x === b); });
+  document.querySelectorAll(`[data-vpane="${sw.dataset.vs}"]`).forEach(p => { p.hidden = p.dataset.vk2 !== b.dataset.vk; }); });
 function pageCwgs() {
   pendingMaps.push(() => mountPins("map-all", terrs()));
   return `${crumbs([["Home", "#/"], ["Cluster Working Groups"]])}
@@ -1514,14 +1620,20 @@ function pageCwgs() {
     <div class="wrap page-body">
       ${cwgExplainer()}
       <div class="aslp-map" id="map-all" role="region" aria-label="Map of ASLP territorial and regional headquarters"></div>${zoneLegend(["SPEA", "SASIA"])}
-      ${ZONES.map(zoneSection).join("")}
+      ${viewSwitch("cwgs", [["cwg", "By CWG"], ["theme", "By thematic area"]])}
+      <div data-vpane="cwgs" data-vk2="cwg">${ZONES.map(zoneSection).join("")}</div>
+      <div data-vpane="cwgs" data-vk2="theme" hidden><p class="lede gv-lede">Every territory and region in SPEA and SASIA, grouped by the thematic areas they work in. Select one to open its profile.</p>
+        ${groupedView(placesIn(cwgList()), THEMES, x => x.p.thematic || [], null, "Thematic areas will show here once territories add them to their profiles.")}</div>
     </div>`;
 }
 function pageZone(zk) {
   const z = ZONES.find(x => x.key.toLowerCase() === zk); if (!z) return notFound();
   pendingMaps.push(() => mountPins("map-zone", terrs().filter(t => zoneOf(t.cwg) === z.key)));
   return `${crumbs([["Home", "#/"], ["Cluster Working Groups", "#/cwgs"], [z.label]])}
-    <div class="wrap page-body">${zoneSection(z)}
+    <div class="wrap page-body">${viewSwitch("zone", [["cwg", "By CWG"], ["theme", "By thematic area"]])}
+      <div data-vpane="zone" data-vk2="cwg">${zoneSection(z)}</div>
+      <div data-vpane="zone" data-vk2="theme" hidden><p class="lede gv-lede">${esc(z.label)} territories and regions grouped by thematic area, showing where its two CWGs work on the same things.</p>
+        ${(() => { const cs = cwgList().filter(c => zoneOf(c) === z.key); return groupedView(placesIn(cs), THEMES, x => x.p.thematic || [], cs.length === 2 ? cs : null, "Thematic areas will show here once territories add them to their profiles."); })()}</div>
       <div style="margin-top:var(--g6)"><div class="aslp-map" id="map-zone" role="region" aria-label="Map of ${esc(z.label)} headquarters"></div>${zoneLegend([z.key])}</div></div>`;
 }
 
@@ -1540,8 +1652,10 @@ function pageCwg(cs) {
     </div></section>
     <div class="wrap page-body" style="padding-top:var(--g7)">
       <p class="lede" style="margin-bottom:var(--g6)">${esc(c)} is one of four <a class="textlink" href="#/cwgs">Cluster Working Groups</a>. Its members meet online through the year and in person every two years to share what works, build their teams' skills and shape their territories' Community Development Strategies.</p>
-      <h2 class="h2">${ts.length} territories and regions</h2>
-      <div class="terr-grid">${ts.map(t => { const p = t.profile || {}, us = unitsOf(t.id).filter(u => u.cwg === c);
+      <div class="row-head"><h2 class="h2">${ts.length} territories and regions</h2>${viewSwitch("cwgst", [["list", "Territories"], ["str", "By strength"]])}</div>
+      <div data-vpane="cwgst" data-vk2="str" hidden><p class="lede gv-lede">${esc(c)}'s territories and regions grouped by their strengths, as named at the Asia Sharing and Learning Forums.</p>
+        ${groupedView(placesIn([c]), STRENGTHS.map(([g, xs]) => [g, xs.map(x => x[0])]), x => strengthsOf(x.p), null, "Strengths will show here once territories pick them in their profiles.")}</div>
+      <div data-vpane="cwgst" data-vk2="list" class="terr-grid">${ts.map(t => { const p = t.profile || {}, us = unitsOf(t.id).filter(u => u.cwg === c);
         return `<a class="terr-row" href="#/territory/${esc(t.id)}"><div class="nm">${esc(t.name)}</div>
           <div class="where">${t.location ? `${isRegion(t) ? "Regional" : "Territorial"} Headquarters in ${esc(t.location)}` : ""}</div>
           ${(p.thematic || []).length ? tags(p.thematic.slice(0, 4)) : `<span class="small">Profile coming soon</span>`}</a>${unitRows(us)}`; }).join("")}${unitRows(units().filter(u => u.cwg === c && !ts.some(t => t.id === u.parent)))}</div>
@@ -1582,7 +1696,7 @@ function pageTerritory(id) {
         </div>
         ${unitsOf(t.id).length ? `<div class="t-sec"><h2 class="h3">Regions, divisions and countries</h2><div class="terr-grid">${unitRows(unitsOf(t.id))}</div></div>` : ""}
         ${sec("Thematic areas", (p.thematic || []).length ? tags(p.thematic) : "", "Thematic areas will appear here once the territory adds them.")}
-        ${sec("Strengths", p.strengths ? `<p>${esc(p.strengths)}</p>` : "", "Strengths will appear here once the territory adds them.")}
+        ${sec("Strengths", strengthsOf(p).length ? tags(strengthsOf(p)) : "", "Strengths will appear here once the territory adds them.")}
         ${sec("Technical support they can offer other territories", p.techSupport ? `<p>${esc(p.techSupport)}</p>` : "", "Support offers will appear here once the territory adds them.")}
       </div>
       <aside>
@@ -1633,7 +1747,7 @@ function pageUnit(u) {
           <div class="aslp-map sm" id="map-terr" role="region" aria-label="Map of ${esc(u.name)}"></div>
           ${p.workAreas ? `<p style="margin-top:var(--g3)">${esc(p.workAreas)}</p>` : ""}</div>
         ${sec("Thematic areas", (p.thematic || []).length ? tags(p.thematic) : "", `Thematic areas will appear here once ${esc(u.name)} adds them.`)}
-        ${sec("Strengths", p.strengths ? `<p>${esc(p.strengths)}</p>` : "", `Strengths will appear here once ${esc(u.name)} adds them.`)}
+        ${sec("Strengths", strengthsOf(p).length ? tags(strengthsOf(p)) : "", `Strengths will appear here once ${esc(u.name)} adds them.`)}
         ${sec("Technical support they can offer others", p.techSupport ? `<p>${esc(p.techSupport)}</p>` : "", "Support offers will appear here once they're added.")}
       </div>
       <aside>
@@ -1703,8 +1817,8 @@ function unitEditor(id) {
   box.innerHTML = `<div class="synced"><div class="synced-h"><b>${esc(u.name)}</b><span class="small">${esc(u.kind === "Country" ? "Part of the" : `A ${u.kind.toLowerCase()} of the`)} ${esc(OFFICIAL_NAME[t.id] || t.name || "")} · ${esc(u.cwg)} CWG. It shares the territory's CD Strategy.</span></div></div>
     <div class="ed-grid">
       <label class="full"><span>Where they work</span><textarea id="p-work" rows="3">${esc(p.workAreas || "")}</textarea></label>
-      <label class="full"><span>Thematic areas</span><input id="p-them" value="${esc((p.thematic || []).join(", "))}" placeholder="Separate with commas, e.g. Disaster response, Livelihoods, Health"></label>
-      <label><span>Strengths</span><textarea id="p-str" rows="4">${esc(p.strengths || "")}</textarea></label>
+      <div class="full ed-field"><span>Thematic areas <span class="ed-hint">pick as many as apply, from the standard list</span></span><div id="p-them" class="tp"></div></div>
+      <div class="full ed-field"><span>Strengths <span class="ed-hint">pick from the strengths territories named at the ASLFs, 2018 to 2025</span></span><div id="p-str" class="tp"></div></div>
       <label><span>Technical support they can offer others</span><textarea id="p-tech" rows="4">${esc(p.techSupport || "")}</textarea></label>
     </div>
     <h3 class="h3" style="margin-top:var(--g5)">Contact persons</h3>
@@ -1712,10 +1826,11 @@ function unitEditor(id) {
     <div id="con-box"><div class="ed-rows">${((u.contacts || []).length ? u.contacts : [{}]).map(c => fieldRow(CON_COLS, c, [])).join("")}</div>
       <div class="ed-actions"><button type="button" class="btn sm ed-add">Add a contact</button></div></div>` : roContacts(u.contacts)}
     <div class="ed-actions sticky"><button type="button" class="btn fill" id="terr-save">Save ${esc(u.name)}</button><a class="textlink" href="#/territory/${esc(u.id)}">View the page</a><span class="ed-msg" id="terr-msg" role="status"></span></div>`;
+  const pT = tagPicker($("p-them"), THEMES, p.thematic || [], "thematic areas"), pS = tagPicker($("p-str"), STRENGTHS.map(([g, xs]) => [g, xs.map(x => x[0])]), strengthsOf(p), "strengths");
   if (canConU) wireRows($("con-box"), CON_COLS, []);
   makeDraftable(box, `unit:${id}`, () => unitEditor(id));
   $("terr-save").addEventListener("click", () => saveWith("terr-save", "terr-msg", () => db.rpc("aslp_save_unit", { p_id: id,
-    p_profile: { workAreas: $("p-work").value.trim(), thematic: $("p-them").value.split(",").map(x => x.trim()).filter(Boolean), strengths: $("p-str").value.trim(), techSupport: $("p-tech").value.trim() },
+    p_profile: { workAreas: $("p-work").value.trim(), thematic: pT.value(), strengths: pS.value().join("\n"), techSupport: $("p-tech").value.trim() },
     p_contacts: canConU ? readRows($("con-box")) : (u.contacts || []) }), `${u.name} saved.`));
 }
 
@@ -2812,8 +2927,8 @@ function terrEditor(id) {
       <a class="textlink" href="${CDS_URL}#territory-${esc(t.id)}">${shared ? "Change the offices, status and focal person in the CD Strategies console" : "See it on the CD Strategies website"}</a></div>
     <div class="ed-grid">
       <label class="full"><span>Where they work</span><textarea id="p-work" rows="3" placeholder="Areas, communities and programmes the territory works in">${esc(p.workAreas || "")}</textarea></label>
-      <label class="full"><span>Thematic areas</span><input id="p-them" value="${esc((p.thematic || []).join(", "))}" placeholder="Separate with commas, e.g. Disaster response, Livelihoods, Health"></label>
-      <label><span>Strengths</span><textarea id="p-str" rows="4">${esc(p.strengths || "")}</textarea></label>
+      <div class="full ed-field"><span>Thematic areas <span class="ed-hint">pick as many as apply, from the standard list</span></span><div id="p-them" class="tp"></div></div>
+      <div class="full ed-field"><span>Strengths <span class="ed-hint">pick from the strengths territories named at the ASLFs, 2018 to 2025</span></span><div id="p-str" class="tp"></div></div>
       <label><span>Technical support they can offer other territories</span><textarea id="p-tech" rows="4">${esc(p.techSupport || "")}</textarea></label>
     </div>
     <h3 class="h3" style="margin-top:var(--g5)">Contact persons</h3>
@@ -2821,6 +2936,7 @@ function terrEditor(id) {
     <div id="con-box"><div class="ed-rows">${((t.contacts || []).length ? t.contacts : [{}]).map(c => fieldRow(CON_COLS, c, [])).join("")}</div>
       <div class="ed-actions"><button type="button" class="btn sm ed-add">Add a contact</button></div></div>` : roContacts(t.contacts)}
     <div class="ed-actions sticky"><button type="button" class="btn fill" id="terr-save">Save ${esc(shortName(t.name))}</button><a class="textlink" href="#/territory/${esc(t.id)}">View the page</a><span class="ed-msg" id="terr-msg" role="status"></span></div>`;
+  const pT = tagPicker($("p-them"), THEMES, p.thematic || [], "thematic areas"), pS = tagPicker($("p-str"), STRENGTHS.map(([g, xs]) => [g, xs.map(x => x[0])]), strengthsOf(p), "strengths");
   if (canCon) wireRows($("con-box"), CON_COLS, []);
   makeDraftable(box, `terr:${id}`, () => terrEditor(id));
   $("terr-save").addEventListener("click", () => saveWith("terr-save", "terr-msg", async () => {
@@ -2830,7 +2946,7 @@ function terrEditor(id) {
       if ([...ct].sort().join("|") !== [...(t.countries || [])].sort().join("|")) det.countries = ct;
       if (Object.keys(det).length) { const r0 = await db.rpc("submit_details_update", { p_email: V().email, p_territory: id, p_details: det }); if (r0.error) return r0; }
     }
-    const r1 = await db.rpc("aslp_save_profile", { p_territory: id, p_profile: { workAreas: $("p-work").value.trim(), thematic: $("p-them").value.split(",").map(x => x.trim()).filter(Boolean), strengths: $("p-str").value.trim(), techSupport: $("p-tech").value.trim() } });
+    const r1 = await db.rpc("aslp_save_profile", { p_territory: id, p_profile: { workAreas: $("p-work").value.trim(), thematic: pT.value(), strengths: pS.value().join("\n"), techSupport: $("p-tech").value.trim() } });
     if (r1.error || !canCon) return r1;
     return db.rpc("aslp_set_contacts", { p_territory: id, p_items: readRows($("con-box")) });
   }, `${shortName(t.name)} saved.`));
