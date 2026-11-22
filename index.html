@@ -846,6 +846,30 @@
   .prev-slide { flex: 0 0 180px; background: var(--paper-2); border-radius: 10px; padding: 10px; font-size: 13px; line-height: 1.35; }
   .prev-slide b { display: block; margin-bottom: 4px; } .prev-slide img { height: 54px; margin-top: 6px; }
   @media (max-width: 600px) { .up-li { grid-template-columns: 56px minmax(0, 1fr); } .up-li .th { width: 56px; height: 42px; } .up-li .acts { grid-column: 1 / -1; } }
+  /* ---- motion: scroll reveals (added by JS only, so content never stays hidden) and hover ---- */
+  .rv { opacity: 0; transition: opacity .7s cubic-bezier(.2,.7,.2,1), transform .7s cubic-bezier(.2,.7,.2,1); transition-delay: var(--rv-d, 0ms); will-change: opacity, transform; }
+  .rv.rv-up { transform: translateY(22px); }
+  .rv.rv-left { transform: translateX(-28px); }
+  .rv.rv-right { transform: translateX(28px); }
+  .rv.rv-zoom { transform: scale(.96); }
+  .rv.rv-fade { transform: none; }
+  .rv.in { opacity: 1; transform: none; }
+  .cwg-panel, .grp-card, .act-card, .ex-card, .hi-card, .door, .issue, .mem-group, .zone-tile .zcwg { transition: transform .35s cubic-bezier(.2,.7,.2,1), box-shadow .35s ease; }
+  .cwg-panel:hover, .act-card:hover, .ex-card:hover, .hi-card:hover, .mem-group:hover { transform: translateY(-4px); box-shadow: 0 14px 30px -18px rgba(36,33,95,.35); }
+  .grp-card:hover, .door:hover { transform: translateY(-5px); box-shadow: 0 18px 36px -20px rgba(36,33,95,.5); }
+  .issue:hover { transform: translateY(-4px) rotate(-1deg); }
+  .zone-tile .zcwg:hover { transform: translateX(4px); }
+  .grp-card .decor > *, .door .decor > * { transition: translate .6s cubic-bezier(.2,.7,.2,1), rotate .6s cubic-bezier(.2,.7,.2,1); }
+  .grp-card:hover .decor > *, .door:hover .decor > * { translate: 0 -6px; rotate: 6deg; }
+  .terr-row .nm { transition: transform .3s cubic-bezier(.2,.7,.2,1), color .2s; } .terr-row:hover .nm { transform: translateX(5px); }
+  .up-card img, .zone-tile .zmap { transition: transform .6s cubic-bezier(.2,.7,.2,1); } .up-card:hover img { transform: scale(1.04); } .zone-tile:hover .zmap { transform: scale(1.03); }
+  .btn, .chip-btn, .tb-auth { transition: background-color .2s, color .2s, border-color .2s, transform .15s ease, box-shadow .2s; }
+  .btn:hover { transform: translateY(-2px); box-shadow: 0 8px 18px -10px rgba(225,75,30,.6); }
+  .btn:active, .chip-btn:active, .tb-auth:active { transform: translateY(0) scale(.97); box-shadow: none; }
+  @media (prefers-reduced-motion: reduce) {
+    .rv { opacity: 1 !important; transform: none !important; transition: none !important; }
+    .cwg-panel, .grp-card, .act-card, .ex-card, .hi-card, .door, .issue, .mem-group, .btn, .terr-row .nm, .up-card img, .zone-tile .zmap, .grp-card .decor > *, .door .decor > * { transition: none !important; transform: none !important; translate: none !important; rotate: none !important; }
+  }
 </style>
 </head>
 <body>
@@ -2993,6 +3017,31 @@ function buildMenus() {
     + (data.groups || []).map(g => `<a href="#/group/${esc(g.key)}"><b>${esc(g.short)}</b><span>${esc(g.name)}</span></a>`).join("");
 }
 
+// ---- motion: reveal sections and cards as they scroll into view, with a few calm variations ----
+let rvTick = 0, rvStop = () => {};
+function reveal(root) {
+  rvStop();
+  if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  const set = (el, kind, delay) => { if (el.classList.contains("rv")) return; el.classList.add("rv", "rv-" + kind); if (delay) el.style.setProperty("--rv-d", delay + "ms"); };
+  const q = sel => root.querySelectorAll(sel);
+  q(".page-hero > .stack, .page-hero h1, .sec-head, .page-body > .stack, .page-body > .h2, .t-sec, .page-body > .lede").forEach(el => set(el, "up"));
+  q(".aslp-map, .paper-panel, .hi-ph, .ab-25-ph, .bk-wrap, .grp-hero").forEach(el => set(el, "zoom"));
+  q(".cwg-pair").forEach(p => [...p.children].forEach((el, i) => set(el, i % 2 ? "right" : "left", i * 90)));
+  q(".zone-sec-head").forEach(el => set(el, "fade"));
+  q(".terr-grid, .grp-grid, .finder-grid, .up-grid, .act-grid, .ex-grid, .ab-25-grid, .cds-grid, .zones, .doors, .mg-wrap, .hi-list, .grp-row, .apsg-grid, .pm-grid")
+    .forEach(g => [...g.children].forEach((el, i) => set(el, "up", (i % 6) * 70)));
+  q(".mem-group").forEach((el, i) => set(el, "up", (i % 4) * 80));
+  let pending = [...q(".rv")]; if (!pending.length) return;
+  const settle = el => setTimeout(() => { el.classList.remove("rv", "in", "rv-up", "rv-left", "rv-right", "rv-zoom", "rv-fade"); el.style.removeProperty("--rv-d"); }, 1300);
+  // anything that has reached the lower part of the screen, or been scrolled past, comes in
+  const check = () => { rvTick = 0; const lim = innerHeight * .92;
+    pending = pending.filter(el => { if (!el.isConnected) return false; if (el.getBoundingClientRect().top < lim) { el.classList.add("in"); settle(el); return false; } return true; });
+    if (!pending.length) removeEventListener("scroll", onScroll); };
+  const onScroll = () => { if (!rvTick) rvTick = requestAnimationFrame(check); };
+  rvStop = () => removeEventListener("scroll", onScroll);
+  addEventListener("scroll", onScroll, { passive: true }); addEventListener("resize", onScroll, { passive: true });
+  requestAnimationFrame(() => requestAnimationFrame(check));
+}
 // ---- router ----
 function route() {
   if (!data) return;
@@ -3003,7 +3052,7 @@ function route() {
   $("view").innerHTML = html;
   document.body.classList.toggle("is-home", !p);
   pendingMaps.forEach(f => f()); pendingMaps = [];
-  if (p === "console") mountSignin();
+  if (p === "console") mountSignin(); else reveal($("view"));
   const nav = p === "zone" || p === "cwg" || p === "territory" || p === "cwgs" || p === "group" ? "groups" : p === "history" ? "about" : p === "newsletter" || p === "update" || p === "programmatic" ? "updates" : p;
   document.querySelectorAll("[data-nav]").forEach(x => x.classList.toggle("on", x.dataset.nav === nav));
   $("menu").classList.remove("open"); $("menu-btn").setAttribute("aria-expanded", "false");
