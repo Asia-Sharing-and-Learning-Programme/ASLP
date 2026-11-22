@@ -23,6 +23,7 @@
 <script src="vendor/topojson-client.min.js"></script>
 <script src="vendor/supabase.js"></script>
 <script src="aslp-tour.js"></script>
+<script src="aslp-pin.js"></script>
 <style>
   /* Archivo (variable weight + width), hosted with the site. SIL Open Font License. */
   @font-face { font-family: "Archivo"; font-style: normal; font-display: swap; font-weight: 100 900; font-stretch: 62% 125%;
@@ -932,6 +933,12 @@
   .wel-steps li { counter-increment: ws; display: grid; grid-template-columns: 64px minmax(0, 1fr) auto; gap: var(--g3); align-items: center; background: var(--paper); border-radius: 16px; padding: 14px 16px;
     opacity: 0; transform: translateY(14px); animation: welIn 1s cubic-bezier(.16,1,.3,1) forwards; animation-delay: calc(.75s + var(--i) * .12s); }
   body.view-only #view button:not([data-jump]):not([data-goto]):not([data-tour]):not([data-ue]):not(#up-new):not(#ue-cancel):not(#si-out):not([data-ro-ok]) { opacity: .45; cursor: not-allowed; }
+  .si-pin { max-width: 560px; margin-top: var(--g3); }
+  .si-alt { margin-top: var(--g4); border-top: 1px solid var(--line); padding-top: var(--g3); }
+  .si-alt summary { cursor: pointer; font-weight: 700; font-size: 15px; color: var(--ink-2); }
+  .si-alt[open] summary { margin-bottom: var(--g2); }
+  .pin-req { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px 16px; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--line); }
+  .pin-req b { display: block; } .pin-req small { color: var(--ink-3); font-size: 13.5px; } .pin-req .acts { display: flex; gap: 8px; }
   .ro-bar { display: flex; flex-wrap: wrap; gap: 4px 12px; align-items: baseline; margin: var(--g3) 0 0; padding: 12px 16px; border-radius: 12px; background: color-mix(in srgb, #005fc0 10%, var(--paper)); border: 1.5px solid #005fc0; }
   .ro-bar b { color: #005fc0; font-weight: 800; } .ro-bar span { font-size: 15px; color: var(--ink-2); }
   .xa-rows { display: grid; gap: 8px; margin-top: var(--g2); }
@@ -2382,14 +2389,16 @@ function signinLimitBox(st) {
 }
 function consoleSignin() {
   return `<div class="console-card"><h2 class="h2">Sign in</h2>
-    <p class="small">CWG leads, admins and CWG members use the same sign-in as the CD Strategies website. If you're already signed in there, you're signed in here too.</p>
+    <p class="small">Sign in with your email and PIN. It's the same sign-in for this website, the Calendar and CD Strategies: sign in once and you're signed in on all three.</p>
+    <div id="pin-box" class="si-pin"></div>
+    <details class="si-alt"${signinEmail ? " open" : ""}><summary>Or email me a sign-in code instead (fastest with Gmail)</summary>
     <form id="si-form" class="si-form" autocomplete="on"><label for="si-email">Your email</label>
       <div class="copy-row"><input type="email" id="si-email" required autocomplete="email" value="${esc(signinEmail)}" placeholder="name@salvationarmy.org"><button class="btn fill sm" id="si-go">Email me a sign-in code</button></div></form>
     <div id="si-limit">${signinLimitBox(null)}</div>
     <div id="si-code" ${signinEmail ? "" : "hidden"}><label for="si-token">Code from the email</label>
       <div class="copy-row"><input type="text" id="si-token" inputmode="numeric" autocomplete="one-time-code" placeholder="123456"><button class="btn fill sm" id="si-verify">Sign in</button></div>
       <p class="small">The email also has a link. Opening it signs you in too.</p></div>
-    <p class="si-msg" id="si-msg" role="status"></p></div>`;
+    <p class="si-msg" id="si-msg" role="status"></p></details></div>`;
 }
 // ---- console welcome: a greeting and, in plain steps, what this person's access lets them do ----
 const firstName = v => { const n = String(v.name || "").replace(/^(Major|Captain|Lieutenant|Colonel|Commissioner|Lt\.?|Lt-Colonel|Envoy|Mr\.?|Mrs\.?|Ms\.?|Dr\.?)\s+/i, "").trim(); return n ? n.split(/\s+/)[0] : ""; };
@@ -2405,6 +2414,7 @@ const WICON = {
   cal: `<svg viewBox="0 0 48 48" class="wi wi-cal"><rect x="7" y="10" width="34" height="30" rx="4"/><path d="M7 18h34M16 6v8M32 6v8"/><circle class="d1" cx="16" cy="26" r="2.4"/><circle class="d2" cx="24" cy="26" r="2.4"/><circle class="d3" cx="32" cy="26" r="2.4"/><circle class="d4" cx="16" cy="33" r="2.4"/></svg>`,
   chart: `<svg viewBox="0 0 48 48" class="wi wi-chart"><path d="M7 41h34"/><rect class="c1" x="10" y="25" width="7" height="16" rx="2"/><rect class="c2" x="21" y="16" width="7" height="25" rx="2"/><rect class="c3" x="32" y="9" width="7" height="32" rx="2"/></svg>`,
   page: `<svg viewBox="0 0 48 48" class="wi wi-page"><path d="M12 6h17l9 9v27H12z"/><path class="ln l1" d="M17 22h16"/><path class="ln l2" d="M17 29h16"/><path class="ln l3" d="M17 36h10"/></svg>`,
+  lock: `<svg viewBox="0 0 48 48" class="wi wi-key"><g class="ky"><rect x="11" y="21" width="26" height="20" rx="4"/><path d="M17 21v-5a7 7 0 0 1 14 0v5"/><circle cx="24" cy="31" r="2.5"/></g></svg>`,
   key: `<svg viewBox="0 0 48 48" class="wi wi-key"><g class="ky"><circle cx="16" cy="24" r="8"/><path d="M24 24h18M36 24v6M41 24v5"/></g></svg>` };
 function welcomeRo(v, tabs, roles, go) {
   const has = id => tabs.some(t => t[0] === id), steps = [["explore", "Look around", "Use the menu at the top to visit every page. Your console shows everything an admin sees, but nothing can be changed from this account.", `<a class="btn sm" href="#/">Home</a>`]];
@@ -2444,6 +2454,7 @@ function welcomeHtml(v, tabs, roSteps, roRoles) {
   if (has("cc-pages")) steps.push(["page", "Edit pages and the newsletter", `Open <b>Pages and newsletter</b> to change the About text, the home page introduction and newsletter issues.`, go("cc-pages")]);
   if (has("cc-access")) steps.push(["key", "Decide who can do what", `Open <b>Access</b> to add admins and view-only accounts, switch editing on or off for each role, name the zone coordinators and choose who edits each group page.`, go("cc-access")]);
   if (roSteps) steps = roSteps;
+  steps.push(["lock", pinApprover(v) ? "Your PIN, and approving others'" : "Your PIN", `You sign in with your email and PIN, with no email to wait for.${pinApprover(v) ? " When someone in your CWG chooses a new PIN, approve it in <b>PINs</b>." : ""} Change your own PIN there any time.`, go("cc-pin")]);
   const fn = firstName(v);
   return `<section class="console-card wel" id="cc-welcome">
     <div class="wel-hero"><div class="wel-lll" aria-hidden="true"><span>Listen.</span><span>Learn.</span><span>Lead.</span></div>
@@ -2590,7 +2601,7 @@ function pageConsole(a, b) {
   const selC = a === "cwg" ? cwgs.find(c => cwgSlug(c) === b) : null;
   pendingMaps.push(() => mountConsole());
   const canUpd = (v.post_cwgs || []).length || (v.submit_cwgs || []).length || Object.keys(PGROUPS).some(canGroupPost);
-  const secs = [["cc-welcome", "Welcome"], canUpd && ["cc-updates", "Updates"], toggleIds.length && ["cc-units", "Regions and countries"], cwgs.length && ["cc-members", "CWG members"], (terrIds.length || unitIds.length) && ["cc-terr", "Territory profiles"], groups.length && ["cc-groups", "ASLP Groups"], v.is_full_admin && ["cc-pages", "Pages and newsletter"], v.is_full_admin && ["cc-access", "Access"]].filter(Boolean);
+  const secs = [["cc-welcome", "Welcome"], canUpd && ["cc-updates", "Updates"], toggleIds.length && ["cc-units", "Regions and countries"], cwgs.length && ["cc-members", "CWG members"], (terrIds.length || unitIds.length) && ["cc-terr", "Territory profiles"], groups.length && ["cc-groups", "ASLP Groups"], v.is_full_admin && ["cc-pages", "Pages and newsletter"], v.is_full_admin && ["cc-access", "Access"], ["cc-pin", pinApprover(v) ? "PINs" : "My PIN"]].filter(Boolean);
   return head + `<div class="wrap page-body">
     ${secs.length > 1 ? `<nav class="con-sub" role="tablist" aria-label="Console sections">${secs.map(([id, l]) => `<button type="button" role="tab" data-jump="${id}">${l}</button>`).join("")}</nav>` : ""}
     ${welcomeHtml(v, secs)}
@@ -2613,6 +2624,17 @@ function pageConsole(a, b) {
       <div id="grp-editor"></div></section>` : ""}
     ${v.is_full_admin ? `<section class="console-card" id="cc-pages"><h2 class="h2">Pages and newsletter</h2><div id="pages-editor"></div></section>
     <section class="console-card" id="cc-access"><h2 class="h2">Access</h2><div id="access-editor">${loader("Loading access settings…")}</div></section>` : ""}
+    <section class="console-card" id="cc-pin">
+      ${pinApprover(v) ? `<h2 class="h2">PIN requests</h2>
+      <p class="small">People who chose a new PIN, or forgot theirs, wait here for approval. ${v.is_full_admin ? "As an admin you approve anyone's, including CWG leads' and other admins'." : "You approve PINs for people in your CWG: members, contact persons and focal persons. Admins approve CWG leads' and admins' PINs."} Approve only if you know the request is really from them, for example after a quick message.</p>
+      <div id="pin-reqs">${loader("Loading requests…")}</div>
+      <h2 class="h2" style="margin-top:var(--g5)">Your PIN</h2>` : `<h2 class="h2">Your PIN</h2>`}
+      <p class="small">You sign in with your email and PIN on this website, the Calendar and CD Strategies. Change it here any time. You're signed in, so no approval is needed.</p>
+      <form id="my-pin" class="ed-grid" autocomplete="off" style="max-width:560px">
+        <label><span>New PIN</span><input type="password" id="mp-a" autocomplete="new-password" data-ro-ok placeholder="At least 6 characters"></label>
+        <label><span>Type it again</span><input type="password" id="mp-b" autocomplete="new-password" data-ro-ok></label>
+        <div class="ed-actions full"><button type="submit" class="btn fill" id="mp-save" data-ro-ok>Change my PIN</button><span class="ed-msg" id="mp-msg" role="status"></span></div>
+      </form></section>
   </div>`;
 }
 // ---- console: ASLP group details and members ----
@@ -3217,7 +3239,45 @@ async function saveWith(btnId, msgId, fn, okText) {
   b.disabled = false;
 }
 async function refresh() { const { data: d, error } = await db.rpc("get_aslp_site"); if (!error && d) { data = d; buildMenus(); updateAuthLinks(); } }
+// ---- PINs: approving requests (CWG leads for their CWG, admins for anyone) and changing your own ----
+const pinApprover = v => !!((v.is_full_admin && !v.ro) || (v.lead_cwgs || []).length);
+async function pinConsole() {
+  const f = $("my-pin");
+  if (f) f.addEventListener("submit", async e => {
+    e.preventDefault(); const a = $("mp-a").value, b = $("mp-b").value, m = $("mp-msg");
+    m.className = "ed-msg err";
+    if (a.length < 6) return m.textContent = "Your PIN needs at least 6 characters.";
+    if (/^(\d)\1+$/.test(a) || /^(012345|123456|234567|345678|456789|654321|password)/i.test(a)) return m.textContent = "That PIN is too easy to guess. Please choose another.";
+    if (a !== b) return m.textContent = "The two PINs don't match.";
+    $("mp-save").disabled = true; m.className = "ed-msg"; m.textContent = "Saving…";
+    const { error } = await db.auth.updateUser({ password: a });
+    $("mp-save").disabled = false;
+    if (error) { m.className = "ed-msg err"; m.textContent = /same|different/i.test(error.message) ? "That's already your PIN." : /reauth|recent/i.test(error.message) ? "Please sign out and in again, then change your PIN." : (error.message || "That didn't work."); return; }
+    db.rpc("aslp_pin_mark_set").then(() => {}, () => {});
+    $("mp-a").value = $("mp-b").value = ""; m.className = "ed-msg ok"; m.textContent = "PIN changed. Use it next time you sign in.";
+  });
+  const box = $("pin-reqs"); if (!box) return;
+  const draw = async () => {
+    const { data: rs, error } = await db.rpc("aslp_pin_requests_list");
+    if (error) { box.innerHTML = `<p class="small">Couldn't load the requests. ${esc(error.message || "")}</p>`; return; }
+    const n = (rs || []).length, tab = document.querySelector('.con-sub [data-jump="cc-pin"]');
+    if (tab) tab.textContent = n ? `PINs (${n})` : "PINs";
+    box.innerHTML = n ? rs.map(r => `<div class="pin-req"><div><b>${esc(r.name || r.email)}</b><small>${esc(r.email)}${(r.cwgs || []).length ? ` · ${esc(r.cwgs.join(", "))}` : ""} · ${r.kind === "reset" ? "Forgot PIN, chose a new one" : "First PIN"} · ${esc(new Date(r.at).toLocaleString(undefined, { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }))}</small></div>
+      <div class="acts"><button type="button" class="btn fill sm" data-pin-ok="${esc(r.id)}">Approve</button><button type="button" class="btn sm" data-pin-no="${esc(r.id)}">Decline</button></div></div>`).join("")
+      : `<p class="small">No requests waiting.</p>`;
+    box.querySelectorAll("[data-pin-ok], [data-pin-no]").forEach(btn => btn.addEventListener("click", async () => {
+      const ok = !!btn.dataset.pinOk, id = btn.dataset.pinOk || btn.dataset.pinNo;
+      box.querySelectorAll("button").forEach(x => x.disabled = true); btn.textContent = ok ? "Approving…" : "Declining…";
+      const { data: r, error: e2 } = await db.functions.invoke("aslp-pin", { body: { action: "review", id, ok } });
+      if (e2 || (r && r.error)) { let msg = (r && r.error) || ""; try { if (!msg && e2 && e2.context) msg = (await e2.context.json()).error; } catch (x) {} alert0(msg || "That didn't work. Please try again."); }
+      draw();
+    }));
+  };
+  draw();
+}
+const alert0 = t => { const b = $("pin-reqs"); if (b) b.insertAdjacentHTML("afterbegin", `<p class="ed-msg err">${esc(t)}</p>`); };
 function mountConsole() {
+  pinConsole();
   const out = $("si-out"); if (out) out.addEventListener("click", async () => { await db.auth.signOut(); await refresh(); route(); });
   const v = V(), cwgs = v.can_cwgs || [], [, a, b] = (location.hash.replace(/^#\/?/, "")).split("/");
   if ($("mem-editor")) {
@@ -3257,6 +3317,7 @@ function mountConsole() {
   }
 }
 function mountSignin() {
+  if (window.ASLPPin && $("pin-box")) ASLPPin.mount($("pin-box"), db, { onSignedIn: async () => { await refresh(); route(); hello(); } });
   const f = $("si-form"); if (!f) return;
   const msg = t => { $("si-msg").textContent = t; };
   let lt = 0;
