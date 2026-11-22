@@ -545,6 +545,8 @@
   .si-limit p { margin: 6px 0 0; color: var(--ink-2); }
   .sl-segs { display: flex; gap: 4px; margin-top: 8px; } .sl-segs span { flex: 1; height: 8px; border-radius: 3px; background: var(--line); }
   .sl-segs span.on { background: var(--blue); } .si-limit.low .sl-segs span.on { background: var(--yellow); }
+  .draft-note { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--g2) var(--g3); background: color-mix(in srgb, var(--yellow) 22%, var(--paper)); border-left: 5px solid var(--yellow); border-radius: 12px; padding: 10px 14px; margin: var(--g3) 0; font-size: 14.5px; font-weight: 600; }
+  .draft-note .btn { margin: 0; }
   .ed-grid .ed-field { display: grid; gap: 6px; font-size: 12.5px; font-weight: 700; color: var(--ink-2); }
   .synced { background: var(--paper); border-radius: 16px; padding: var(--g4); margin-top: var(--g3); border-left: 5px solid var(--blue); }
   .synced-h { display: flex; flex-wrap: wrap; gap: 4px var(--g2); align-items: baseline; }
@@ -1914,6 +1916,7 @@ function groupEditor(key) {
       <div class="ed-actions"><button type="button" class="btn sm ed-add">Add a member</button></div></div>
     <div class="ed-actions sticky"><button type="button" class="btn fill" id="g-save">Save the ${esc(g.short)}</button><a class="textlink" href="#/group/${esc(key)}">View the page</a><span class="ed-msg" id="g-msg" role="status"></span></div>`;
   wireRows($("gm-box"), GRP_COLS, []);
+  makeDraftable(box, `grp:${key}`, () => groupEditor(key));
   $("g-save").addEventListener("click", () => saveWith("g-save", "g-msg", async () => {
     const r = await db.rpc("aslp_save_group", { p_key: key, p_group: { ...(admin ? { name: $("g-name").value.trim() } : {}), description: $("g-desc").value.trim(), members: readRows($("gm-box")) } });
     if (r.error || key !== "apsg") return r;
@@ -2041,6 +2044,9 @@ function updatesConsole(sel) {
   $("up-new").onclick = () => updateEditor({ cwg: (v => v.find(c => cwgSlug(c) === sel.cwg) || v[0])(V().can_cwgs || []) }, draw);
   loadUpdates(true).then(() => {
     draw();
+    if (!sel.id && !sel.open) getDraft("upd:new").then(d => { if (d && d.f && list.isConnected && !$("ue-title"))
+      list.insertAdjacentHTML("afterbegin", `<div class="draft-note"><span>You have an unpublished update${d.f.title ? `, "${esc(d.f.title)}",` : ""} from ${esc(draftWhen(d.at))}.</span><button type="button" class="btn fill sm" id="up-cont">Continue it</button></div>`);
+      const c = $("up-cont"); if (c) c.onclick = () => { c.closest(".draft-note").remove(); updateEditor({ cwg: d.f.cwg }, draw); }; });
     if (sel.id) { const u = mine().find(x => x.id === sel.id); if (u) updateEditor(u, draw); }
     else if (sel.open) updateEditor({ cwg: (V().can_cwgs || []).find(c => cwgSlug(c) === sel.cwg) || (V().can_cwgs || [])[0] }, draw);
   }).catch(() => { list.innerHTML = `<p class="ed-msg err">Your updates couldn't load. Refresh the page to try again.</p>`; });
@@ -2065,6 +2071,14 @@ function updateEditor(u, redraw) {
     </div>
     <div class="ed-actions"><button type="button" class="btn fill sm" id="ue-save">${st.id ? "Save changes" : "Publish the update"}</button><button type="button" class="btn sm" id="ue-cancel">Cancel</button><span class="ed-msg" id="ue-msg" role="status"></span></div></div>`;
   const msg = (t, c = "") => { const m = $("ue-msg"); m.className = "ed-msg " + c; m.innerHTML = t; };
+  const dkey = `upd:${st.id || "new"}`; box.dataset.draft = dkey;
+  const fieldsNow = () => ({ cwg: $("ue-cwg").value, title: $("ue-title").value, date: $("ue-date").value, body: $("ue-body").value });
+  const base = JSON.stringify({ f: fieldsNow(), kind: st.kind, file: st.file, photos: st.photos });
+  let kt = 0;
+  const keep = () => { clearTimeout(kt); kt = setTimeout(() => { if (box.dataset.draft !== dkey || !$("ue-title")) return;
+    const now = { f: fieldsNow(), kind: st.kind, file: st.file, photos: st.photos };
+    putDraft(dkey, JSON.stringify(now) === base ? null : { at: Date.now(), ...now, pages: st.pages, slides: st.slides, folder: st.folder }); }, 500); };
+  box.oninput = keep; box.onchange = keep;
   const drawKind = () => {
     box.querySelectorAll("[data-kind]").forEach(b => { b.classList.toggle("on", b.dataset.kind === st.kind); b.setAttribute("aria-checked", b.dataset.kind === st.kind); });
     $("ue-body-l").innerHTML = st.kind === "text" ? `Your update <span class="ed-hint">Leave a blank line between paragraphs. Start a line with "-" to make a list.</span>` : `Short introduction <span class="ed-hint">optional, shown above the ${st.kind === "pdf" ? "pages" : "slides"}</span>`;
@@ -2096,22 +2110,22 @@ function updateEditor(u, redraw) {
       const r = isPdf ? await processPdf(file, folder(), note) : await processPptx(file, folder(), note);
       st.file = r.file; st.pages = r.pages || []; st.slides = r.slides || [];
       if (!$("ue-title").value.trim()) $("ue-title").value = r.title || file.name.replace(/\.[^.]+$/, "").replace(/[_-]+/g, " ");
-      drawKind(); msg(r.more ? `Ready. Only the first 60 pages are shown on the website; the full PDF stays downloadable.` : "Ready. Check the title, then publish.", "ok");
+      drawKind(); keep(); msg(r.more ? `Ready. Only the first 60 pages are shown on the website; the full PDF stays downloadable.` : "Ready. Check the title, then publish.", "ok");
     } catch (e) { console.error(e); drawKind(); msg(esc(e && e.message) || "The file couldn't be read. Try saving it again, or upload it as a PDF.", "err"); }
     st.busy = false; $("ue-save").disabled = false;
   }
-  box.querySelectorAll("[data-kind]").forEach(b => b.onclick = () => { st.kind = b.dataset.kind; drawKind(); });
-  $("ue-photos").onclick = e => { const r = e.target.closest("[data-rmph]"); if (r) { st.photos.splice(+r.dataset.rmph, 1); drawPhotos(); } };
+  box.querySelectorAll("[data-kind]").forEach(b => b.onclick = () => { st.kind = b.dataset.kind; drawKind(); keep(); });
+  $("ue-photos").onclick = e => { const r = e.target.closest("[data-rmph]"); if (r) { st.photos.splice(+r.dataset.rmph, 1); drawPhotos(); keep(); } };
   $("ue-ph-in").onchange = async e => {
     const fs = [...e.target.files]; e.target.value = ""; if (!fs.length || st.busy) return;
     st.busy = true; $("ue-save").disabled = true;
     try { for (let i = 0; i < fs.length; i++) { msg(loader(`Uploading photo ${i + 1} of ${fs.length}…`, "sm inline"));
         const im = await shrinkImage(fs[i]); st.photos.push(await upPut(`${folder()}/photo-${newId().slice(0, 8)}.${im.ext}`, im.blob, im.blob.type)); drawPhotos(); }
-      msg("Photos added.", "ok");
+      keep(); msg("Photos added.", "ok");
     } catch (er) { msg(esc(er && er.message) || "A photo couldn't be uploaded.", "err"); }
     st.busy = false; $("ue-save").disabled = false;
   };
-  $("ue-cancel").onclick = () => { box.innerHTML = ""; };
+  $("ue-cancel").onclick = () => { clearTimeout(kt); putDraft(dkey, null); delete box.dataset.draft; box.innerHTML = ""; };
   $("ue-save").onclick = async () => {
     const title = $("ue-title").value.trim(), body = $("ue-body").value.trim();
     if (!title) return msg("Give the update a title.", "err");
@@ -2124,11 +2138,22 @@ function updateEditor(u, redraw) {
     const { data: id, error } = await db.rpc("aslp_save_update", { p_id: st.id, p_update: p });
     $("ue-save").disabled = false;
     if (error) return msg(esc(error.message || "Couldn't save. Please try again."), "err");
+    clearTimeout(kt); putDraft(dkey, null); delete box.dataset.draft;
     await loadUpdates(true); redraw();
     box.innerHTML = `<p class="ed-msg ok" style="margin-top:var(--g3)">${st.id ? "Changes saved." : "Published."} <a class="textlink" href="#/update/${esc(id)}">See it on the Programme Updates page</a></p>`;
   };
   drawKind(); drawPhotos();
   setTimeout(() => box.scrollIntoView({ behavior: "smooth", block: "start" }), 30);
+  // bring back an unfinished draft of this update
+  getDraft(dkey).then(d => {
+    if (!d || !d.f || box.dataset.draft !== dkey || !$("ue-title")) return;
+    const f = d.f; if ([...$("ue-cwg").options].some(o => o.value === f.cwg)) $("ue-cwg").value = f.cwg;
+    $("ue-title").value = f.title || ""; $("ue-date").value = f.date || $("ue-date").value; $("ue-body").value = f.body || "";
+    Object.assign(st, { kind: d.kind || st.kind, file: d.file || null, pages: d.pages || [], slides: d.slides || [], photos: d.photos || [], folder: d.folder || st.folder });
+    drawKind(); drawPhotos();
+    box.querySelector(".up-ed").insertAdjacentHTML("afterbegin", draftNote(d.at, st.id ? "" : "An unpublished update"));
+    box.querySelector("[data-draft-discard]").onclick = () => { clearTimeout(kt); putDraft(dkey, null); delete box.dataset.draft; updateEditor(u, redraw); };
+  });
 }
 
 // ---- console (admins): About, home introduction and newsletter issues ----
@@ -2148,6 +2173,7 @@ function pagesEditor() {
         <label class="btn sm" style="cursor:pointer">Upload a PDF<input type="file" id="nw-file" accept="application/pdf" hidden></label>
         <button type="button" class="btn fill sm" id="nw-save">Save the newsletter shelf</button><span class="ed-msg" id="nw-msg" role="status"></span></div></div>`;
   wireRows($("nw-box"), NEWS_COLS, []);
+  makeDraftable(box, "pages", pagesEditor);
   $("pg-save").addEventListener("click", () => saveWith("pg-save", "pg-msg", async () => {
     const r = await db.rpc("aslp_save_content", { p_key: "home", p_title: "Home introduction", p_body: $("pg-home").value.trim() }); if (r.error) return r;
     return db.rpc("aslp_save_content", { p_key: "about", p_title: "About ASLP", p_body: $("pg-about").value.trim() });
@@ -2212,6 +2238,7 @@ function memEditor(c) {
   box.innerHTML = `<div class="ed-rows">${(ms.length ? ms : [{}]).map(m => fieldRow(MEM_COLS, m, opts)).join("")}</div>
     <div class="ed-actions"><button type="button" class="btn sm ed-add">Add a member</button><button type="button" class="btn fill sm" id="mem-save">Save ${esc(c)} members</button><span class="ed-msg" id="mem-msg" role="status"></span></div>`;
   wireRows(box, MEM_COLS, opts);
+  makeDraftable(box, `mem:${c}`, () => memEditor(c));
   $("mem-save").addEventListener("click", () => saveWith("mem-save", "mem-msg", () => db.rpc("aslp_set_cwg_members", { p_cwg: c, p_items: readRows(box) }), `${c} members saved.`));
 }
 function terrEditor(id) {
@@ -2237,6 +2264,7 @@ function terrEditor(id) {
       <div class="ed-actions"><button type="button" class="btn sm ed-add">Add a contact</button></div></div>
     <div class="ed-actions sticky"><button type="button" class="btn fill" id="terr-save">Save ${esc(shortName(t.name))}</button><a class="textlink" href="#/territory/${esc(t.id)}">View the page</a><span class="ed-msg" id="terr-msg" role="status"></span></div>`;
   wireRows($("con-box"), CON_COLS, []);
+  makeDraftable(box, `terr:${id}`, () => terrEditor(id));
   $("terr-save").addEventListener("click", () => saveWith("terr-save", "terr-msg", async () => {
     if (shared) {   // shared fields go to the one record both websites use
       const hq = $("s-hq").value.trim(), ct = $("s-ctry").value.split(",").map(x => x.trim()).filter(Boolean), det = {};
@@ -2249,9 +2277,55 @@ function terrEditor(id) {
     return db.rpc("aslp_set_contacts", { p_territory: id, p_items: readRows($("con-box")) });
   }, `${shortName(t.name)} saved.`));
 }
+// ---- console drafts: unsaved edits are kept (in this browser and on the server) until they're saved or discarded ----
+const draftLocal = k => `aslp-draft:${V().email}:${k}`;
+const draftServerT = {};
+function putDraft(k, d) {
+  try { d ? localStorage.setItem(draftLocal(k), JSON.stringify(d)) : localStorage.removeItem(draftLocal(k)); } catch (e) {}
+  clearTimeout(draftServerT[k]); draftServerT[k] = setTimeout(() => db.rpc("aslp_save_draft", { p_key: k, p_body: d || null }).then(() => {}, () => {}), d ? 1500 : 0);
+}
+async function getDraft(k) {
+  let loc = null, srv = null;
+  try { loc = JSON.parse(localStorage.getItem(draftLocal(k)) || "null"); } catch (e) {}
+  try { const r = await db.rpc("aslp_get_draft", { p_key: k }); srv = r.error ? null : r.data; } catch (e) {}
+  return [loc, srv].filter(Boolean).sort((a, b) => (b.at || 0) - (a.at || 0))[0] || null;
+}
+const draftWhen = at => new Date(at).toLocaleString([], { day: "numeric", month: "short", hour: "numeric", minute: "2-digit" });
+const draftNote = (at, what) => `<div class="draft-note" role="status"><span>${what || "Your unsaved changes"} from ${esc(draftWhen(at))} ${what ? "is" : "were"} brought back. ${what ? "Publish it" : "Save"} to keep ${what ? "it" : "them"}.</span><button type="button" class="btn sm" data-draft-discard>Discard ${what ? "it" : "them"}</button></div>`;
+const FIELDS = "input:not([type=file]), textarea, select";
+const snapBox = box => ({ rows: [...box.querySelectorAll(".ed-rows")].map(r => r.querySelectorAll(".ed-row").length),
+  vals: [...box.querySelectorAll(FIELDS)].map(i => i.type === "checkbox" ? i.checked : i.value) });
+function applySnap(box, s) {
+  [...box.querySelectorAll(".ed-rows")].forEach((r, i) => { const want = s.rows[i]; if (want == null) return;
+    const add = r.parentElement.querySelector(".ed-add"); let have = r.querySelectorAll(".ed-row").length;
+    while (have < want && add) { add.click(); have++; } while (have > want) { r.querySelector(".ed-row:last-child").remove(); have--; } });
+  const els = [...box.querySelectorAll(FIELDS)]; if (els.length !== s.vals.length) return false;
+  els.forEach((el, i) => { if (el.type === "checkbox") el.checked = !!s.vals[i]; else el.value = s.vals[i] ?? ""; }); return true;
+}
+// keep a console form's unsaved edits; bring them back when the form opens again (any browser, any device)
+function makeDraftable(box, key, rerender) {
+  if (!box) return;
+  box.dataset.draft = key; box._base = JSON.stringify(snapBox(box));
+  const keep = () => { clearTimeout(box._dt); box._dt = setTimeout(() => { if (box.dataset.draft !== key) return;
+    const cur = JSON.stringify(snapBox(box)); putDraft(key, cur === box._base ? null : { at: Date.now(), s: JSON.parse(cur) }); }, 500); };
+  box.addEventListener("input", keep); box.addEventListener("change", keep);
+  box.addEventListener("click", e => { if (e.target.closest(".ed-up, .ed-down, .ed-del, .ed-add")) keep();
+    if (e.target.closest("[data-draft-discard]") && box.dataset.draft === key) { putDraft(key, null); rerender(); } });
+  getDraft(key).then(d => {
+    if (!d || !d.s || !box.isConnected || box.dataset.draft !== key) return;
+    if (JSON.stringify(d.s) === box._base || !applySnap(box, d.s)) return putDraft(key, null);
+    box.insertAdjacentHTML("afterbegin", draftNote(d.at));
+  });
+}
+// after a successful save, what's on screen becomes the saved version
+function draftSaved(btn) {
+  const box = btn && btn.closest("[data-draft]"); if (!box) return;
+  box._base = JSON.stringify(snapBox(box)); putDraft(box.dataset.draft, null);
+  const n = box.querySelector(".draft-note"); if (n) n.remove();
+}
 async function saveWith(btnId, msgId, fn, okText) {
   const b = $(btnId), m = $(msgId); b.disabled = true; m.textContent = "Saving…"; m.className = "ed-msg";
-  try { const { error } = await fn(); if (error) throw error; await refresh(); m.textContent = okText; m.className = "ed-msg ok"; }
+  try { const { error } = await fn(); if (error) throw error; draftSaved(b); await refresh(); m.textContent = okText; m.className = "ed-msg ok"; }
   catch (e) { m.textContent = (e && e.message) || "Couldn't save. Please try again."; m.className = "ed-msg err"; }
   b.disabled = false;
 }
@@ -2469,7 +2543,12 @@ load().then(async () => {
   if (th) { await db.auth.verifyOtp({ token_hash: th, type: "email" }).catch(() => {}); history.replaceState(null, "", location.pathname + "#/console"); }
   if (fromLink) history.replaceState(null, "", location.pathname + "#/console");
   if (fromLink || th) await refresh();
-  db.auth.onAuthStateChange(evt => { if (evt === "SIGNED_IN" || evt === "SIGNED_OUT") refresh().then(route); });
+  db.auth.onAuthStateChange((evt, ses) => {
+    if (evt !== "SIGNED_IN" && evt !== "SIGNED_OUT") return;
+    const em = evt === "SIGNED_OUT" ? "" : String((ses && ses.user && ses.user.email) || "").toLowerCase();
+    if (em === String(V().email || "").toLowerCase()) return;   // same person (e.g. the tab came back into view): leave the page and its typing alone
+    setTimeout(() => refresh().then(route), 0);
+  });
   buildMenus(); route(); updateAuthLinks();
 }).catch(e => { $("view").innerHTML = `<div class="wrap loading">The site couldn't load its content. Check your connection and refresh the page.</div>`; console.error(e); });
 </script>
