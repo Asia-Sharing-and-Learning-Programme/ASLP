@@ -553,6 +553,22 @@
   .ab-how > div { background: var(--paper-2); border-radius: 18px; padding: var(--g4); } .ab-how p, .ab-out p { margin-top: 6px; font-size: 15.5px; color: var(--ink-2); }
   .ab-out { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--g4) var(--g5); }
   .ab-out > div { border-left: 3px solid #005fc0; padding-left: var(--g3); }
+  .ab-25 { background: var(--paper-2); border-radius: 30px; padding: var(--g6) clamp(20px, 4vw, 48px); }
+  .ab-25-head { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); gap: var(--g5); align-items: center; }
+  .ab-25-ph { position: relative; padding: 0; border: 0; border-radius: 20px; overflow: hidden; cursor: zoom-in; aspect-ratio: 16 / 10; }
+  .ab-25-ph img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .4s; } .ab-25-ph:hover img { transform: scale(1.04); }
+  .ab-25-ph span { position: absolute; left: 12px; bottom: 12px; background: #f5c400; color: #000; font-weight: 750; font-size: 14px; padding: 5px 12px; border-radius: 999px; }
+  .ab-25-grid { display: grid; grid-template-columns: 1.1fr 1fr 1fr; gap: var(--g3); margin-top: var(--g5); }
+  .ab-25-card { background: var(--paper); border-radius: 20px; padding: var(--g4); } .ab-25-card .h3 + * { margin-top: var(--g2); }
+  .ab-25-card.v { background: #e14b1e; color: #fff; } .ab-25-card.v p { font-size: 18px; line-height: 1.45; font-weight: 500; }
+  .ab-path { list-style: none; padding: 0; margin: var(--g2) 0 0; display: grid; gap: var(--g2); font-size: 15px; color: var(--ink-2); }
+  .ab-path b { display: block; color: var(--ink); }
+  .ab-levels { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--g3); margin-top: var(--g3); }
+  .ab-levels > div { background: var(--paper); border-radius: 18px; padding: var(--g4); border-left: 6px solid var(--lc); }
+  .ab-levels b { display: block; font-size: 22px; font-weight: 850; color: var(--lc); } .ab-levels span { font-size: 13.5px; color: var(--ink-3); } .ab-levels p { margin-top: var(--g2); }
+  @media (prefers-color-scheme: dark) { :root:where(:not([data-theme="light"])) .ab-levels b { color: var(--ink); } } :root[data-theme="dark"] .ab-levels b { color: var(--ink); }
+  .ab-25-do { display: grid; grid-template-columns: 1fr 1fr; gap: var(--g5); margin-top: var(--g5); } .ab-25-do p { margin-top: var(--g1); color: var(--ink-2); } .ab-25-do .textlink { display: inline-block; margin-top: var(--g2); }
+  @media (max-width: 900px) { .ab-25-head, .ab-25-grid, .ab-levels, .ab-25-do { grid-template-columns: 1fr; } }
   .ab-hist { position: relative; overflow: hidden; display: grid; gap: var(--g1); margin-top: var(--g7); background: #e14b1e; color: #fff; border-radius: 28px; padding: var(--g6) clamp(22px, 4vw, 48px); text-decoration: none; }
   .ab-hist > :not(.decor) { position: relative; z-index: 1; max-width: 46ch; }
   .ab-hist b { font-size: clamp(26px, 3vw, 38px); font-weight: 850; letter-spacing: -.02em; line-height: 1.1; } .ab-hist .ab-go { font-weight: 750; text-decoration: underline; margin-top: var(--g2); }
@@ -587,6 +603,26 @@
     .hi-col.l .hi-dot, .hi-col.r .hi-dot { left: calc(var(--g5) * -1); right: auto; }
     .hi-el { width: 44px; }
   }
+  .hi-photos { display: grid; gap: 6px; margin: var(--g3) 0 var(--g1); }
+  .hi-photos.n2 { grid-template-columns: 1fr 1fr; } .hi-photos.n3 { grid-template-columns: 2fr 1fr; grid-template-rows: 1fr 1fr; }
+  .hi-photos.n3 .hi-ph:first-child { grid-row: 1 / 3; }
+  .hi-ph { position: relative; padding: 0; border: 0; border-radius: 12px; overflow: hidden; cursor: zoom-in; background: var(--line); aspect-ratio: 16 / 10; }
+  .hi-photos.n3 .hi-ph:first-child { aspect-ratio: auto; }
+  .hi-photos.n1 .hi-ph { aspect-ratio: 16 / 9; }
+  .hi-ph img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .4s; }
+  .hi-ph:hover img { transform: scale(1.04); } .hi-ph.extra { display: none; }
+  .hi-more { position: absolute; inset: 0; display: grid; place-items: center; background: rgba(0,0,0,.45); color: #fff; font-size: 24px; font-weight: 850; }
+  .hi-det { margin-top: var(--g3); border-top: 1px solid var(--line); padding-top: var(--g2); }
+  .hi-det summary { cursor: pointer; font-weight: 750; color: var(--hc); }
+  .hi-m { margin-top: var(--g2); } .hi-m b { display: block; } .hi-m p { margin-top: 2px; font-size: 15px; }
+  .hi-years a.on { background: var(--hc); color: #fff; }
+  .lb { border: 0; padding: 0; background: transparent; max-width: min(1200px, 94vw); max-height: 92vh; overflow: visible; }
+  .lb::backdrop { background: rgba(10,10,20,.88); }
+  .lb figure { margin: 0; } .lb img { max-width: 94vw; max-height: 80vh; display: block; border-radius: 12px; margin: 0 auto; }
+  .lb figcaption { color: #fff; margin-top: 10px; font-size: 15px; display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; } .lb figcaption span { opacity: .7; }
+  .lb-x { position: fixed; top: 14px; right: 18px; font-size: 36px; color: #fff; background: none; border: 0; cursor: pointer; }
+  .lb-nav { position: fixed; top: 50%; transform: translateY(-50%); width: 48px; height: 48px; border-radius: 50%; border: 0; background: rgba(255,255,255,.18); color: #fff; font-size: 30px; cursor: pointer; }
+  .lb-nav:hover { background: #f5c400; color: #000; } .lb-nav.prev { left: 14px; } .lb-nav.next { right: 14px; }
   .hi-mission { margin-top: var(--g6); background: #005fc0; color: #fff; border-radius: 28px; padding: var(--g6) clamp(22px, 4vw, 48px); display: grid; gap: var(--g4); }
   .hi-mission .statement { max-width: 24ch; } .hi-mission > p { max-width: 68ch; opacity: .92; }
   .hi-four { display: flex; flex-wrap: wrap; gap: var(--g2); } .hi-four span { background: #fff; color: var(--wc); font-weight: 900; font-stretch: 112%; font-size: 22px; padding: 6px 18px; border-radius: 999px; }
@@ -969,22 +1005,45 @@ function pageAbout() {
       <section class="ab-sec"><h2 class="h2">What ASLP will deliver</h2>
         <div class="ab-out">${ABOUT_OUTPUTS.map(([h, t]) => `<div><h3 class="h3">${esc(h)}</h3><p>${esc(t)}</p></div>`).join("")}</div></section>
 
+      <section class="ab-sec ab-25">
+        <div class="ab-25-head"><div class="stack"><div class="ab-k">Asia-Pacific Sharing and Learning Forum 2025</div><h2 class="h2">Where the region is heading</h2>
+          <p class="lede">At ASLF 2025, development office teams, territorial leaders, International Headquarters and support offices worked through the same questions at three levels: practice, policies and principles. Their outputs are the foundation for the Asia-Pacific Community Development Strategy.</p></div>
+          <button type="button" class="ab-25-ph" data-lb="2025" data-k="0" aria-label="Open the ASLF 2025 photos"><img src="photos/2025-group.webp" alt="ASLF 2025 delegates" loading="lazy"><span>See the photos</span></button></div>
+        <div class="ab-25-grid">
+          <div class="ab-25-card v"><h3 class="h3">A shared vision</h3><p>Resilient, self-sustaining communities through holistic restoration and reconciliation, serving all without discrimination, through an Integrated Mission that is collaborative, community-driven and God-led.</p></div>
+          <div class="ab-25-card"><h3 class="h3">Core values</h3><div class="chips">${["Compassion", "Christ-centeredness", "Integrity", "Collaboration", "Dignity"].map(v => `<span class="chip">${v}</span>`).join("")}</div>
+            <p class="small" style="margin-top:var(--g2)">Stewardship, Learning, Unity and Inclusion were named as vital for the future.</p></div>
+          <div class="ab-25-card"><h3 class="h3">The pathway</h3><ol class="ab-path"><li><b>1–3 years</b> Capacity building, local groups and economic empowerment</li><li><b>3–7 years</b> Accountable local leadership and community-led governance</li><li><b>10 years</b> Empowered communities leading their own holistic development, with no one left behind</li></ol></div>
+        </div>
+        <h3 class="h3" style="margin-top:var(--g5)">Strategic priorities agreed at three levels</h3>
+        <div class="ab-levels">
+          <div style="--lc:#e14b1e"><b>Practice</b><span>Development office teams</span><p>Networking, local ownership, education, accountability and sustainability</p></div>
+          <div style="--lc:#005fc0"><b>Policies</b><span>Territorial leadership</span><p>Territorial policy alignment, resource and succession planning, and clearer policy communication</p></div>
+          <div style="--lc:#24215f"><b>Principles</b><span>IHQ and support offices</span><p>Accountability, a stronger Integrated Mission, collaboration and a learning culture</p></div>
+        </div>
+        <div class="ab-25-do"><div><h3 class="h3">Development offices at the centre</h3><p>Territories see their development offices as essential for coordination, quality and strategic alignment, and asked for more staff and succession planning, stronger MEAL and financial skills, a stronger place in territorial leadership, stable budgets and better digital tools.</p></div>
+          <div><h3 class="h3">What comes next</h3><p>Territories finish and approve their own strategies first. The Asia and the Pacific Strategy Group then brings them together, and a pre-final draft of the Asia-Pacific Community Development Strategy is expected for confirmation at ASLF 2028.</p>
+            <a class="textlink" href="#/group/apsg">About the Strategy Group</a> &nbsp;·&nbsp; <a class="textlink" href="#/history" data-hist-year="2025">ASLF 2025 in the history</a></div></div>
+      </section>
+
       <section class="ab-sec"><h2 class="h2">Ways of working we're building</h2>
         <div class="chips ab-ways">${ABOUT_WAYS.map(w => `<span class="chip">${esc(w)}</span>`).join("")}</div></section>
 
       <a class="ab-hist" href="#/history">${decor([el("g11-02", "top:-26px;right:4%", 120, 0, "white"), el("g7-05", "bottom:14px;right:24%", 46, 12, "white hm")])}
-        <span class="ab-k">Our story</span><b>The ASLP journey, 2016 to today</b><span>From the first conversations in 2016 and the first forum in the Philippines to a programme led by Asia-Pacific voices.</span><span class="ab-go">Read the history</span></a>
+        <span class="ab-k">Our story</span><b>The ASLP journey, 2016 to today</b><span>From the first conversations in 2016 and the first forum in the Philippines to ASLF 2025 and a programme led by Asia-Pacific voices.</span><span class="ab-go">Read the history</span></a>
     </div>`;
 }
 
 // ---- HISTORY: the journey (from "Journey of Hope 2018 to 2024" and the programme proposal) ----
 const HISTORY = [
-  { y: "2016", t: "The early beginnings", c: "#24215f", shapes: ["spe1-02"],
+  { y: "2016", t: "The early beginnings", c: "#24215f", shapes: ["spe1-02"], photos: [["2016-myanmar", "Myanmar, where the first conversations began"]],
     p: ["The first conversations began between The Salvation Army in Myanmar and the support offices in Norway, Switzerland and Australia: how could territories in Asia learn from each other, rather than development flowing only from North to South?"] },
   { y: "2018", t: "The first Asia Sharing and Learning Forum", where: "5–9 November, Philippines", c: "#e14b1e", shapes: ["g11-02"],
+    photos: [["2018-group", "ASLF 2018 delegates in the Philippines"], ["2018-workshop", "Mapping country strategies into an Asia road map"]],
     p: ["Development officers and leaders from across Asia met in person for the first time. Together they mapped how each country's projects and strategies could fit into an Asia strategy and The Salvation Army's theory of change, laying out challenges, strengths and where territories could help each other."],
     li: ["Share examples of community development strategies across territories", "Take the road map and issues such as succession planning to zonal leaders", "Draft a proposal for a continued sharing and learning process in Asia", "Pilot programme-to-programme exchange visits between Asian partners"], lh: "Next steps agreed" },
   { y: "2020", t: "ASLF 2020: Our Call to Mission in Asia", where: "24–26 November, online", c: "#005fc0", shapes: ["spe2-17"],
+    photos: [["2020-online", "ASLF 2020 met online during the pandemic"]],
     p: ["During the COVID-19 pandemic the forum moved online. Over three days, delegates looked at the role of the project office, how partners work together, how to help each other build capacity, and how to connect to communities of learning.",
        "A survey found that 7 of 21 territories had a territorial strategy and 7 more wanted to develop a separate community development strategy. The message was clear: community development is an integral part of our mission, not something separate."],
     quote: "An Asian strategy that is cohesive, clear and understood by all territories, that helps the region move forward and increases the capacity of territories to deliver effective and impactful community development projects." },
@@ -992,6 +1051,7 @@ const HISTORY = [
     p: ["Territories met in four clusters for the first time, each with its own facilitators: South Asia 1 (India), South Asia 2 (Bangladesh, Sri Lanka, Pakistan and the Middle East), SPEA 1 (South East Asia and the Pacific) and SPEA 2 (East Asia).",
        "Each cluster named its main thematic areas, its priorities for an Asia strategy and the risks it faces. Common themes included livelihoods, education, health, water and sanitation, anti-trafficking, disaster preparedness and capacity building. The clusters asked for regular meetings of appointed members to keep learning together between forums."] },
   { y: "2022", t: "ASLF 2022: the programme takes shape", where: "October, Bali, Indonesia", c: "#fe6809", shapes: ["sas2-02"],
+    photos: [["2022-group", "ASLF 2022 delegates in Bali"], ["2022-group-2", "Delegates in their national dress"]],
     p: ["Development officers from both Asia zones, the support offices and zonal representatives spent five days designing the Asia-Pacific Sharing and Learning Programme together, including its logframe, in a truly collaborative and participatory way.",
        "The entire forum was led, prepared and supported by and for Asia-Pacific voices through the ASLF Taskforce, a milestone for Salvation Army international conferences. Delegates also met their future Cluster Working Group colleagues, ready for the groups' launch."] },
   { y: "2023", t: "The programme is proposed", c: "#2e6be0", shapes: ["spe1-06"],
@@ -1000,8 +1060,21 @@ const HISTORY = [
   { y: "2024", t: "ASLP begins", c: "#c0391e", shapes: ["g7-01"],
     p: ["The four-year programme started, with its governance in place: the ASLP Steering Committee, the Support Office Group and the finance coordination group. Cluster Working Groups began meeting regularly, Communities of Practice and programme-to-programme visits were set up, and territories began work on their community development strategies."],
     quote: "Commitment of Hope towards Community Development: life in its fullness." , cite: "Journey of Hope, 2018 to 2024" },
-  { y: "2025–2027", t: "Towards an Asia-Pacific strategy", c: "#24215f", shapes: ["spe2-03"],
-    p: ["Territorial community development strategies come together into the Asia-Pacific Community Development Strategy, to be presented for endorsement at ASLF 2027. Forums every two years and regional cluster meetings keep zooming in on local priorities and zooming out to connect them across the region."],
+  { y: "2025", t: "ASLF 2025: Listen, Learn, Lead", where: "30 September – 2 October 2025", c: "#e14b1e", shapes: ["sas1-13"],
+    photos: [["2025-group", "ASLF 2025 delegates"], ["2025-plenary", "A plenary session"], ["2025-group-work", "Group work on the consolidated draft vision"],
+             ["2025-leaders-table", "Leaders in discussion"], ["2025-presentation", "A territorial presentation"], ["2025-cultural-night", "Cultural night"]],
+    p: ["A participatory, territory-led forum of fourteen sessions: Integrated Mission in action, territorial community development strategies, Cluster Working Group sharing, revisiting the vision and mission, anchoring core values, setting strategic priorities, territorial action planning and strengthening development offices.",
+       "Every session worked on three levels: practice (development office teams), policies (territorial leadership) and principles (International Headquarters and support offices)."],
+    more: [
+      ["A shared vision", "Resilient, self-sustaining communities through holistic restoration and reconciliation, serving all without discrimination, through an Integrated Mission that is collaborative, community-driven and God-led. Within ten years, the region hopes to be recognised as an innovator with effective models of community work, sharing what it learns as a Christian minority context with the wider Salvation Army."],
+      ["Five core values", "Compassion, Christ-centeredness, Integrity, Collaboration and Dignity, with Stewardship, Learning, Unity and Inclusion seen as vital for the future. Delegates asked for a shorter list with clear definitions so the values are applied the same way everywhere."],
+      ["A pathway to impact", "From short-term outcomes in one to three years (capacity building, local groups, economic empowerment) to long-term outcomes in three to seven years (accountable local leadership, community-led governance), towards empowered communities that lead their own holistic development, leaving no one behind."],
+      ["Strategic priorities", "Practice: networking, local ownership, education, accountability and sustainability. Policies: territorial policy alignment, resource and succession planning, and clearer policy communication. Principles: accountability, a stronger Integrated Mission, collaboration and a learning culture."],
+      ["Stronger development offices", "Territories named development offices as critical for coordination, quality and strategic alignment, and asked for more staff and succession planning, MEAL and financial skills, a stronger place in territorial leadership, stable budgets and better digital tools."]],
+    quote: "Strengthening development offices is not only an internal improvement but a strategic requirement for the region.", cite: "ASLF 2025 Outputs Summary Report" },
+  { y: "2026–2028", t: "Towards the Asia-Pacific strategy", c: "#24215f", shapes: ["spe2-03"],
+    p: ["Territories finish and approve their own community development strategies, the building blocks of the regional strategy. The Asia and the Pacific Strategy Group then brings them together, with the ASLF 2025 outputs as orientation rather than prescription, shaping the 2026–2030 Asia strategic priorities.",
+       "A pre-final draft of the Asia-Pacific Community Development Strategy is expected at the next forum, ASLF 2028, for confirmation: a strategy grown from local realities, not top-down assumptions."],
     link: ["/cd-strategy/", "Follow each territory's strategy"] },
 ];
 function pageHistory() {
@@ -1016,7 +1089,9 @@ function pageHistory() {
         <div class="hi-dot" aria-hidden="true"></div>
         <div class="hi-card">${h.shapes.map(sh => `<img class="hi-el" src="brand/el/${sh}.webp" alt="" aria-hidden="true" loading="lazy">`).join("")}
           <div class="hi-y">${esc(h.y)}</div><h2 class="h3">${esc(h.t)}</h2>${h.where ? `<div class="hi-where">${esc(h.where)}</div>` : ""}
+          ${(h.photos || []).length ? `<div class="hi-photos n${Math.min(h.photos.length, 3)}">${h.photos.map(([f, c], k) => `<button type="button" class="hi-ph${k > 2 ? " extra" : ""}" data-lb="${esc(h.y)}" data-k="${k}" aria-label="Open photo: ${esc(c)}"><img src="photos/${f}.webp" alt="${esc(c)}" loading="lazy">${k === 2 && h.photos.length > 3 ? `<span class="hi-more">+${h.photos.length - 3}</span>` : ""}</button>`).join("")}</div>` : ""}
           ${h.p.map(x => `<p>${esc(x)}</p>`).join("")}
+          ${h.more ? `<details class="hi-det"><summary>What the forum agreed</summary>${h.more.map(([a, b]) => `<div class="hi-m"><b>${esc(a)}</b><p>${esc(b)}</p></div>`).join("")}</details>` : ""}
           ${h.li ? `<div class="hi-lh">${esc(h.lh)}</div><ul>${h.li.map(x => `<li>${esc(x)}</li>`).join("")}</ul>` : ""}
           ${h.quote ? `<blockquote>${esc(h.quote)}${h.cite ? `<cite>${esc(h.cite)}</cite>` : ""}</blockquote>` : ""}
           ${h.link ? `<a class="textlink" href="${h.link[0]}">${esc(h.link[1])}</a>` : ""}</div></li>`).join("")}</ol>`).join("")}</div>
@@ -1026,6 +1101,28 @@ function pageHistory() {
         <p>Through the journey, the forums kept returning to the same calling: the mission of The Salvation Army is to preach the gospel of Jesus Christ and to meet human needs in his name without discrimination. Community development is one way that mission comes alive, with communities' own resources, shared responsibility and hope.</p></section>
       <div class="hi-next"><a class="btn fill" href="#/about">About ASLP today</a><a class="btn" href="#/cwgs">Meet the Cluster Working Groups</a></div>
     </div>`;
+}
+// photo viewer for the history page
+function openLightbox(y, k) {
+  const h = HISTORY.find(x => x.y === y); if (!h || !h.photos) return;
+  let lb = $("lightbox"); if (!lb) { lb = document.createElement("dialog"); lb.id = "lightbox"; lb.className = "lb"; document.body.appendChild(lb); }
+  const show = n => { k = (n + h.photos.length) % h.photos.length; const [f, c] = h.photos[k];
+    lb.innerHTML = `<button type="button" class="lb-x" data-lbx aria-label="Close">×</button><figure><img src="photos/${f}.webp" alt="${esc(c)}"><figcaption><b>${esc(h.y)}</b> ${esc(c)}<span>${k + 1} / ${h.photos.length}</span></figcaption></figure>
+      ${h.photos.length > 1 ? `<button type="button" class="lb-nav prev" data-lbn="-1" aria-label="Previous photo">‹</button><button type="button" class="lb-nav next" data-lbn="1" aria-label="Next photo">›</button>` : ""}`; };
+  show(k);
+  lb.onclick = e => { if (e.target === lb || e.target.closest("[data-lbx]")) return lb.close(); const n = e.target.closest("[data-lbn]"); if (n) show(k + +n.dataset.lbn); };
+  lb.onkeydown = e => { if (e.key === "ArrowRight") show(k + 1); if (e.key === "ArrowLeft") show(k - 1); };
+  lb.showModal();
+}
+document.addEventListener("click", e => { const b = e.target.closest("[data-lb]"); if (b) openLightbox(b.dataset.lb, +b.dataset.k); });
+let histTarget = "";
+document.addEventListener("click", e => { const b = e.target.closest("[data-hist-year]"); if (b) histTarget = b.dataset.histYear; });
+// highlight the year being read
+function watchYears() {
+  if (histTarget) { const t = document.getElementById("y-" + histTarget); histTarget = ""; if (t) setTimeout(() => t.scrollIntoView({ block: "start" }), 60); }
+  const chips = document.querySelectorAll("[data-jump-year]"); if (!chips.length || !window.IntersectionObserver) return;
+  const io = new IntersectionObserver(es => es.forEach(en => { if (en.isIntersecting) chips.forEach(c => c.classList.toggle("on", "y-" + c.dataset.jumpYear === en.target.id)); }), { rootMargin: "-40% 0px -55% 0px" });
+  document.querySelectorAll(".hi-item").forEach(x => io.observe(x));
 }
 document.addEventListener("click", e => { const b = e.target.closest("[data-jump-year]"); if (!b) return; e.preventDefault(); const t = document.getElementById("y-" + b.dataset.jumpYear); if (t) t.scrollIntoView({ behavior: "smooth", block: "start" }); });
 
@@ -1858,7 +1955,7 @@ function route() {
   if (!data) return;
   maps.forEach(m => m.remove()); maps = []; pendingMaps = [];
   const [p, a] = (location.hash.replace(/^#\/?/, "") || "").split("/").filter(Boolean);
-  const html = !p ? pageHome() : p === "about" ? pageAbout() : p === "history" ? pageHistory() : p === "cwgs" ? pageCwgs() : p === "zone" ? pageZone(a) : p === "cwg" ? pageCwg(a)
+  const html = !p ? pageHome() : p === "about" ? pageAbout() : p === "history" ? (pendingMaps.push(watchYears), pageHistory()) : p === "cwgs" ? pageCwgs() : p === "zone" ? pageZone(a) : p === "cwg" ? pageCwg(a)
     : p === "territory" ? pageTerritory(a) : p === "groups" ? pageGroups() : p === "group" ? pageGroup(a) : p === "newsletter" ? pageNewsletter() : p === "console" ? pageConsole(a, (location.hash.replace(/^#\/?/, "").split("/")[2] || "")) : notFound();
   $("view").innerHTML = html;
   document.body.classList.toggle("is-home", !p);
