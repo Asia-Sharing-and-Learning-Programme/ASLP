@@ -1339,7 +1339,7 @@ async function groupPDF(key, btn) {
           const c = ysM[0] <= ysM[1] ? 0 : 1, x = M + c * (mw + mg); let yy = ysM[c];
           doc.setFont("Archivo", "bold"); doc.setFontSize(f1); doc.setTextColor(25, 25, 25);
           const nm = doc.splitTextToSize(pdfSafe([m.rank, m.name].filter(Boolean).join(" ") + (m.groupRole ? `, ${m.groupRole}` : "")), mw); doc.text(nm, x, yy, { lineHeightFactor: 1.3 }); yy += nm.length * l1;
-          const det = [m.role, m.territory && (terrName(m.territory) || m.territory), m.email].filter(Boolean).join(", ");
+          const det = [m.role, m.territory && (terrName(m.territory) || m.territory)].filter(Boolean).join(", ");
           if (det) { doc.setFont("Archivo", "normal"); doc.setFontSize(f2); doc.setTextColor(80, 80, 76); const dl = doc.splitTextToSize(pdfSafe(det), mw); doc.text(dl, x, yy, { lineHeightFactor: 1.3 }); yy += dl.length * l2; }
           ysM[c] = yy + 1.8 * sc;
         });
