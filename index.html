@@ -582,6 +582,16 @@
   .sl-segs span.on { background: var(--blue); } .si-limit.low .sl-segs span.on { background: var(--yellow); }
   .draft-note { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--g2) var(--g3); background: color-mix(in srgb, var(--yellow) 22%, var(--paper)); border-left: 5px solid var(--yellow); border-radius: 12px; padding: 10px 14px; margin: var(--g3) 0; font-size: 14.5px; font-weight: 600; }
   .draft-note .btn { margin: 0; }
+  /* CWG members grouped by territory: boxes sized by how many people they hold, flowing to fill each row */
+  .mem-groups { display: flex; flex-wrap: wrap; gap: var(--g4); }
+  .mem-group { flex: var(--n) 1 calc(var(--n) * 250px); min-width: min(100%, 250px); border: 2px solid color-mix(in srgb, var(--cwg-a, var(--blue)) 35%, transparent); border-radius: 22px; padding: var(--g3); display: flex; flex-direction: column; gap: var(--g3); }
+  .mg-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px var(--g2); padding: 0 var(--g1); }
+  .mg-head a, .mg-head b { font-weight: 800; font-size: 17px; color: var(--ink); } .mg-head a { text-decoration: none; } .mg-head a:hover { text-decoration: underline; }
+  .mg-head span { font-size: 13.5px; color: var(--ink-3); } .mg-head .mg-n { margin-left: auto; }
+  .mg-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: var(--g2); flex: 1; }
+  .mg-list .member { height: 100%; }
+  .mg-place { display: inline-block; font-size: 12.5px; font-weight: 700; color: var(--cwg-a, var(--blue)); background: color-mix(in srgb, var(--cwg-a, var(--blue)) 10%, transparent); border-radius: 999px; padding: 2px 10px; margin-bottom: 8px; }
+  .unit-of { font-size: 18px; margin: 0; color: var(--ink-2); } .unit-row .nm::before { content: "↳ "; color: var(--ink-3); }
   .ed-grid .ed-field { display: grid; gap: 6px; font-size: 12.5px; font-weight: 700; color: var(--ink-2); }
   .synced { background: var(--paper); border-radius: 16px; padding: var(--g4); margin-top: var(--g3); border-left: 5px solid var(--blue); }
   .synced-h { display: flex; flex-wrap: wrap; gap: 4px var(--g2); align-items: baseline; }
@@ -1397,12 +1407,12 @@ function pageCwg(cs) {
     <div class="wrap page-body" style="padding-top:var(--g7)">
       <p class="lede" style="margin-bottom:var(--g6)">${esc(c)} is one of four <a class="textlink" href="#/cwgs">Cluster Working Groups</a>. Its members meet online through the year and in person every two years to share what works, build their teams' skills and shape their territories' Community Development Strategies.</p>
       <h2 class="h2">${ts.length} territories and regions</h2>
-      <div class="terr-grid">${ts.map(t => { const p = t.profile || {};
+      <div class="terr-grid">${ts.map(t => { const p = t.profile || {}, us = unitsOf(t.id).filter(u => u.cwg === c);
         return `<a class="terr-row" href="#/territory/${esc(t.id)}"><div class="nm">${esc(t.name)}</div>
           <div class="where">${t.location ? `${isRegion(t) ? "Regional" : "Territorial"} Headquarters in ${esc(t.location)}` : ""}</div>
-          ${(p.thematic || []).length ? tags(p.thematic.slice(0, 4)) : `<span class="small">Profile coming soon</span>`}</a>`; }).join("")}</div>
+          ${(p.thematic || []).length ? tags(p.thematic.slice(0, 4)) : `<span class="small">Profile coming soon</span>`}</a>${unitRows(us)}`; }).join("")}${unitRows(units().filter(u => u.cwg === c && !ts.some(t => t.id === u.parent)))}</div>
       ${(() => { const ms = membersOf(c); return `<div class="stack" style="margin-top:var(--g6)"><div class="row-head"><h2 class="h2">${esc(c)} CWG members</h2>${canCwg(c) ? `<a class="btn sm" href="#/console/cwg/${cwgSlug(c)}">Edit members</a>` : ""}</div>
-        ${ms.length ? `<div class="member-grid">${ms.map(m => `<div class="member">${contactHtml({ ...m, role: [m.role, memberPlace(m)].filter(Boolean).join(", ") })}</div>`).join("")}</div>` : `<p class="empty">The members of ${esc(c)} will be listed here.</p>`}</div>`; })()}
+        ${ms.length ? memberGroups(ms, c) : `<p class="empty">The members of ${esc(c)} will be listed here.</p>`}</div>`; })()}
       <div style="margin-top:var(--g6)"><div class="aslp-map" id="map-cwg" role="region" aria-label="Map of ${esc(c)} headquarters"></div>${z ? zoneLegend([z.key]) : ""}</div>
       ${countries.length ? `<div class="stack" style="margin-top:var(--g6)"><h3 class="h3">Countries covered</h3><div class="chips">${countries.map(x => `<span class="chip">${esc(x)}</span>`).join("")}</div></div>` : ""}
     </div></div>`;
@@ -1410,7 +1420,7 @@ function pageCwg(cs) {
 
 // ---- TERRITORY ----
 function pageTerritory(id) {
-  const t = terrs().find(x => x.id === id); if (!t) return notFound();
+  const t = terrs().find(x => x.id === id); if (!t) { const u = unitById(id); return u ? pageUnit(u) : notFound(); }
   const c = (t.cwg || "").trim(), z = ZONES.find(x => x.key === zoneOf(c)), p = t.profile || {}, a = ART(c), l = c && leadOf(c);
   const offices = (t.offices || []).filter(o => o.name);
   const color = ZCOL[zoneOf(c)] || "#6f6e69";
@@ -1436,6 +1446,7 @@ function pageTerritory(id) {
           ${offices.length ? `<ul class="office-list">${offices.map(o => `<li>${officeSvg(14)}<span>${esc(o.name)}</span></li>`).join("")}</ul>` : ""}
           ${p.workAreas ? `<p style="margin-top:var(--g3)">${esc(p.workAreas)}</p>` : ""}
         </div>
+        ${unitsOf(t.id).length ? `<div class="t-sec"><h2 class="h3">Regions, divisions and countries</h2><div class="terr-grid">${unitRows(unitsOf(t.id))}</div></div>` : ""}
         ${sec("Thematic areas", (p.thematic || []).length ? tags(p.thematic) : "", "Thematic areas will appear here once the territory adds them.")}
         ${sec("Strengths", p.strengths ? `<p>${esc(p.strengths)}</p>` : "", "Strengths will appear here once the territory adds them.")}
         ${sec("Technical support they can offer other territories", p.techSupport ? `<p>${esc(p.techSupport)}</p>` : "", "Support offers will appear here once the territory adds them.")}
@@ -1450,6 +1461,101 @@ function pageTerritory(id) {
           <div style="margin-top:var(--g2)"><a class="textlink" href="#/cwg/${cwgSlug(c)}">Other territories in ${esc(c)}</a></div></div></div>` : ""}
       </aside>
     </div></div>`;
+}
+
+// ---- REGIONS, DIVISIONS AND COUNTRIES inside a territory (each with its own profile, linked to its territory) ----
+const units = () => data.units || [];
+const unitById = id => units().find(u => u.id === id);
+const unitsOf = pid => units().filter(u => u.parent === pid);
+const canUnit = id => (V().can_units || []).includes(id);
+const unitContacts = u => { const seen = new Set(), out = [];
+  (u.contacts || []).forEach(c => { const k = (c.email || c.name || "").toLowerCase(); if (k && !seen.has(k)) { seen.add(k); out.push(c); } });
+  (data.cwgMembers || []).filter(m => m.territory === u.parent && m.unit === u.name).forEach(m => { const k = (m.email || m.name || "").toLowerCase(); if (!seen.has(k)) { seen.add(k); out.push({ ...m, role: [m.role, `${m.cwg} CWG member`].filter(Boolean).join(", ") }); } });
+  return out; };
+function pageUnit(u) {
+  const t = terrs().find(x => x.id === u.parent) || { name: "", id: u.parent }, c = u.cwg, z = ZONES.find(x => x.key === zoneOf(c)), p = u.profile || {}, a = ART(c), l = c && leadOf(c);
+  const sec = (title, body, empty) => `<div class="t-sec"><h2 class="h3">${title}</h2>${body || `<p class="empty">${empty}</p>`}</div>`;
+  const siblings = unitsOf(u.parent).filter(x => x.id !== u.id), crossCwg = t.cwg && t.cwg !== c;
+  pendingMaps.push(() => mountTerritory("map-terr", { ...u, offices: [] }));
+  return `<div style="${cwgVars(c)}">
+    ${crumbs([["Home", "#/"], ["Cluster Working Groups", "#/cwgs"], ...(z ? [[z.key, `#/zone/${z.key.toLowerCase()}`]] : []), [c, `#/cwg/${cwgSlug(c)}`], [shortName(OFFICIAL_NAME[t.id] || t.name), `#/territory/${esc(t.id)}`], [u.name]])}
+    <section class="t-hero"><div class="wrap">
+      <div class="stack">${a ? `<a class="lockup" href="#/cwg/${cwgSlug(c)}"><img src="${a.h}" alt="${esc(c)} Cluster Working Group"></a>` : ""}
+        <h1 class="h1">${esc(u.name)}</h1>
+        <p class="unit-of">${esc(u.kind === "Country" ? "Part of the" : `A ${u.kind.toLowerCase()} of the`)} <a class="textlink" href="#/territory/${esc(t.id)}">${esc(OFFICIAL_NAME[t.id] || t.name)}</a>${crossCwg ? `, and a member of the ${esc(c)} Cluster Working Group` : ""}</p>
+        <div class="facts-row">
+          <div><div class="k">${u.kind === "Region" ? "Regional Headquarters" : u.kind === "Division" ? "Divisional Headquarters" : u.kind === "District" ? "District Headquarters" : "Main office"}</div><div class="v">${esc(u.location || "Not recorded")}</div></div>
+          <div><div class="k">Country</div><div class="v">${esc((u.countries || []).join(", ").replace("Solomon Is.", "Solomon Islands").replace("Macao", "Macau") || "Not recorded")}</div></div>
+          <div><div class="k">CD Strategy</div><div class="v">${statusChip(t)}</div></div>
+        </div></div>
+      ${cwgCluster(c)}
+    </div></section>
+    <div class="wrap t-body">
+      <div>
+        <div class="t-sec"><h2 class="h3">Where they work</h2>
+          <div class="aslp-map sm" id="map-terr" role="region" aria-label="Map of ${esc(u.name)}"></div>
+          ${p.workAreas ? `<p style="margin-top:var(--g3)">${esc(p.workAreas)}</p>` : ""}</div>
+        ${sec("Thematic areas", (p.thematic || []).length ? tags(p.thematic) : "", `Thematic areas will appear here once ${esc(u.name)} adds them.`)}
+        ${sec("Strengths", p.strengths ? `<p>${esc(p.strengths)}</p>` : "", `Strengths will appear here once ${esc(u.name)} adds them.`)}
+        ${sec("Technical support they can offer others", p.techSupport ? `<p>${esc(p.techSupport)}</p>` : "", "Support offers will appear here once they're added.")}
+      </div>
+      <aside>
+        ${canUnit(u.id) ? `<a class="btn fill" style="margin-bottom:var(--g3)" href="#/console/territory/${esc(u.id)}">Edit this profile</a>` : ""}
+        <div class="aside-box"><h2 class="h3">Contact persons</h2>${unitContacts(u).length ? `<div>${unitContacts(u).map(contactHtml).join("")}</div>` : `<p class="empty">Contacts will be listed here. Until then, reach ${esc(u.name)} through the ${esc(shortName(t.name))} territory or the ${esc(c)} CWG lead.</p>`}</div>
+        <div class="aside-box"><h2 class="h3">${esc(OFFICIAL_NAME[t.id] || t.name)}</h2><div class="stack" style="--gap:var(--g1)">
+          <p class="small" style="margin:0">${esc(u.name)} follows the territory's Community Development Strategy.</p><div>${statusChip(t)}</div>
+          <a class="textlink" href="#/territory/${esc(t.id)}">The territory's profile</a>
+          ${siblings.length ? `<div class="small" style="margin-top:var(--g2)">Also in the territory: ${siblings.map(s => `<a class="textlink" href="#/territory/${esc(s.id)}">${esc(s.name)}</a>`).join(", ")}</div>` : ""}</div></div>
+        ${l ? `<div class="aside-box"><h2 class="h3">${esc(c)} CWG lead</h2><div>${contactHtml({ name: l.name, role: [l.role, terrName(l.territory)].filter(Boolean).join(", "), email: l.email })}</div></div>` : ""}
+      </aside>
+    </div></div>`;
+}
+// CWG members boxed by territory (any number per territory); a sub-unit from another CWG's territory (e.g. Cambodia in SPEA 2) gets its own box.
+// Inside a territory with several places (e.g. Singapore and Thailand in SMMT), each person shows where they're based.
+function memberGroups(ms, c) {
+  const groups = [], byKey = {};
+  ms.forEach(m => {
+    const t = terrs().find(x => x.id === m.territory), u = m.unit && units().find(x => x.parent === m.territory && x.name === m.unit);
+    const key = !t ? "_none" : u && t.cwg !== c ? "u:" + u.id : t.id;
+    if (!byKey[key]) { byKey[key] = { key, t, u: key.startsWith("u:") ? u : null, ms: [] }; groups.push(byKey[key]); }
+    byKey[key].ms.push(m); });
+  const order = g => g.key === "_none" ? 1e6 : (terrs().findIndex(x => x.id === (g.t || {}).id) + (g.u ? .5 : 0));
+  groups.sort((a, b) => order(a) - order(b));
+  const hq = t => ((TERR_UNITS[t.id] || [])[0] || "");
+  return `<div class="mem-groups">${groups.map(g => {
+    const n = g.ms.length, places = new Set(g.ms.map(m => m.unit || "")), multi = !g.u && g.t && places.size > 1;
+    const title = g.key === "_none" ? "Other members" : g.u ? g.u.name : (OFFICIAL_NAME[g.t.id] || g.t.name);
+    const href = g.key === "_none" ? "" : `#/territory/${esc(g.u ? g.u.id : g.t.id)}`;
+    const sub = g.u ? `Part of the ${shortName(OFFICIAL_NAME[g.t.id] || g.t.name)} Territory` : "";
+    return `<section class="mem-group" style="--n:${Math.min(n, 4)}" aria-label="${esc(title)}">
+      <div class="mg-head">${href ? `<a href="${href}">${esc(title)}</a>` : `<b>${esc(title)}</b>`}${sub ? `<span>${esc(sub)}</span>` : ""}<span class="mg-n">${n} ${n === 1 ? "member" : "members"}</span></div>
+      <div class="mg-list">${g.ms.map(m => { const place = multi ? (m.unit || hq(g.t)).replace(/\s*\((Territorial|Regional) Headquarters\)/, "") : "";
+        return `<div class="member">${place ? `<span class="mg-place">${esc(place)}</span>` : ""}${contactHtml({ ...m, role: m.role || "" })}</div>`; }).join("")}</div></section>`; }).join("")}</div>`;
+}
+const unitRows = us => us.map(u => { const p = u.profile || {}, t = terrs().find(x => x.id === u.parent) || {};
+  return `<a class="terr-row unit-row" href="#/territory/${esc(u.id)}"><div class="nm">${esc(u.name)}</div>
+    <div class="where">Part of the ${esc(shortName(OFFICIAL_NAME[t.id] || t.name || ""))} Territory${u.location ? ` · ${esc(u.location)}` : ""}</div>
+    ${(p.thematic || []).length ? tags(p.thematic.slice(0, 4)) : `<span class="small">Profile coming soon</span>`}</a>`; }).join("");
+function unitEditor(id) {
+  const box = $("terr-editor"), u = unitById(id); if (!box || !u) return;
+  const p = u.profile || {}, t = terrs().find(x => x.id === u.parent) || {};
+  box.innerHTML = `<div class="synced"><div class="synced-h"><b>${esc(u.name)}</b><span class="small">${esc(u.kind === "Country" ? "Part of the" : `A ${u.kind.toLowerCase()} of the`)} ${esc(OFFICIAL_NAME[t.id] || t.name || "")} · ${esc(u.cwg)} CWG. It shares the territory's CD Strategy.</span></div></div>
+    <div class="ed-grid">
+      <label class="full"><span>Where they work</span><textarea id="p-work" rows="3">${esc(p.workAreas || "")}</textarea></label>
+      <label class="full"><span>Thematic areas</span><input id="p-them" value="${esc((p.thematic || []).join(", "))}" placeholder="Separate with commas, e.g. Disaster response, Livelihoods, Health"></label>
+      <label><span>Strengths</span><textarea id="p-str" rows="4">${esc(p.strengths || "")}</textarea></label>
+      <label><span>Technical support they can offer others</span><textarea id="p-tech" rows="4">${esc(p.techSupport || "")}</textarea></label>
+    </div>
+    <h3 class="h3" style="margin-top:var(--g5)">Contact persons</h3>
+    <p class="small">CWG members linked to ${esc(u.name)} are added to its contacts automatically.</p>
+    <div id="con-box"><div class="ed-rows">${((u.contacts || []).length ? u.contacts : [{}]).map(c => fieldRow(CON_COLS, c, [])).join("")}</div>
+      <div class="ed-actions"><button type="button" class="btn sm ed-add">Add a contact</button></div></div>
+    <div class="ed-actions sticky"><button type="button" class="btn fill" id="terr-save">Save ${esc(u.name)}</button><a class="textlink" href="#/territory/${esc(u.id)}">View the page</a><span class="ed-msg" id="terr-msg" role="status"></span></div>`;
+  wireRows($("con-box"), CON_COLS, []);
+  makeDraftable(box, `unit:${id}`, () => unitEditor(id));
+  $("terr-save").addEventListener("click", () => saveWith("terr-save", "terr-msg", () => db.rpc("aslp_save_unit", { p_id: id,
+    p_profile: { workAreas: $("p-work").value.trim(), thematic: $("p-them").value.split(",").map(x => x.trim()).filter(Boolean), strengths: $("p-str").value.trim(), techSupport: $("p-tech").value.trim() },
+    p_contacts: readRows($("con-box")) }), `${u.name} saved.`));
 }
 
 // ---- GROUPS ----
@@ -1957,11 +2063,12 @@ function pageConsole(a, b) {
     <p class="small">The territory's name, CWG, headquarters, countries, offices, status, strategy period and focal person are kept there and shown on this website automatically.</p>
     <a class="btn fill" href="${CDS_URL}#admin">Open the CD Strategies console</a></div></div>`;
   if (!terrIds.length && !cwgs.length && !groups.length && !v.is_full_admin) return head + `<div class="wrap page-body"><div class="console-card"><p>This account can't edit any website details yet. CWG leads and admins edit their CWGs; CWG members edit their own territory. Ask your CWG lead or the ASLP Coordinator for access.</p></div></div>`;
-  const selT = a === "territory" && terrIds.includes(b) ? b : terrIds[0];
+  const unitIds = (v.can_units || []).filter(unitById);
+  const selT = a === "territory" && terrIds.includes(b) ? b : a === "territory" && unitIds.includes(b) ? "u:" + b : terrIds[0] || (unitIds[0] ? "u:" + unitIds[0] : "");
   const selC = a === "cwg" ? cwgs.find(c => cwgSlug(c) === b) : null;
   pendingMaps.push(() => mountConsole());
   const canUpd = cwgs.length || Object.keys(PGROUPS).some(canGroupPost);
-  const secs = [canUpd && ["cc-updates", "Updates"], cwgs.length && ["cc-members", "CWG members"], terrIds.length && ["cc-terr", "Territory profiles"], groups.length && ["cc-groups", "ASLP Groups"], v.is_full_admin && ["cc-pages", "Pages and newsletter"], v.is_full_admin && ["cc-access", "Access"]].filter(Boolean);
+  const secs = [canUpd && ["cc-updates", "Updates"], cwgs.length && ["cc-members", "CWG members"], (terrIds.length || unitIds.length) && ["cc-terr", "Territory profiles"], groups.length && ["cc-groups", "ASLP Groups"], v.is_full_admin && ["cc-pages", "Pages and newsletter"], v.is_full_admin && ["cc-access", "Access"]].filter(Boolean);
   return head + `<div class="wrap page-body">
     ${secs.length > 1 ? `<nav class="con-nav" aria-label="Console sections">${secs.map(([id, l]) => `<button type="button" class="chip-btn" data-jump="${id}">${l}</button>`).join("")}</nav>` : ""}
     ${canUpd ? `<section class="console-card" id="cc-updates"><div class="row-head"><h2 class="h2">Updates</h2><button type="button" class="btn fill sm" id="up-new">Post an update</button></div>
@@ -1971,8 +2078,9 @@ function pageConsole(a, b) {
       <p class="small">Add each CWG member's rank (if an officer), name, appointment or role and email. Members linked to a territory are listed on that territory's page and can sign in to edit its profile.</p>
       ${cwgs.length > 1 ? `<div class="cw-pick" role="tablist">${cwgs.map(c => `<button type="button" role="tab" class="chip-btn${c === (selC || cwgs[0]) ? " on" : ""}" data-cw="${esc(c)}">${esc(c)}</button>`).join("")}</div>` : ""}
       <div id="mem-editor"></div></section>` : ""}
-    ${terrIds.length ? `<section class="console-card" id="cc-terr"><div class="row-head"><h2 class="h2">Territory profiles</h2>
-      <select id="t-pick" aria-label="Territory">${terrIds.map(id => `<option value="${esc(id)}"${id === selT ? " selected" : ""}>${esc(terrName(id))}</option>`).join("")}</select></div>
+    ${terrIds.length || unitIds.length ? `<section class="console-card" id="cc-terr"><div class="row-head"><h2 class="h2">Territory profiles</h2>
+      <select id="t-pick" aria-label="Territory">${terrIds.length ? `<optgroup label="Territories">${terrIds.map(id => `<option value="${esc(id)}"${id === selT ? " selected" : ""}>${esc(terrName(id))}</option>`).join("")}</optgroup>` : ""}
+        ${unitIds.length ? `<optgroup label="Regions, divisions and countries">${unitIds.map(id => `<option value="u:${esc(id)}"${"u:" + id === selT ? " selected" : ""}>${esc(unitById(id).name)}</option>`).join("")}</optgroup>` : ""}</select></div>
       <div id="terr-editor"></div></section>` : ""}
     ${groups.length ? `<section class="console-card" id="cc-groups"><div class="row-head"><h2 class="h2">ASLP Groups</h2>
       <select id="g-pick" aria-label="Group">${groups.map(k => { const g = (data.groups || []).find(x => x.key === k) || { short: k }; return `<option value="${esc(k)}"${a === "group" && b === k ? " selected" : ""}>${esc(g.short)}${g.name ? ` (${esc(g.name)})` : ""}</option>`; }).join("")}</select></div>
@@ -2355,7 +2463,8 @@ const memberPlace = m => m.unit || (m.territory && shortName(OFFICIAL_NAME[m.ter
 const zoneTerrSelect = (vals, terrOpts) => { const groups = {}; terrOpts.forEach(t => (groups[t.cwg] = groups[t.cwg] || []).push(t));
   const cur = (vals.territory || "") + "|" + (vals.unit || "");
   return `<select data-k="territory"><option value="">Not linked to a territory</option>${Object.keys(groups).sort().map(g => `<optgroup label="${esc(g)}">${groups[g].map(t =>
-    `<option value="${esc(t.id)}|"${cur === t.id + "|" ? " selected" : ""}>${esc(terrLabel(t))}</option>${(TERR_UNITS[t.id] || []).map(u => `<option value="${esc(t.id)}|${esc(u)}"${cur === t.id + "|" + u ? " selected" : ""}>\u00a0\u00a0\u00a0↳ ${esc(u)}</option>`).join("")}`).join("")}</optgroup>`).join("")}</select>`; };
+    `<option value="${esc(t.id)}|"${cur === t.id + "|" ? " selected" : ""}>${esc(terrLabel(t))}</option>${(TERR_UNITS[t.id] || []).map(u => `<option value="${esc(t.id)}|${esc(u)}"${cur === t.id + "|" + u ? " selected" : ""}>\u00a0\u00a0\u00a0↳ ${esc(u)}</option>`).join("")}`).join("")}${units().filter(u => u.cwg === g && !groups[g].some(t => t.id === u.parent) && terrOpts.some(t => t.id === u.parent)).map(u =>
+    `<option value="${esc(u.parent)}|${esc(u.name)}">${esc(u.name)} (${esc(shortName(terrName(u.parent)))} Territory)</option>`).join("")}</optgroup>`).join("")}</select>`; };
 const fieldRow = (cols, vals, terrOpts) => `<div class="ed-row">${cols.map(([k, l, ph]) => k === "territory"
   ? `<label><span>${l}</span>${zoneTerrSelect(vals, terrOpts)}</label>`
   : `<label><span>${l}</span><input data-k="${k}" type="${k === "email" ? "email" : "text"}" value="${esc(vals[k] || "")}" placeholder="${esc(ph || "")}"></label>`).join("")}
@@ -2487,7 +2596,8 @@ function mountConsole() {
   if ($("pages-editor")) pagesEditor();
   if ($("access-editor")) accessEditor();
   if ($("terr-editor")) {
-    terrEditor($("t-pick").value); $("t-pick").addEventListener("change", e => terrEditor(e.target.value));
+    const pickEd = v => v.startsWith("u:") ? unitEditor(v.slice(2)) : terrEditor(v);
+    pickEd($("t-pick").value); $("t-pick").addEventListener("change", e => pickEd(e.target.value));
     if (a === "territory") setTimeout(() => $("cc-terr").scrollIntoView({ block: "start" }), 50);
   }
 }
