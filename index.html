@@ -105,7 +105,13 @@
   .dd { position: relative; }
   .dd-top::after { content: ""; display: inline-block; width: 7px; height: 7px; border-right: 2px solid currentColor; border-bottom: 2px solid currentColor; transform: rotate(45deg) translateY(-3px); margin-left: 8px; opacity: .55; }
   .dd-menu { position: absolute; left: 0; top: 100%; min-width: 300px; background: var(--paper); border: 1px solid var(--line); border-radius: 16px; box-shadow: 0 14px 36px rgba(0,0,0,.13); padding: var(--g2); display: none; z-index: 60; }
-  #dd-cwgs { min-width: 380px; }
+  #dd-groups { min-width: 360px; }
+  .dd-sub { position: relative; }
+  .dd-sub-top::after { content: ""; margin-left: auto; width: 7px; height: 7px; border-right: 2px solid currentColor; border-top: 2px solid currentColor; transform: rotate(45deg); opacity: .5; flex: none; }
+  .dd-sub:hover > .dd-sub-top, .dd-sub:focus-within > .dd-sub-top { background: var(--paper-2); }
+  .dd-sub-menu { display: none; position: absolute; left: 100%; top: calc(-1 * var(--g2) - 1px); margin-left: 4px; min-width: 300px; background: var(--paper); border: 1px solid var(--line); border-radius: 16px; box-shadow: 0 14px 36px rgba(0,0,0,.13); padding: var(--g2); }
+  .dd-sub-menu::before { content: ""; position: absolute; right: 100%; top: 0; bottom: 0; width: 10px; }   /* keeps the hover alive across the gap */
+  .dd-sub:hover > .dd-sub-menu, .dd-sub:focus-within > .dd-sub-menu { display: block; }
   #dd-about, #dd-updates { min-width: 300px; } #dd-about a, #dd-updates a { display: grid; gap: 2px; } #dd-about a b, #dd-updates a b { min-width: 0; font-size: 16px; }
   .dd:hover .dd-menu, .dd:focus-within .dd-menu { display: block; }
   .dd-menu .dd-h { font-size: 13px; font-weight: 700; color: var(--ink-3); padding: var(--g1) 10px 2px; }
@@ -131,7 +137,8 @@
     .topbar > .wrap > .theme { display: none; }
     nav.menu .theme-in-menu { display: flex !important; margin-top: var(--g3); }
     .dd-top::after { display: none; }
-    .dd-menu, #dd-cwgs { display: block; position: static; box-shadow: none; border: 0; padding: 0 0 var(--g1) var(--g2); min-width: 0; background: none; }
+    .dd-menu, .dd-sub-menu { display: block; position: static; box-shadow: none; border: 0; padding: 0 0 var(--g1) var(--g2); min-width: 0; background: none; margin: 0; }
+    #dd-groups { min-width: 0; } .dd-sub-top::after { display: none; } .dd-sub:hover > .dd-sub-top { background: none; }
     .dd-menu a { padding: 9px 4px; font-size: 16px; }
   }
 
@@ -532,6 +539,12 @@
   .ed-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--g3); margin-top: var(--g4); }
   .ed-grid .full { grid-column: 1 / -1; }
   .ed-grid textarea { resize: vertical; line-height: 1.5; }
+  .si-limit { border-left: 5px solid var(--blue); background: var(--paper); border-radius: 12px; padding: 12px 14px; margin-top: var(--g3); font-size: 14px; }
+  .si-limit.low { border-left-color: var(--yellow); } .si-limit.full { border-left-color: var(--orange); }
+  .si-limit .sl-top { display: flex; justify-content: space-between; gap: var(--g2); } .si-limit .sl-top span { font-weight: 700; }
+  .si-limit p { margin: 6px 0 0; color: var(--ink-2); }
+  .sl-segs { display: flex; gap: 4px; margin-top: 8px; } .sl-segs span { flex: 1; height: 8px; border-radius: 3px; background: var(--line); }
+  .sl-segs span.on { background: var(--blue); } .si-limit.low .sl-segs span.on { background: var(--yellow); }
   .ed-grid .ed-field { display: grid; gap: 6px; font-size: 12.5px; font-weight: 700; color: var(--ink-2); }
   .synced { background: var(--paper); border-radius: 16px; padding: var(--g4); margin-top: var(--g3); border-left: 5px solid var(--blue); }
   .synced-h { display: flex; flex-wrap: wrap; gap: 4px var(--g2); align-items: baseline; }
@@ -757,7 +770,6 @@
   <nav class="menu" id="menu" aria-label="Main">
     <a href="#/" data-nav="home">Home</a>
     <div class="dd"><a href="#/about" data-nav="about" class="dd-top" aria-haspopup="true">About</a><div class="dd-menu" id="dd-about"><a href="#/about"><b>About ASLP</b><span>What the programme is, what it aims for and how it works</span></a><a href="#/history"><b>History of ASLP</b><span>The journey from 2016 to today</span></a></div></div>
-    <div class="dd"><a href="#/cwgs" data-nav="cwgs" class="dd-top" aria-haspopup="true">Cluster Working Groups</a><div class="dd-menu" id="dd-cwgs"></div></div>
     <div class="dd"><a href="#/groups" data-nav="groups" class="dd-top" aria-haspopup="true">ASLP Groups</a><div class="dd-menu" id="dd-groups"></div></div>
     <div class="dd"><a href="#/updates" data-nav="updates" class="dd-top" aria-haspopup="true">ASLP Updates</a><div class="dd-menu" id="dd-updates"><a href="#/newsletter"><b>Newsletter</b><span>Every issue of the ASLP newsletter</span></a><a href="#/updates"><b>Programme Updates</b><span>Activities and news from each CWG</span></a></div></div>
     <a href="/cd-strategy/">CD Strategies</a>
@@ -1824,11 +1836,22 @@ document.addEventListener("click", e => { const b = e.target.closest("[data-grp-
 // ---- console: sign in once, then edit the strategies or the website ----
 
 let signinEmail = "";
+// how many sign-in emails are left this hour (admins and CWG leads: 5; everyone else: 3)
+function signinLimitBox(st) {
+  const segs = (on, n) => `<div class="sl-segs" aria-hidden="true">${Array.from({ length: n }, (_, i) => `<span class="${i < on ? "on" : ""}"></span>`).join("")}</div>`;
+  if (!st) return `<div class="si-limit"><div class="sl-top"><b>Sign-ins left this hour</b><span>up to 5</span></div>${segs(5, 5)}
+    <p>Admins and CWG leads can request up to 5 sign-in emails an hour, everyone else up to 3. Enter your email to see how many you have left.</p></div>`;
+  const lim = st.limit || 3, left = Math.max(0, lim - (st.used || 0));
+  const at = st.next_free_at ? new Date(st.next_free_at).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" }) : "";
+  return `<div class="si-limit${left ? left === 1 ? " low" : "" : " full"}"><div class="sl-top"><b>Sign-ins left this hour</b><span>${left} of ${lim} left</span></div>${segs(left, lim)}
+    <p>${left ? `You can request ${left} more sign-in email${left === 1 ? "" : "s"} this hour.${left === 1 ? " Check your inbox and spam folder before asking for another." : ""}` : `You've used all ${lim} for this hour. You can ask for another at about <b>${esc(at)}</b>. The newest email in your inbox may still work.`}</p></div>`;
+}
 function consoleSignin() {
   return `<div class="console-card"><h2 class="h2">Sign in</h2>
     <p class="small">CWG leads, admins and CWG members use the same sign-in as the CD Strategies website. If you're already signed in there, you're signed in here too.</p>
     <form id="si-form" class="si-form" autocomplete="on"><label for="si-email">Your email</label>
       <div class="copy-row"><input type="email" id="si-email" required autocomplete="email" value="${esc(signinEmail)}" placeholder="name@salvationarmy.org"><button class="btn fill sm" id="si-go">Email me a sign-in code</button></div></form>
+    <div id="si-limit">${signinLimitBox(null)}</div>
     <div id="si-code" ${signinEmail ? "" : "hidden"}><label for="si-token">Code from the email</label>
       <div class="copy-row"><input type="text" id="si-token" inputmode="numeric" autocomplete="one-time-code" placeholder="123456"><button class="btn fill sm" id="si-verify">Sign in</button></div>
       <p class="small">The email also has a link. Opening it signs you in too.</p></div>
@@ -2254,14 +2277,20 @@ function mountConsole() {
 function mountSignin() {
   const f = $("si-form"); if (!f) return;
   const msg = t => { $("si-msg").textContent = t; };
+  let lt = 0;
+  const showLimit = st => { const b = $("si-limit"); if (b) b.innerHTML = signinLimitBox(st); const full = st && (st.used || 0) >= (st.limit || 3); $("si-go").disabled = !!full; };
+  const checkLimit = () => { clearTimeout(lt); const em = $("si-email").value.trim().toLowerCase(); if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(em)) return showLimit(null);
+    lt = setTimeout(() => db.rpc("signin_status_for", { p_email: em }).then(({ data: st }) => { if (st && $("si-email") && $("si-email").value.trim().toLowerCase() === em) showLimit(st); }).catch(() => {}), 400); };
+  $("si-email").addEventListener("input", checkLimit); if ($("si-email").value) checkLimit();
   f.addEventListener("submit", async e => {
     e.preventDefault(); const email = $("si-email").value.trim().toLowerCase(); if (!email) return;
     $("si-go").disabled = true; msg("Checking…");
     const { data: d, error } = await db.rpc("aslp_request_signin", { p_email: email });
     if (error || !d) { $("si-go").disabled = false; return msg("Couldn't send the sign-in email. Please try again."); }
+    if (d.limit) showLimit(d);
     if (!d.ok) { $("si-go").disabled = d.reason === "limit"; return msg(d.reason === "not_registered" ? "This email isn't registered. Ask your CWG lead or the ASLP Coordinator to add you." : "The hourly sign-in limit is reached. Please try again later; the newest email in your inbox may still work."); }
     const r = await db.auth.signInWithOtp({ email, options: { emailRedirectTo: location.origin + location.pathname, shouldCreateUser: true } });
-    $("si-go").disabled = false;
+    $("si-go").disabled = (d.used || 0) >= (d.limit || 3);
     if (r.error) return msg(r.error.message || "Couldn't send the sign-in email.");
     signinEmail = email; $("si-code").hidden = false; msg(`Sign-in email sent to ${email}. Type the code from it below, or open its link.`); $("si-token").focus();
   });
@@ -2407,8 +2436,10 @@ const notFound = () => `<div class="wrap page-body" style="padding-top:var(--g7)
 // ---- drop-down menus ----
 function buildMenus() {
   const cls = cwgList();
-  $("dd-cwgs").innerHTML = ZONES.map(z => `<a href="#/zone/${z.key.toLowerCase()}"><b style="color:${ZCOL[z.key]}">${z.key}</b><span>${esc(z.label)}</span></a>`).join("");
-  $("dd-groups").innerHTML = (data.groups || []).map(g => `<a href="#/group/${esc(g.key)}"><b>${esc(g.short)}</b><span>${esc(g.name)}</span></a>`).join("");
+  // CWGs first; hovering it opens SPEA and SASIA to the side
+  $("dd-groups").innerHTML = `<div class="dd-sub"><a href="#/cwgs" class="dd-sub-top" aria-haspopup="true"><b>CWGs</b><span>Cluster Working Groups</span></a>
+      <div class="dd-sub-menu">${ZONES.map(z => `<a href="#/zone/${z.key.toLowerCase()}"><b style="color:${ZCOL[z.key]}">${z.key}</b><span>${esc(z.label)}</span></a>`).join("")}</div></div>`
+    + (data.groups || []).map(g => `<a href="#/group/${esc(g.key)}"><b>${esc(g.short)}</b><span>${esc(g.name)}</span></a>`).join("");
 }
 
 // ---- router ----
@@ -2422,7 +2453,7 @@ function route() {
   document.body.classList.toggle("is-home", !p);
   pendingMaps.forEach(f => f()); pendingMaps = [];
   if (p === "console") mountSignin();
-  const nav = p === "zone" || p === "cwg" || p === "territory" ? "cwgs" : p === "group" ? "groups" : p === "history" ? "about" : p === "newsletter" || p === "update" ? "updates" : p;
+  const nav = p === "zone" || p === "cwg" || p === "territory" || p === "cwgs" || p === "group" ? "groups" : p === "history" ? "about" : p === "newsletter" || p === "update" ? "updates" : p;
   document.querySelectorAll("[data-nav]").forEach(x => x.classList.toggle("on", x.dataset.nav === nav));
   $("menu").classList.remove("open"); $("menu-btn").setAttribute("aria-expanded", "false");
   const h1 = $("view").querySelector("h1"); const t1 = h1 ? (h1.textContent.trim() || (h1.querySelector("img") || {}).alt || "") : "";
