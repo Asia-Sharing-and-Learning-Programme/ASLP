@@ -488,6 +488,10 @@
   .book-wrap:fullscreen { border-radius: 0; display: flex; flex-direction: column; justify-content: center; background: #1d1c2e; color: #fff; }
   .book-wrap:fullscreen .bk-hint { display: none; }
   .book-stage { display: grid; place-items: center; min-height: 360px; perspective: 2600px; user-select: none; touch-action: pan-y; }
+  .book-stage.zoomed { overflow: hidden; touch-action: none; border-radius: 6px; }
+  .bk-z { transform-origin: 0 0; transition: transform .55s cubic-bezier(.16,1,.3,1); }
+  .book-stage.zoomed .bk-z, .book-stage.zoomed .bk { cursor: grab; } .book-stage.zoomed.panning .bk-z { transition: none; cursor: grabbing; }
+  @media (prefers-reduced-motion: reduce) { .bk-z { transition: none; } }
   .bk { position: relative; display: flex; cursor: pointer; transition: transform .9s cubic-bezier(.45, .05, .25, 1); touch-action: pan-y; }
   .bk.two.cover { transform: translateX(-25%); } .bk.two.end { transform: translateX(25%); }
   .bk-pg { background: #fff; overflow: hidden; box-shadow: 0 6px 22px rgba(0,0,0,.16); flex: none; }
@@ -2935,7 +2939,7 @@ function pageNewsletter(a) {
         <div class="book-bar"><button type="button" class="bk-btn" id="bk-prev" aria-label="Previous page">‹</button>
           <input type="range" id="bk-range" min="0" max="0" value="0" aria-label="Go to page"><span id="bk-count" class="bk-count"></span>
           <button type="button" class="bk-btn" id="bk-next" aria-label="Next page">›</button></div>
-        <p class="small bk-hint">Turn the pages with the arrows, by selecting the edge of a page, with your keyboard's arrow keys or by swiping.</p></div>`
+        <p class="small bk-hint">Turn the pages with the arrows, by selecting or dragging a page, or with your keyboard's arrow keys. Double-click or double-tap to zoom in, and drag to move around.</p></div>`
       : `<div class="soon" style="max-width:720px"><h2 class="h3">The first issues are on their way</h2><p>New issues will appear here as soon as they're uploaded.</p></div>`}
       ${ns.length > 1 ? `<h2 class="h2" style="margin-top:var(--g7)">All issues</h2><div class="shelf">${ns.map((x, i) => `<a class="issue c${i % 4}${i === k ? " now" : ""}" href="#/newsletter/${i}"${i === k ? ' aria-current="true"' : ""}>
         <span class="i-top">${i === 0 ? "Latest issue" : "ASLP Newsletter"}</span><b>${esc(x.title)}</b><span class="i-date">${esc(x.date || "")}</span><span class="i-open">${i === k ? "Open now" : "Read as a book"}</span></a>`).join("")}</div>` : ""}
@@ -2973,10 +2977,35 @@ async function mountBook(issue) {
   const face = (src, cls) => `<div class="bk-pg ${cls}" style="width:${pw}px;height:${ph}px">${src ? `<img src="${src}" alt="" draggable="false">` : ""}</div>`;
   const label = () => { const ps = pagesOf(cur).filter(p => p >= 1 && p <= n); return ps.length > 1 ? `Pages ${ps[0]}–${ps[1]} of ${n}` : `Page ${ps[0]} of ${n}`; };
   const bar = () => { $("bk-range").max = last(); $("bk-range").value = cur; $("bk-count").textContent = label(); $("bk-prev").disabled = cur <= 0; $("bk-next").disabled = cur >= last(); };
+  // ---- zoom: double-click / double-tap a spot to look closer, drag to move, double-click again to step back ----
+  const ZOOM = 2.4; let zoom = null;   // { x, y } translate while zoomed
+  const hiImg = p => { if (p < 1 || p > n) return Promise.resolve(""); const key = p + "@hi" + pw; if (cache.has(key)) return cache.get(key);
+    const job = (async () => { const pg = await pdf.getPage(p), v0 = pg.getViewport({ scale: 1 }), vp = pg.getViewport({ scale: Math.min(6, pw * ZOOM * (devicePixelRatio || 1) / v0.width) });
+      const cv = document.createElement("canvas"); cv.width = Math.round(vp.width); cv.height = Math.round(vp.height);
+      const cx = cv.getContext("2d"); cx.fillStyle = "#fff"; cx.fillRect(0, 0, cv.width, cv.height); await pg.render({ canvasContext: cx, viewport: vp }).promise;
+      return await new Promise(r => cv.toBlob(b => r(URL.createObjectURL(b)), "image/jpeg", .9)); })();
+    cache.set(key, job); return job; };
+  const zBox = () => { const z = $("bkz"); return z ? { z, w: z.offsetWidth, h: z.offsetHeight } : null; };
+  const clampZ = (x, y, b) => [Math.min(0, Math.max(b.w * (1 - ZOOM), x)), Math.min(0, Math.max(b.h * (1 - ZOOM), y))];
+  const applyZ = () => { const b = zBox(); if (!b) return; b.z.style.transform = zoom ? `translate(${zoom.x}px, ${zoom.y}px) scale(${ZOOM})` : ""; };
+  function zoomReset() { zoom = null; stage.classList.remove("zoomed", "panning"); }
+  async function zoomAt(cx, cy) {
+    const b = zBox(); if (!b || busy) return;
+    if (zoom) { zoom = null; applyZ(); setTimeout(() => { if (!zoom) stage.classList.remove("zoomed"); }, 560); return; }
+    const r = b.z.getBoundingClientRect(), px = cx - r.left, py = cy - r.top;
+    // keep the spot under the pointer, then pull it a little towards the middle of the view
+    const [x, y] = clampZ(px * (1 - ZOOM) + (b.w / 2 - px) * .35, py * (1 - ZOOM) + (b.h / 2 - py) * .35, b);
+    zoom = { x, y }; stage.classList.add("zoomed"); applyZ();
+    // swap in sharper page images for the close-up
+    const ps = pagesOf(cur);
+    const pairs = two ? [[ps[0], ".bk-pg.l img"], [ps[1], ".bk-pg.r img"]] : [[ps[0], ".bk-pg img"]];
+    for (const [p, sel] of pairs) { if (p < 1 || p > n) continue; hiImg(p).then(src => { const im = $("bkz") === b.z && b.z.querySelector(sel); if (im && src && zoom) im.src = src; }); }
+  }
   async function draw() {
     const ps = pagesOf(cur), srcs = await Promise.all(ps.map(img)); if (!live()) return;
-    stage.innerHTML = `<div class="bk${two ? " two" : ""}${two && cur === 0 ? " cover" : ""}${two && ps[1] > n ? " end" : ""}" id="bk" style="width:${two ? pw * 2 : pw}px;height:${ph}px">
-      ${two ? face(ps[0] <= n ? srcs[0] : "", "l") + face(ps[1] <= n ? srcs[1] : "", "r") : face(srcs[0], "s")}${two ? `<div class="bk-spine"></div>` : ""}</div>`;
+    zoomReset();
+    stage.innerHTML = `<div class="bk-z" id="bkz"><div class="bk${two ? " two" : ""}${two && cur === 0 ? " cover" : ""}${two && ps[1] > n ? " end" : ""}" id="bk" style="width:${two ? pw * 2 : pw}px;height:${ph}px">
+      ${two ? face(ps[0] <= n ? srcs[0] : "", "l") + face(ps[1] <= n ? srcs[1] : "", "r") : face(srcs[0], "s")}${two ? `<div class="bk-spine"></div>` : ""}</div></div>`;
     bar(); [cur - 1, cur + 1, cur + 2].forEach(c => c >= 0 && c <= last() && pagesOf(c).forEach(img));   // get the next pages ready
   }
   // ---- page turning: a curved, shaded leaf you can click, drag or swipe ----
@@ -3050,6 +3079,7 @@ async function mountBook(issue) {
     await draw(); busy = false;
   }
   async function turn(dir) {
+    if (zoom) { zoom = null; applyZ(); stage.classList.remove("zoomed"); await new Promise(r => setTimeout(r, 380)); }
     if (busy || cur + dir < 0 || cur + dir > last() || !live()) return;
     busy = true;
     if (matchMedia("(prefers-reduced-motion: reduce)").matches) { cur += dir; await draw(); busy = false; return; }
@@ -3061,14 +3091,28 @@ async function mountBook(issue) {
   $("bk-range").oninput = e => { if (busy) return; cur = +e.target.value; draw(); };
   // click a page edge to turn; or grab a page and drag it over like a real magazine
   let drag = null, moved = false;
-  stage.onclick = e => { if (moved) { moved = false; return; } const bk = $("bk"); if (!bk || !bk.contains(e.target)) return; const r = bk.getBoundingClientRect(); turn(e.clientX - r.left < r.width / 2 ? -1 : 1); };
+  let tapT = 0, tapTimer = 0, tapX = 0, tapY = 0;
+  stage.onclick = e => { if (moved) { moved = false; return; } const bk = $("bk"); if (!bk || !bk.contains(e.target)) return;
+    const now = performance.now();
+    if (now - tapT < 320 && Math.hypot(e.clientX - tapX, e.clientY - tapY) < 40) { clearTimeout(tapTimer); tapT = 0; zoomAt(e.clientX, e.clientY); return; }
+    tapT = now; tapX = e.clientX; tapY = e.clientY; clearTimeout(tapTimer);
+    if (zoom) return;   // a single click while zoomed does nothing; drag to move, double-click to step back
+    const r = bk.getBoundingClientRect(), dir = e.clientX - r.left < r.width / 2 ? -1 : 1;
+    tapTimer = setTimeout(() => turn(dir), 300); };
+  let pan = null;
   stage.onpointerdown = async e => {
+    if (zoom) { if (e.button > 0) return; pan = { id: e.pointerId, x0: e.clientX, y0: e.clientY, zx: zoom.x, zy: zoom.y, moved: false }; return; }
     const bk = $("bk"); if (busy || !bk || !bk.contains(e.target) || e.button > 0) return;
     const r = bk.getBoundingClientRect(), dir = e.clientX - r.left < r.width / 2 ? -1 : 1;
     if (cur + dir < 0 || cur + dir > last()) return;
     drag = { x0: e.clientX, dir, L: null, p: dir > 0 ? 0 : 1, id: e.pointerId, t: performance.now(), lastX: e.clientX, v: 0 }; moved = false;
   };
   stage.onpointermove = async e => {
+    if (pan && e.pointerId === pan.id && zoom) {
+      const dx = e.clientX - pan.x0, dy = e.clientY - pan.y0; if (!pan.moved && Math.hypot(dx, dy) < 5) return;
+      if (!pan.moved) { pan.moved = true; moved = true; stage.classList.add("panning"); try { stage.setPointerCapture(e.pointerId); } catch (x) {} }
+      const b = zBox(); if (!b) return; [zoom.x, zoom.y] = clampZ(pan.zx + dx, pan.zy + dy, b); applyZ(); return;
+    }
     const d = drag; if (!d || e.pointerId !== d.id) return;
     const dx = e.clientX - d.x0; if (!d.L && Math.abs(dx) < 8) return;
     if (!d.L) {
@@ -3084,6 +3128,7 @@ async function mountBook(issue) {
     setLeaf(d.L, d.p, d.dir);
   };
   const endDrag = async e => {
+    if (pan && (!e || e.pointerId === pan.id)) { if (!pan.moved) moved = false; pan = null; stage.classList.remove("panning"); return; }
     const d = drag; if (!d || (e && e.pointerId !== d.id)) return; drag = null;
     if (!d.L) { if (d.starting) { const wait = () => new Promise(r => setTimeout(r, 30)); while (busy && !d.L) await wait(); } if (!d.L) return; }
     const prog = d.dir > 0 ? d.p : 1 - d.p, flick = (d.dir > 0 ? -d.v : d.v) > .45;
@@ -3091,7 +3136,8 @@ async function mountBook(issue) {
   };
   stage.onpointerup = endDrag; stage.onpointercancel = endDrag;
   const key = e => { if (!live()) return document.removeEventListener("keydown", key); if (/input|textarea|select/i.test(e.target.tagName)) return;
-    if (e.key === "ArrowRight") turn(1); if (e.key === "ArrowLeft") turn(-1); };
+    if (e.key === "ArrowRight") turn(1); if (e.key === "ArrowLeft") turn(-1);
+    if (e.key === "Escape" && zoom) { zoom = null; applyZ(); setTimeout(() => { if (!zoom) stage.classList.remove("zoomed"); }, 560); } };
   document.addEventListener("keydown", key);
   let rt = 0; const resize = () => { if (!live()) return removeEventListener("resize", resize); clearTimeout(rt); rt = setTimeout(() => { const was = two, p = pagesOf(cur).find(x => x >= 1) || 1; size(); if (was !== two) cur = two ? Math.floor(p / 2) : p - 1; draw(); }, 150); };
   addEventListener("resize", resize); document.addEventListener("fullscreenchange", resize);
