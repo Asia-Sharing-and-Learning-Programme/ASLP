@@ -930,11 +930,17 @@
   .wel-steps { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; counter-reset: ws; }
   .wel-steps li { counter-increment: ws; display: grid; grid-template-columns: 64px minmax(0, 1fr) auto; gap: var(--g3); align-items: center; background: var(--paper); border-radius: 16px; padding: 14px 16px;
     opacity: 0; transform: translateY(14px); animation: welIn 1s cubic-bezier(.16,1,.3,1) forwards; animation-delay: calc(.75s + var(--i) * .12s); }
+  .wel-try { display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: center; justify-content: space-between; background: var(--ink); color: var(--paper); border-radius: 16px; padding: 16px 20px; margin-bottom: 12px;
+    opacity: 0; animation: welIn 1s .7s cubic-bezier(.16,1,.3,1) forwards; }
+  .wel-try b { display: block; font-size: 18px; color: #f5c400; } .wel-try span { display: block; font-size: 15px; opacity: .85; max-width: 62ch; margin-top: 2px; }
+  .wel-try .btn.fill { background: #f5c400; color: #000; border-color: #f5c400; }
+  .wel-acts { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
+  @media (max-width: 600px) { .wel-acts { grid-column: 2; justify-content: flex-start; } }
   .wel-tx > b { display: block; font-size: 17px; } .wel-tx > b::before { content: counter(ws) ". "; color: var(--ink-3); font-weight: 700; }
   .wel-tx p { margin: 2px 0 0; font-size: 15px; color: var(--ink-2); line-height: 1.5; max-width: 70ch; }
   .wel-ic { width: 56px; height: 56px; border-radius: 14px; background: var(--paper-2); display: grid; place-items: center; }
   @keyframes welIn { to { opacity: 1; transform: none; } }
-  @media (max-width: 600px) { .wel-steps li { grid-template-columns: 48px minmax(0, 1fr); } .wel-steps li > .btn { grid-column: 2; justify-self: start; } .wel-ic { width: 44px; height: 44px; } }
+  @media (max-width: 600px) { .wel-steps li { grid-template-columns: 48px minmax(0, 1fr); } .wel-ic { width: 44px; height: 44px; } }
   /* the little moving pictures */
   .wi { width: 36px; height: 36px; fill: none; stroke: var(--ink); stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; overflow: visible; }
   .wi-explore .n { fill: #e14b1e; stroke: none; transform-origin: 24px 24px; animation: wiSpin 4s ease-in-out infinite; }
@@ -1003,6 +1009,27 @@
   .gv-links { background: var(--paper-2); border-radius: 16px; padding: 16px 18px; display: grid; gap: 10px; }
   .gv-shared { display: flex; flex-wrap: wrap; gap: 6px; } .gv-sh { text-decoration: none; }
   @media (max-width: 600px) { .gv-cols { grid-template-columns: 1fr; } .row-head .view-sw { margin-top: var(--g2); } }
+  /* ---------- guided test runs ---------- */
+  .tour { position: fixed; inset: 0; z-index: 4000; pointer-events: none; }
+  .tour-b { position: fixed; background: rgba(10, 10, 20, .58); pointer-events: auto; transition: all .35s cubic-bezier(.16,1,.3,1); }
+  .tour-ring { position: fixed; border-radius: 12px; box-shadow: 0 0 0 3px #f5c400, 0 0 0 9px rgba(245,196,0,.3); pointer-events: none; transition: all .35s cubic-bezier(.16,1,.3,1); }
+  .tour.doing .tour-ring { animation: tourPulse 1.6s ease-in-out infinite; }
+  @keyframes tourPulse { 50% { box-shadow: 0 0 0 3px #f5c400, 0 0 0 14px rgba(245,196,0,.15); } }
+  .tour-card { position: fixed; width: min(380px, calc(100vw - 24px)); background: var(--paper); color: var(--ink); border-radius: 18px; padding: 18px 20px 14px; pointer-events: auto;
+    box-shadow: 0 24px 60px -20px rgba(0,0,0,.55); transition: left .35s cubic-bezier(.16,1,.3,1), top .35s cubic-bezier(.16,1,.3,1); }
+  .tour-card.pop { animation: tourPop .5s cubic-bezier(.16,1,.3,1); } .tour-card.busy { opacity: .6; }
+  @keyframes tourPop { from { opacity: 0; transform: translateY(8px) scale(.98); } }
+  .tour-k { font-size: 12.5px; font-weight: 800; color: var(--orange, #e14b1e); margin-bottom: 4px; }
+  .tour-card h3 { font-size: 20px; font-weight: 800; letter-spacing: -.01em; margin-bottom: 6px; }
+  .tour-card p { font-size: 15.5px; line-height: 1.5; color: var(--ink-2); }
+  .tour-card p em { display: block; margin-top: 6px; font-style: normal; font-size: 13.5px; color: var(--ink-3); }
+  .tour-nav { display: flex; align-items: center; gap: 10px; margin-top: 14px; } .tour-nav .tour-n { flex: 1; text-align: center; font-size: 13px; color: var(--ink-3); }
+  .tour-bar { position: fixed; z-index: 4100; left: 50%; top: 10px; transform: translateX(-50%); display: flex; gap: 12px; align-items: center; background: #f5c400; color: #000; border-radius: 999px;
+    padding: 7px 8px 7px 18px; font-size: 14px; box-shadow: 0 10px 30px -12px rgba(0,0,0,.5); max-width: calc(100vw - 20px); }
+  .tour-bar b { font-weight: 800; white-space: nowrap; }
+  .tour-nav [data-tn="back"] { background: transparent; color: var(--ink); border-color: var(--line); box-shadow: none; transform: none; } .tour-bar button { border: 0; background: #000; color: #fff; border-radius: 999px; padding: 6px 14px; font: inherit; font-weight: 700; cursor: pointer; white-space: nowrap; }
+  @media (max-width: 600px) { .tour-bar span { display: none; } }
+  @media (prefers-reduced-motion: reduce) { .tour-b, .tour-ring, .tour-card { transition: none; } .tour.doing .tour-ring, .tour-card.pop { animation: none; } }
 </style>
 </head>
 <body>
@@ -2377,9 +2404,179 @@ function welcomeHtml(v, tabs) {
       <h2 class="wel-hi">Hi${fn ? `, ${esc(fn)}` : ""}.</h2><p class="wel-sub">Feel free to roam around the site. Here's how to get around with your access.</p>
       ${roles.length ? `<div class="wel-roles">${roles.map(r => `<span>${esc(r)}</span>`).join("")}</div>` : ""}</div>
     <h3 class="h3 wel-h">How to navigate the site with your access</h3>
-    <ol class="wel-steps">${steps.map(([ic, t, d, a], i) => `<li style="--i:${i}"><div class="wel-ic">${WICON[ic]}</div><div class="wel-tx"><b>${esc(t)}</b><p>${d}</p></div>${a}</li>`).join("")}</ol>
+    <div class="wel-try"><div><b>New here? Take a test run.</b><span>Each guide below walks you through the real screens, one step at a time. Nothing you do during a test run is saved or published, so you can practise freely.</span></div>
+      <button type="button" class="btn fill" data-tour="all">Start the full test run</button></div>
+    <ol class="wel-steps">${steps.map(([ic, t, d, a], i) => `<li style="--i:${i}"><div class="wel-ic">${WICON[ic]}</div><div class="wel-tx"><b>${esc(t)}</b><p>${d}</p></div><div class="wel-acts">${TOURS[ic] ? `<button type="button" class="btn fill sm" data-tour="${ic}">Try it</button>` : ""}${a}</div></li>`).join("")}</ol>
     ${steps.length === 1 ? `<p class="small" style="margin-top:var(--g3)">Your account doesn't edit anything on this website yet. If you think it should, ask your CWG lead or the ASLP team.</p>` : ""}</section>`;
 }
+// ---- guided test runs: walk people through the real console, in practice mode where nothing is saved ----
+const PRACTICE = { on: false };
+function practiceOn() {
+  if (PRACTICE.on) return; PRACTICE.on = true;
+  PRACTICE.rpc = db.rpc.bind(db); PRACTICE.inv = db.functions.invoke.bind(db.functions); PRACTICE.from = db.storage.from.bind(db.storage); PRACTICE.put = putDraft;
+  PRACTICE.sample = null;
+  db.rpc = (n, a) => /^aslp_(save|set|delete|approve)_|^aslp_save_draft$/.test(n)
+    ? new Promise(r => setTimeout(() => { if (n === "aslp_approve_update" && PRACTICE.sample) PRACTICE.sample.status = "published"; r({ data: n === "aslp_save_update" ? "test-run" : { ok: true }, error: null }); }, 450))
+    : n === "aslp_list_updates" && PRACTICE.sample ? PRACTICE.rpc(n, a).then(r => ({ ...r, data: [PRACTICE.sample, ...(r.data || [])] })) : PRACTICE.rpc(n, a);
+  db.functions.invoke = () => Promise.resolve({ data: { error: "Files aren't uploaded during a test run." }, error: null });
+  db.storage.from = () => ({ upload: async () => ({ error: { message: "Files aren't uploaded during a test run." } }), remove: async () => ({}), getPublicUrl: () => ({ data: { publicUrl: "" } }) });
+  putDraft = () => {};
+  document.body.classList.add("practicing");
+  const bar = document.createElement("div"); bar.className = "tour-bar"; bar.id = "tour-bar";
+  bar.innerHTML = `<b>Test run</b><span>Nothing you do now is saved or published.</span><button type="button" id="tour-end">End test run</button>`;
+  document.body.appendChild(bar); $("tour-end").onclick = () => endTour();
+}
+function practiceOff() {
+  if (!PRACTICE.on) return; PRACTICE.on = false;
+  db.rpc = PRACTICE.rpc; db.functions.invoke = PRACTICE.inv; db.storage.from = PRACTICE.from; putDraft = PRACTICE.put;
+  document.body.classList.remove("practicing"); const b = $("tour-bar"); if (b) b.remove();
+  if (PRACTICE.sample) { PRACTICE.sample = null; updates = (updates || []).filter(u => u.id !== "test-run"); }
+}
+const tourTab = id => { const b = document.querySelector(`.con-sub [data-jump="${id}"]`); if (b) b.click(); };
+const findEl = sel => typeof sel === "function" ? sel() : [...document.querySelectorAll(sel)].find(e => e.offsetParent !== null || e.getClientRects().length);
+const waitEl = (sel, ms = 5000) => new Promise(r => { const t0 = Date.now(); const f = () => { const e = findEl(sel); if (e || Date.now() - t0 > ms) return r(e || null); setTimeout(f, 120); }; f(); });
+const fillIn = (sel, v) => { const e = findEl(sel); if (e && !e.value) { e.value = v; e.dispatchEvent(new Event("input", { bubbles: true })); } };
+let TOUR = null;
+function endTour(done) {
+  if (!TOUR) return; const t = TOUR; TOUR = null;
+  clearInterval(t.timer); document.removeEventListener("click", t.onClick, true); removeEventListener("resize", t.place); removeEventListener("scroll", t.place, true);
+  t.layer.remove(); practiceOff();
+  if (!done) { route(); return; }
+  // back to a clean console, opened on the welcome guide
+  try { sessionStorage.setItem("aslp-con-tab", "cc-welcome"); } catch (e) {}
+  route();
+}
+async function runTour(keys) {
+  if (TOUR) endTour();
+  const steps = keys.flatMap(k => TOURS[k] ? TOURS[k]().map(s => ({ ...s, group: TOUR_NAMES[k] })) : []);
+  if (!steps.length) return;
+  practiceOn();
+  const layer = document.createElement("div"); layer.className = "tour";
+  layer.innerHTML = `<div class="tour-b t"></div><div class="tour-b r"></div><div class="tour-b bt"></div><div class="tour-b l"></div><div class="tour-ring"></div>
+    <div class="tour-card" role="dialog" aria-live="polite"><div class="tour-k"></div><h3></h3><p></p><div class="tour-nav"><button type="button" class="btn sm" data-tn="back">Back</button><span class="tour-n"></span><button type="button" class="btn fill sm" data-tn="next">Next</button></div></div>`;
+  document.body.appendChild(layer);
+  const T = TOUR = { steps, i: -1, layer, el: null };
+  const card = layer.querySelector(".tour-card"), ring = layer.querySelector(".tour-ring"), bs = [...layer.querySelectorAll(".tour-b")];
+  T.place = () => {
+    const e = T.el, vw = innerWidth, vh = innerHeight;
+    if (!e || !e.isConnected) { bs.forEach((b, k) => Object.assign(b.style, k === 0 ? { left: 0, top: 0, width: vw + "px", height: vh + "px" } : { width: 0, height: 0 })); ring.style.opacity = 0;
+      Object.assign(card.style, { left: Math.max(12, (vw - card.offsetWidth) / 2) + "px", top: Math.max(70, (vh - card.offsetHeight) / 2) + "px" }); return; }
+    const r = e.getBoundingClientRect(), pad = 8, x = Math.max(0, r.left - pad), y = Math.max(0, r.top - pad), w = Math.min(vw, r.right + pad) - x, h = Math.min(vh, r.bottom + pad) - y;
+    Object.assign(bs[0].style, { left: 0, top: 0, width: vw + "px", height: y + "px" });
+    Object.assign(bs[1].style, { left: x + w + "px", top: y + "px", width: Math.max(0, vw - x - w) + "px", height: h + "px" });
+    Object.assign(bs[2].style, { left: 0, top: y + h + "px", width: vw + "px", height: Math.max(0, vh - y - h) + "px" });
+    Object.assign(bs[3].style, { left: 0, top: y + "px", width: x + "px", height: h + "px" });
+    Object.assign(ring.style, { left: x + "px", top: y + "px", width: w + "px", height: h + "px", opacity: 1 });
+    const cw = card.offsetWidth, ch = card.offsetHeight, below = y + h + 14 + ch < vh - 10, above = y - 14 - ch > 70;
+    const top = below ? y + h + 14 : above ? y - 14 - ch : Math.max(70, vh - ch - 16);
+    Object.assign(card.style, { left: Math.min(vw - cw - 12, Math.max(12, x + w / 2 - cw / 2)) + "px", top: top + "px" });
+  };
+  const go = async d => {
+    const ni = T.i + d; if (ni < 0) return; if (ni >= T.steps.length) return endTour(true);
+    T.i = ni; const st = T.steps[ni]; T.el = null; card.classList.add("busy");
+    if (st.tab) { tourTab(st.tab); await new Promise(r => setTimeout(r, 250)); }
+    if (st.before) { try { await st.before(); } catch (e) {} }
+    T.el = st.el ? await waitEl(st.el) : null;
+    if (TOUR !== T) return;
+    if (T.el) T.el.scrollIntoView({ block: "center", behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
+    card.querySelector(".tour-k").textContent = st.group || "Test run";
+    card.querySelector("h3").textContent = st.title; card.querySelector("p").innerHTML = st.text + (st.el && !T.el ? `<br><em>This part isn't on your screen just now, so read on and select Next.</em>` : "");
+    card.querySelector(".tour-n").textContent = `${ni + 1} of ${T.steps.length}`;
+    const nx = card.querySelector('[data-tn="next"]'), waiting = st.wait === "click" && T.el;
+    nx.textContent = ni === T.steps.length - 1 ? "Finish" : waiting ? "Skip" : "Next"; nx.classList.toggle("fill", !waiting);
+    card.querySelector('[data-tn="back"]').hidden = ni === 0;
+    layer.classList.toggle("doing", !!waiting);
+    card.classList.remove("busy"); card.classList.remove("pop"); void card.offsetWidth; card.classList.add("pop");
+    setTimeout(T.place, 30); setTimeout(T.place, 420);
+  };
+  T.go = go;
+  T.onClick = e => {
+    if (TOUR !== T) return;
+    if (e.target.closest("#si-out, [data-ud], [data-sdel]")) { e.preventDefault(); e.stopPropagation(); return; }
+    const nb = e.target.closest("[data-tn]"); if (nb) { e.preventDefault(); go(nb.dataset.tn === "next" ? 1 : -1); return; }
+    const st = T.steps[T.i]; if (st && st.wait === "click" && T.el && T.el.contains(e.target)) setTimeout(() => go(1), st.delay || 350);
+  };
+  document.addEventListener("click", T.onClick, true);
+  addEventListener("resize", T.place); addEventListener("scroll", T.place, true);
+  T.timer = setInterval(T.place, 400);
+  document.addEventListener("keydown", function esc(e) { if (TOUR !== T) return document.removeEventListener("keydown", esc); if (e.key === "Escape") endTour(); });
+  go(1);
+}
+const TOUR_NAMES = { explore: "Look around", write: "Post an update", send: "Send in an update", approve: "Approve updates", pin: "Update a profile", people: "CWG members",
+  toggle: "Regions and countries", group: "Your group's page", cal: "The Calendar", chart: "CD Strategies", page: "Pages and newsletter", key: "Access" };
+const SAMPLE_TITLE = "Test run: CWG learning visit";
+const TOURS = {
+  explore: () => [
+    { tab: "cc-welcome", el: ".con-sub", title: "Your console", text: "This is your console. Each tab is one thing your access lets you do. You only see the tabs that are yours." },
+    { el: () => findEl("#menu") || findEl("#menu-btn"), title: "The main menu", text: "Use the menu to visit any page of the website, just as everyone else sees it. Your changes show up on these pages once they're saved." },
+    { el: "#tb-auth", title: "Back to your console", text: "Wherever you are on the site, this button brings you back to your console." },
+    { el: "#si-out", title: "Signing out", text: "When you're done, sign out here, especially on a shared computer. You can sign in again any time with the link sent to your email." } ],
+  write: () => [
+    { tab: "cc-updates", el: "#up-new", wait: "click", title: "Start an update", text: "Select <b>Post an update</b>." },
+    { el: "#ue-cwg", title: "Choose where it goes", text: "Pick the CWG or group the update is for. CWG news goes to CWG Updates; ASC and APSG news goes to Programmatic Updates." },
+    { el: "#ue-title", before: () => fillIn("#ue-title", SAMPLE_TITLE), title: "Give it a title", text: "A clear title helps people find it. We've typed a sample title for this test run." },
+    { el: ".seg-pick", title: "Write it, or upload a file", text: "Write the update here, or upload a PDF or PowerPoint. A PowerPoint becomes a short article with sections you can edit." },
+    { el: "#ue-body", before: () => fillIn("#ue-body", "This is a practice update. In a real update, share what happened, who took part and what you learned."), title: "Tell the story", text: "Write what happened. Leave a blank line between paragraphs, and start a line with \"-\" to make a list." },
+    { el: "#ue-photos", title: "Add photos", text: "Optionally add photos. They show with the update and open large when selected. (Files aren't uploaded during a test run.)" },
+    { el: "#ue-save", wait: "click", delay: 900, title: "Publish", text: "Select the save button to publish. In this test run nothing is saved." },
+    { title: "Done", text: "That's it. In a real run, your update is now on the website. You can come back to edit or delete it from the Updates tab at any time." } ],
+  send: () => [
+    { tab: "cc-updates", el: "#up-new", wait: "click", title: "Start an update", text: "Select <b>Post an update</b>." },
+    { el: "#ue-cwg", title: "Your CWG", text: "Your update is for your CWG. It's marked \"sent for approval\"." },
+    { el: "#ue-title", before: () => fillIn("#ue-title", SAMPLE_TITLE), title: "Give it a title", text: "A clear title helps people find it. We've typed a sample title for this test run." },
+    { el: ".seg-pick", title: "Write it, or upload a file", text: "Write the update here, or upload a PDF or PowerPoint." },
+    { el: "#ue-body", before: () => fillIn("#ue-body", "This is a practice update. In a real update, share what happened, who took part and what you learned."), title: "Tell the story", text: "Write what happened, who took part and what you learned." },
+    { el: "#ue-save", wait: "click", delay: 900, title: "Send it in", text: "Select the save button. In a real run, your update goes to the ASC members and admins, who check it before it appears on the website." },
+    { title: "What happens next", text: "While it waits, it shows in your Updates list as <b>Waiting for approval</b>, and only you and the approvers can see it. You can still edit or delete it until it's approved." } ],
+  approve: () => [
+    { tab: "cc-updates", before: async () => { const base = (updates || await loadUpdates().catch(() => []) || []).find(canPost) || { type: "cwg", cwg: (V().post_cwgs || [])[0] || "SPEA 1", kind: "text" };
+        PRACTICE.sample = { ...base, id: "test-run", title: "Sample: community visit (test run)", kind: "text", body: "A sample update sent in by a CWG member.", file: null, photos: [], sections: null, status: "pending", mine: false, by: "member@example.org", date: new Date().toISOString().slice(0, 10) };
+        updates = [PRACTICE.sample, ...(updates || []).filter(u => u.id !== "test-run")]; route(); await new Promise(r => setTimeout(r, 350)); tourTab("cc-updates"); await waitEl('[data-uap="test-run"]', 2500); },
+      el: () => findEl('[data-ue="test-run"]') ? findEl('[data-ue="test-run"]').closest(".up-li") : findEl("#up-list"), title: "Waiting for approval", text: "Updates sent in by CWG members show at the top, marked <b>Waiting for approval</b>. We've added a sample one for this test run." },
+    { el: '[data-uap="test-run"]', wait: "click", delay: 900, title: "Approve it", text: "Check it first with <b>View</b> or <b>Edit</b>, then select <b>Approve</b> to publish it." },
+    { title: "Done", text: "In a real run the update is now on the website. If something needs changing, edit it before approving, or ask the member to." } ],
+  pin: () => [
+    { tab: "cc-terr", el: "#t-pick", title: "Pick the profile", text: "Choose the territory or region you're updating." },
+    { el: "#p-work", title: "Where it works", text: "Describe the places and communities where the territory works." },
+    { el: "#p-them", title: "Thematic areas", text: "Search or browse the standard list and pick as many thematic areas as fit. These group territories on the CWG pages." },
+    { el: "#p-str", title: "Strengths", text: "Pick the strengths the territory brings, from the list territories named at the ASLFs." },
+    { el: "#p-tech", title: "Support you can offer", text: "Say what technical support the territory can offer others. This is how territories find each other." },
+    { el: "#terr-save", wait: "click", delay: 900, title: "Save", text: "Select <b>Save</b>. In this test run nothing is saved." },
+    { title: "Done", text: "In a real run the profile updates on the website straight away. Open the territory's page from the menu to check how it looks." } ],
+  people: () => [
+    { tab: "cc-members", el: "#mem-editor", title: "Your CWG's members", text: "Each row is one member: their rank, name, role, email and the territory they're from." },
+    { el: () => findEl("#mem-editor .ed-add"), wait: "click", title: "Add a member", text: "Select <b>Add a member</b> to add a new row, then fill it in. Members with an email can sign in." },
+    { el: "#mem-save", wait: "click", delay: 900, title: "Save", text: "Select <b>Save</b>. In this test run nothing is saved." },
+    { title: "Done", text: "In a real run the CWG page shows the new members, grouped by territory." } ],
+  toggle: () => [
+    { tab: "cc-units", el: "#units-editor", title: "Regions and countries", text: "Every region, division and country is listed here. Ticked ones have a profile on the website." },
+    { el: () => findEl("#units-editor [data-unit]:not(:disabled)") && findEl("#units-editor [data-unit]:not(:disabled)").closest(".ut-row"), title: "Switch one on", text: "Tick a box to show its profile on the website, or untick to hide it. (During a test run, the switch springs back.)" },
+    { el: () => findEl("#units-editor [data-unit-cwg]:not(:disabled)"), title: "Choose its CWG", text: "Pick which CWG it belongs to. It can differ from its territory's CWG." },
+    { title: "Then fill in its profile", text: "Once it's switched on, select <b>Edit</b> next to it to fill in its profile, the same way as a territory." } ],
+  group: () => [
+    { tab: "cc-groups", el: "#g-pick", title: "Pick the group", text: "Choose the group page you're editing." },
+    { el: "#g-desc", title: "About the group", text: "Describe what the group does, in plain words." },
+    { el: "#gm-box", title: "Who sits on it", text: "List the members, with their role in the group. Members with an email can be recognised by the site." },
+    { el: "#g-save", wait: "click", delay: 900, title: "Save", text: "Select <b>Save</b>. In this test run nothing is saved." },
+    { title: "Done", text: "In a real run the group's page updates straight away." } ],
+  cal: () => [
+    { title: "The Calendar", text: `The Calendar is its own page: <b>Calendar</b> in the main menu. You're already signed in there.` },
+    { title: "See what's planned", text: "Select any day to see its entries. Tick boxes at the top filter by group or activity." },
+    { title: "Add or change entries", text: ({ admin: "You can add and change any entry, and manage who has access.", editor: "You can add and change any entry.", lead: "Select a day to add an entry for your CWG. Requests from your CWG members show at the top for you to approve.", apsg: "Select a day to add an APSG entry. On other groups' entries you'll see <b>Link APSG</b>.", member: "Select a day and suggest an entry. It goes to your CWG lead, and appears once approved." }[V().cal_role]) || "Select a day to see its entries." },
+    { title: "Patterns and in-person meetings", text: "Below the calendar, see how often each group meets, and when people are likely to meet in person." } ],
+  chart: () => [
+    { title: "CD Strategies", text: "CD Strategies is its own page: <b>CD Strategies</b> in the main menu. You're already signed in there." },
+    { title: "Record progress", text: "Select <b>Update</b>, pick the territory, and record where its Community Development Strategy stands. The dashboard and map update straight away." } ],
+  page: () => [
+    { tab: "cc-pages", el: "#pg-home", title: "Home page introduction", text: "Change the short introduction on the home page." },
+    { el: "#pg-about", title: "About ASLP", text: "Change the About text. Leave a blank line between paragraphs." },
+    { el: "#nw-box", title: "Newsletter", text: "Add newsletter issues. The newest one opens as a flip-through book on the Newsletter page." },
+    { el: "#pg-save", wait: "click", delay: 900, title: "Save", text: "Select <b>Save</b>. In this test run nothing is saved." } ],
+  key: () => [
+    { tab: "cc-access", el: "#ac-lead", title: "Switch access on or off", text: "Each switch turns editing on or off for a whole role, such as CWG leads or contact persons." },
+    { el: "#ac-zc-SPEA", title: "Zone coordinators", text: "Type the email of a zone coordinator. They get the same access as the CWG leads of their zone." },
+    { el: ".ge-table", title: "Who edits each group page", text: "Tick who can edit each ASLP Group page, besides admins." },
+    { el: "#ac-save", wait: "click", delay: 900, title: "Save access", text: "Select <b>Save access</b>. In this test run nothing is saved." } ] };
 function pageConsole(a, b) {
   const v = V();
   if (!v.email) return `${crumbs([["Home", "#/"], ["Console"]])}<div class="wrap page-body" style="padding-top:var(--g5)"><h1 class="h1" style="margin-bottom:var(--g5)">Console</h1>${consoleSignin()}</div>`;
@@ -3034,6 +3231,9 @@ function mountConsole() {
     show([fromRoute, fresh ? "cc-welcome" : saved].find(x => x && ids.includes(x)) || ids[0]);
     tabs.forEach(x => x.addEventListener("click", () => show(x.dataset.jump)));
     document.querySelectorAll("[data-goto]").forEach(b => b.addEventListener("click", () => { show(b.dataset.goto); window.scrollTo({ top: 0, behavior: "smooth" }); }));
+    document.querySelectorAll("[data-tour]").forEach(b => b.addEventListener("click", () => {
+      const all = [...document.querySelectorAll(".wel-steps [data-tour]")].map(x => x.dataset.tour);
+      runTour(b.dataset.tour === "all" ? all : [b.dataset.tour]); }));
   }
   if ($("grp-editor")) { groupEditor($("g-pick").value); $("g-pick").addEventListener("change", e => groupEditor(e.target.value)); if (a === "group") setTimeout(() => $("cc-groups").scrollIntoView({ block: "start" }), 50); }
   if ($("up-list")) { const id = (location.hash.replace(/^#\/?/, "")).split("/")[3]; updatesConsole(a === "updates" ? { cwg: b, id, open: !id } : {}); if (a === "updates") setTimeout(() => $("cc-updates").scrollIntoView({ block: "start" }), 50); }
