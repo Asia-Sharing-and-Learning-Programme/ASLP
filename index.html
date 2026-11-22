@@ -742,6 +742,23 @@
   .up-t { font-weight: 800; font-size: 19px; line-height: 1.25; }
   .up-x { color: var(--ink-2); font-size: 15px; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
   .up-more { margin-top: var(--g4); }
+  /* ASLP Activities */
+  .act-sec { padding-top: var(--g6); margin-top: var(--g6); border-top: 6px solid var(--ac); scroll-margin-top: 80px; }
+  .act-sec:first-child { margin-top: 0; }
+  .act-head { display: grid; grid-template-columns: clamp(250px, 29vw, 390px) minmax(0, 1fr); gap: var(--g5); align-items: start; margin-bottom: var(--g5); }
+  .act-name { font-weight: 900; font-stretch: 115%; letter-spacing: -.035em; line-height: 1; font-size: clamp(38px, 4.2vw, 58px); color: var(--ac); margin: 0; min-width: 7.4ch; }
+  .act-head .lede { margin: 0; }
+  .act-grid { display: flex; flex-wrap: wrap; gap: var(--g4); } .act-grid > div { flex: 0 0 var(--w, 100%); min-width: 0; display: flex; }
+  .act-card { flex: 1; display: flex; flex-direction: column; gap: var(--g2); background: var(--paper-2); border-radius: 20px; padding: var(--g4) var(--g4) var(--g3); border-top: 4px solid var(--ac); }
+  .act-card .h3 { font-size: 20px; line-height: 1.2; } .act-card p { margin: 0; font-size: 15.5px; line-height: 1.55; color: var(--ink-2); max-width: none; }
+  .act-card .textlink { font-weight: 700; font-size: 15px; }
+  .act-src { font-size: 12.5px !important; color: var(--ink-3) !important; line-height: 1.45 !important; margin-top: auto !important; padding-top: var(--g2); }
+  .act-head .act-src { margin-top: var(--g2) !important; padding: 0; }
+  .act-note { margin-top: var(--g6); color: var(--ink-3); }
+  @media (prefers-color-scheme: dark) { :root:where(:not([data-theme="light"])) #act-resources { --ac: #8f8ae0; } }
+  :root[data-theme="dark"] #act-resources { --ac: #8f8ae0; }
+  @media (max-width: 900px) { .act-head { grid-template-columns: 1fr; gap: var(--g2); } .act-grid > div { flex-basis: calc((100% - var(--g4)) / 2); } .act-grid > div:last-child:nth-child(odd) { flex-basis: 100%; } }
+  @media (max-width: 600px) { .act-grid > div, .act-grid > div:last-child:nth-child(odd) { flex-basis: 100%; } }
   .up-others { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--g4); margin-top: var(--g7); }
   @media (max-width: 700px) { .up-others { grid-template-columns: 1fr; } }
   .up-other { display: grid; gap: 6px; text-decoration: none; color: #fff; border-radius: 20px; padding: var(--g4) var(--g5); background: var(--navy); }
@@ -813,6 +830,7 @@
   <nav class="menu" id="menu" aria-label="Main">
     <a href="#/" data-nav="home">Home</a>
     <div class="dd"><a href="#/about" data-nav="about" class="dd-top" aria-haspopup="true">About</a><div class="dd-menu" id="dd-about"><a href="#/about"><b>About ASLP</b><span>What the programme is, what it aims for and how it works</span></a><a href="#/history"><b>History of ASLP</b><span>The journey from 2016 to today</span></a></div></div>
+    <a href="#/activities" data-nav="activities">ASLP Activities</a>
     <div class="dd"><a href="#/groups" data-nav="groups" class="dd-top" aria-haspopup="true">ASLP Groups</a><div class="dd-menu" id="dd-groups"></div></div>
     <div class="dd"><a href="#/updates" data-nav="updates" class="dd-top" aria-haspopup="true">ASLP Updates</a><div class="dd-menu" id="dd-updates"><a href="#/newsletter"><b>Newsletter</b><span>Every issue of the ASLP newsletter</span></a><a href="#/updates"><b>CWG Updates</b><span>Activities and news from each CWG</span></a><a href="#/programmatic"><b>Programmatic Updates</b><span>News from the ASC and the APSG</span></a></div></div>
     <a href="/cd-strategy/">CD Strategies</a>
@@ -843,7 +861,7 @@
     <div class="tagline"><span class="a">LISTEN.</span> <span class="b">LEARN.</span> <span class="c">LEAD.</span></div>
   </div>
   <nav aria-label="Footer">
-    <a href="#/about">About ASLP</a><a href="#/cwgs">Cluster Working Groups</a><a href="#/groups">ASLP Groups</a><a href="#/newsletter">Newsletter</a><a href="#/updates">CWG Updates</a><a href="#/programmatic">Programmatic Updates</a>
+    <a href="#/about">About ASLP</a><a href="#/activities">ASLP Activities</a><a href="#/cwgs">Cluster Working Groups</a><a href="#/groups">ASLP Groups</a><a href="#/newsletter">Newsletter</a><a href="#/updates">CWG Updates</a><a href="#/programmatic">Programmatic Updates</a>
     <a href="/cd-strategy/">CD Strategies</a><a href="/Calendar-2027-2028/">Calendar</a>
     <a href="#/console" id="ft-console">Sign in</a>
   </nav>
@@ -2602,6 +2620,49 @@ function openGallery(list, k) {
 }
 
 // ---- NEWSLETTER ----
+// ---- ASLP ACTIVITIES: what the programme does, grouped from the 2024–2027 proposal, logframe and Theory of Change (no budgets or targets) ----
+const ACT_PILLARS = [
+  { key: "strategy", name: "Strategy", c: "#005fc0", src: "Logframe Outcome 1",
+    lede: "Community development across Asia and the Pacific is focused and effective, with the Asia-Pacific strategy and each territory's own strategy in place and being put into practice.",
+    acts: [
+      ["Asia-Pacific Community Development Strategy", "Finalising one regional strategy with every territory, command and region, taking it to the SPEA and South Asia zones for approval, and supporting its use across the region.", "Output 1.1 · Activities 1.1.1–1.1.3", ["#/group/apsg", "The Strategy Group"]],
+      ["Territorial Strategy Support", "Technical support for territories, commands and regions as they develop and refine their own community development strategies, in line with the regional strategy, with a named strategy contact in each and guidance documents to work from.", "Output 1.2 · Activities 1.2.1–1.2.3, 1.2.5", ["/cd-strategy/", "CD Strategies"]],
+      ["Monitoring, Evaluation, Accountability and Learning (MEAL)", "A baseline survey across the region, a MEAL framework shared with every territory, stories of most significant change, external audit and an independent evaluation at the end of the programme.", "Output 1.3 · Activities 1.3.1, 1.3.2, 1.3.5, 1.5.5 · Theory of Change: MEAL framework"],
+      ["Programme Coordination and Communication", "An ASLP Coordinator who follows up logistics and reporting, a clear communication plan linking IHQ, the zones and every territory, and access to The Hive for development officers and staff.", "Output 1.3 · Activities 1.2.4, 1.3.3, 1.3.4 · Theory of Change: communication, reporting and coordination process"],
+      ["Partnerships and Collaboration", "Partnership guidelines and MoU templates, and building working partnerships with regional agencies, with organisations focused on community development and across The Salvation Army in the region.", "Output 1.4 · Activities 1.4.1–1.4.4"],
+      ["Transparency, Accountability and Good Governance", "Guidelines, training and frameworks on good governance, and making IHQ policies easy to find and use: child protection, PSEAH, disability, gender, environment, leaving no one behind, complaints and financial accountability.", "Output 1.5 · Activities 1.5.1, 1.5.2"],
+      ["Leadership Engagement and Advocacy", "Making the case for community development with Salvation Army leaders: as a topic at the zonal leaders' conferences (SPEACO and SACO), and in the International Secretaries' reviews of territories.", "Activities 1.4.5, 1.5.4"]] },
+  { key: "capacity", name: "Capacity", c: "#e14b1e", src: "Logframe Outcome 2",
+    lede: "Community development work is of high quality and meets real needs, improved by learning together and building each other's capacity.",
+    acts: [
+      ["Cluster Working Groups", "Four regional groups of territories, with agreed membership and roles, that meet online through the year and in person every two years. Their discussions feed the ASLF and drive each territory's strategy.", "Output 2.2 · Activities 2.2.1–2.2.4", ["#/cwgs", "The four CWGs"]],
+      ["Asia-Pacific Sharing and Learning Forum (ASLF)", "The region's development leaders and practitioners meet in person every two years to reflect on progress, learn from one another and shape the Asia-Pacific strategy.", "Output 2.3 · Activity 2.3.1", ["#/history", "ASLF through the years"]],
+      ["Communities of Practice", "Online groups on shared themes, each with a coordinator and agreed ways of working, including cross-cutting themes such as safeguarding, disability, gender and environment. Asia-Pacific staff also take part in existing global groups, and what they learn is brought back to the CWGs.", "Output 2.1 · Activities 2.1.1–2.1.4, 1.5.3"]] },
+  { key: "resources", name: "Resources", c: "#24215f", src: "Logframe Outcome 3",
+    lede: "Territorial development offices have the people, systems and financial footing to keep their work going well beyond any single project.",
+    acts: [
+      ["Capacity Development Trainings", "Personal capacity development plans for development officers and staff, training courses matched to the skills they need, and nominations to IHQ's Learning Pathways programme.", "Output 3.2 · Activities 3.2.2, 3.2.3 · Logframe Outcome 2 (capacity enhancement trainings)"],
+      ["Programme-to-Programme Learning Visits", "Staff visit another territory's programme on a theme from their own strategy, see the work first-hand and bring the learning home and into the wider ASLP.", "Output 3.2 · Activity 3.2.4 · Theory of Change: learning"],
+      ["Development Office Sustainability", "Clear IHQ guidance on project overheads, reserves and transparency, and development offices planning their own resourcing around their community development strategy rather than relying on project funding.", "Output 3.1 · Activities 3.1.1, 3.1.2"],
+      ["Development Office Systems and Succession", "Using IHQ's job descriptions and recommended structure for development offices, handover systems for key roles, and a policy on succession planning for development officers and project staff.", "Outputs 3.2, 3.3 · Activities 3.2.1, 3.3.1"]] }];
+function pageActivities() {
+  const card = ([t, d, src, link]) => `<article class="act-card"><h3 class="h3">${esc(t)}</h3><p>${esc(d)}</p>
+      ${link ? `<a class="textlink" href="${link[0]}">${esc(link[1])}</a>` : ""}<p class="act-src">From the logframe: ${esc(src)}</p></article>`;
+  const rows = list => { const n = list.length, r = n <= 3 ? [n] : n === 4 ? [2, 2] : [Math.ceil(n / 2), Math.floor(n / 2)];
+    let k = 0; return r.map(c => list.slice(k, k += c).map(a => `<div style="--w:calc((100% - ${c - 1} * var(--g4)) / ${c})">${card(a)}</div>`).join("")).join(""); };
+  return `${crumbs([["Home", "#/"], ["ASLP Activities"]])}
+    <div class="wrap page-hero"><div class="stack"><h1 class="h1">ASLP Activities</h1>
+      <p class="lede">What the Asia-Pacific Sharing &amp; Learning Programme does, from 2024 to 2027, to strengthen development offices across the two zones and show that community development is integral to The Salvation Army's mission.</p>
+      <nav class="up-filter" aria-label="Jump to a pillar" style="margin:var(--g2) 0 0">${ACT_PILLARS.map(p => `<a class="chip-btn" href="#/activities" data-act-jump="${p.key}">${p.name}</a>`).join("")}</nav></div>
+      ${cluster([cl("g8-04", 4, 20, 26), cl("g11-05", 34, 0, 26), cl("g6-09", 22, 62, 34), cl("g11-03", 64, 6, 30), cl("g8-01", 70, 52, 22, 8)])}</div>
+    <div class="wrap page-body">${ACT_PILLARS.map(p => `<section class="act-sec" id="act-${p.key}" style="--ac:${p.c}">
+        <div class="act-head"><h2 class="act-name">${p.name}</h2><div><p class="lede">${esc(p.lede)}</p><p class="act-src">${esc(p.src)}</p></div></div>
+        <div class="act-grid">${rows(p.acts)}</div></section>`).join("")}
+      <p class="small act-note">Activities are grouped and named for this page from the ASLP 2024–2027 proposal, its logframe and Theory of Change. The grey notes show which logframe outputs and activities each one comes from.</p>
+    </div>`;
+}
+document.addEventListener("click", e => { const b = e.target.closest("[data-act-jump]"); if (!b) return; e.preventDefault(); const t = $("act-" + b.dataset.actJump); if (t) t.scrollIntoView({ behavior: "smooth", block: "start" }); });
+
 // ---- NEWSLETTER: the newest issue opens as a book with turning pages; earlier issues sit on the shelf ----
 function pageNewsletter(a) {
   const ns = newsIssues(), k = Math.max(0, Math.min(ns.length - 1, parseInt(a, 10) || 0)), n = ns[k];
@@ -2710,7 +2771,7 @@ function route() {
   maps.forEach(m => m.remove()); maps = []; pendingMaps = [];
   const [p, a] = (location.hash.replace(/^#\/?/, "") || "").split("/").filter(Boolean);
   const html = !p ? pageHome() : p === "about" ? pageAbout() : p === "history" ? (pendingMaps.push(watchYears), pageHistory()) : p === "cwgs" ? pageCwgs() : p === "zone" ? pageZone(a) : p === "cwg" ? pageCwg(a)
-    : p === "territory" ? pageTerritory(a) : p === "groups" ? pageGroups() : p === "group" ? pageGroup(a) : p === "newsletter" ? pageNewsletter(a) : p === "updates" ? pageUpdates(a) : p === "programmatic" ? pageProgrammatic(a) : p === "update" ? pageUpdate(a) : p === "console" ? pageConsole(a, (location.hash.replace(/^#\/?/, "").split("/")[2] || "")) : notFound();
+    : p === "territory" ? pageTerritory(a) : p === "groups" ? pageGroups() : p === "group" ? pageGroup(a) : p === "newsletter" ? pageNewsletter(a) : p === "updates" ? pageUpdates(a) : p === "programmatic" ? pageProgrammatic(a) : p === "activities" ? pageActivities() : p === "update" ? pageUpdate(a) : p === "console" ? pageConsole(a, (location.hash.replace(/^#\/?/, "").split("/")[2] || "")) : notFound();
   $("view").innerHTML = html;
   document.body.classList.toggle("is-home", !p);
   pendingMaps.forEach(f => f()); pendingMaps = [];
