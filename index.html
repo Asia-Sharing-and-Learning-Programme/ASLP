@@ -450,20 +450,22 @@
   @media (max-width: 1000px) { .apsg-info { min-height: 0; } }
   .pm-grid { display: grid; gap: var(--g3); margin-top: var(--g6); }
   .pm-card { border-radius: 24px; padding: var(--g5); background: var(--paper-2); }
-  .pm-purpose { background: #005fc0; color: #fff; display: grid; grid-template-columns: minmax(180px, 240px) minmax(0, 1fr); gap: var(--g5); align-items: center; }
-  .pm-purpose .h3 { font-size: clamp(34px, 3.6vw, 48px); font-weight: 900; font-stretch: 115%; letter-spacing: -.035em; line-height: 1; color: #f5c400; margin: 0;
+  .pm-purpose { background: var(--pm-bg, #005fc0); color: #fff; display: grid; grid-template-columns: minmax(180px, 240px) minmax(0, 1fr); gap: var(--g5); align-items: center; }
+  .pm-purpose .h3 { font-size: clamp(34px, 3.6vw, 48px); font-weight: 900; font-stretch: 115%; letter-spacing: -.035em; line-height: 1; color: var(--pm-h, #f5c400); margin: 0;
     padding-right: var(--g5); border-right: 2px solid rgba(255,255,255,.35); align-self: stretch; display: flex; align-items: center; }
   .pm-purpose p { margin: 0; max-width: none; font-size: clamp(19px, 1.85vw, 25px); line-height: 1.45; font-weight: 400; letter-spacing: 0; }
   .pm-mh { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px var(--g3); }
   .pm-mh .h3 { font-size: 20px; }
   .pm-mh p { margin: 0; color: var(--ink-2); font-size: 16.5px; }
-  .pm-cols { list-style: none; counter-reset: m; padding: 0; margin: var(--g4) 0 0; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: var(--g4); }
-  .pm-cols li { counter-increment: m; border-top: 3px solid #005fc0; padding-top: var(--g2); font-size: 16.5px; line-height: 1.45; }
-  .pm-cols li::before { content: counter(m); display: block; font-size: 44px; font-weight: 900; font-stretch: 112%; color: #005fc0; line-height: 1; margin-bottom: var(--g2); }
-  @media (prefers-color-scheme: dark) { :root:where(:not([data-theme="light"])) .pm-cols li::before { color: #5b9cf0; } }
-  :root[data-theme="dark"] .pm-cols li::before { color: #5b9cf0; }
-  @media (max-width: 1000px) { .pm-cols { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
-  @media (max-width: 700px) { .pm-purpose { grid-template-columns: 1fr; gap: var(--g3); } .pm-purpose .h3 { border-right: 0; padding: 0 0 var(--g2); border-bottom: 2px solid rgba(255,255,255,.35); } .pm-cols { grid-template-columns: 1fr; gap: var(--g3); } .pm-cols li { display: grid; grid-template-columns: 2.2em minmax(0, 1fr); } .pm-cols li::before { font-size: 30px; margin: 0; } .pm-card { padding: var(--g4); } }
+  .pm-cols { list-style: none; counter-reset: m; padding: 0; margin: var(--g4) 0 0; display: flex; flex-wrap: wrap; gap: var(--g4); }
+  .pm-cols li { flex: 0 0 var(--w, 100%); min-width: 0; }
+  .pm-note { max-width: none; margin: var(--g4) 0 0; padding-top: var(--g3); border-top: 1px solid var(--line); font-size: 15px; color: var(--ink-2); }
+  .pm-cols li { counter-increment: m; border-top: 3px solid var(--pm-a, #005fc0); padding-top: var(--g2); font-size: 16.5px; line-height: 1.45; }
+  .pm-cols li::before { content: counter(m); display: block; font-size: 44px; font-weight: 900; font-stretch: 112%; color: var(--pm-a, #005fc0); line-height: 1; margin-bottom: var(--g2); }
+  @media (prefers-color-scheme: dark) { :root:where(:not([data-theme="light"])) .pm-cols li::before { color: var(--pm-ad, #5b9cf0); } }
+  :root[data-theme="dark"] .pm-cols li::before { color: var(--pm-ad, #5b9cf0); }
+  @media (max-width: 1000px) { .pm-cols li { flex-basis: calc((100% - var(--g4)) / 2); } .pm-cols li:last-child:nth-child(odd) { flex-basis: 100%; } }
+  @media (max-width: 700px) { .pm-purpose { grid-template-columns: 1fr; gap: var(--g3); } .pm-purpose .h3 { border-right: 0; padding: 0 0 var(--g2); border-bottom: 2px solid rgba(255,255,255,.35); } .pm-cols { grid-template-columns: 1fr; gap: var(--g3); } .pm-cols li, .pm-cols li:last-child:nth-child(odd) { flex-basis: 100%; display: grid; grid-template-columns: 2.2em minmax(0, 1fr); } .pm-cols li::before { font-size: 30px; margin: 0; } .pm-card { padding: var(--g4); } }
   /* home: a Share button sits where the logo is on other pages */
   .topbar .wrap { max-width: 1360px; }
   .tb-auth { flex: none; display: inline-flex; align-items: center; margin-left: var(--g2); padding: 7px 16px; border-radius: 999px; background: #f5c400; color: #000; font-weight: 700; font-size: 14.5px; text-decoration: none; }
@@ -1588,13 +1590,35 @@ const APSG_MANDATE = ["Emerges from territory-approved Community Development Str
   "Produces a draft Asia Pacific Community Development Strategy for endorsement at ASLF 2027."];
 const APSG_PURPOSE = "To guide, support, bring together and quality-assure a coherent, values-based Asia Pacific Community Development Strategy, through a collaborative, bottom-up regional process.";
 // the APSG's purpose and mandate: what an admin or the APSG editors saved, otherwise the approved ToR wording
-function apsgTor() { try { const c = data.content && data.content.apsg_tor; const j = c && c.body ? JSON.parse(c.body) : null;
-  if (j && (j.purpose || (j.mandate || []).length)) return { purpose: j.purpose || APSG_PURPOSE, mandate: (j.mandate || []).length ? j.mandate : APSG_MANDATE }; } catch (e) {}
-  return { purpose: APSG_PURPOSE, mandate: APSG_MANDATE }; }
-const apsgPurpose = () => `<section class="pm-grid" aria-label="Purpose and mandate">
-  <div class="pm-card pm-purpose"><h2 class="h3">Purpose</h2><p>${esc(apsgTor().purpose.replace("bottom-up", "bottom‑up"))}</p></div>
-  <div class="pm-card pm-mandate"><div class="pm-mh"><h2 class="h3">Mandate</h2><p>The APSG makes sure the regional strategy:</p></div><ol class="pm-cols">${apsgTor().mandate.map(x => `<li>${esc(x)}</li>`).join("")}</ol></div>
-</section>`;
+const ASC_PURPOSE = "To hold overall programmatic oversight and management of the ASLP. The ASLP Coordinator reports to the ASC.";
+const ASC_MANDATE = ["Receives the ASLP Coordinator's monthly progress reports on implementation and responds where needed.",
+  "Receives updates from all ASLP groups and committees and responds where needed.",
+  "Makes sure ASLP reports and completed activities are up to date.",
+  "Makes sure risks are tracked and mitigated as effectively as possible.",
+  "Addresses programme issues raised by the ASLP Coordinator.",
+  "Reviews the Asia-Pacific strategy every quarter.",
+  "Reviews the programme every year and adjusts plans and ways of working."];
+// purpose and mandate from each group's terms of reference (ASC: revised Dec 2025)
+const TORS = {
+  apsg: { purpose: APSG_PURPOSE, mandate: APSG_MANDATE, lead: "The APSG makes sure the regional strategy:", bg: "#005fc0", hc: "#f5c400", ac: "#005fc0", acd: "#5b9cf0" },
+  asc: { purpose: ASC_PURPOSE, mandate: ASC_MANDATE, lead: "The ASC:", bg: "#24215f", hc: "#ff7a3d", ac: "#e14b1e", acd: "#ff8a5c",
+    note: "The ASC meeting is not where ASLP spending is decided. Expenditure requests go to SWI and the ASLP finance committee." } };
+// what an admin or the group's editors saved, otherwise the approved ToR wording
+function groupTor(key) { const D = TORS[key]; if (!D) return null;
+  try { const c = data.content && data.content[key + "_tor"]; const j = c && c.body ? JSON.parse(c.body) : null;
+    if (j && (j.purpose || (j.mandate || []).length)) return { ...D, purpose: j.purpose || D.purpose, mandate: (j.mandate || []).length ? j.mandate : D.mandate }; } catch (e) {}
+  return { ...D }; }
+const apsgTor = () => groupTor("apsg");
+// mandate points in one row (up to 5) or two even rows that both fill the width
+function pmCols(list) {
+  const n = list.length, rows = n <= 5 ? [n] : [Math.ceil(n / 2), Math.floor(n / 2)];
+  let k = 0; return rows.map(r => list.slice(k, k += r).map(x => `<li style="--w:calc((100% - ${r - 1} * var(--g4)) / ${r})">${esc(x)}</li>`).join("")).join("");
+}
+const groupPurpose = key => { const T = groupTor(key); if (!T) return "";
+  return `<section class="pm-grid" aria-label="Purpose and mandate" style="--pm-bg:${T.bg};--pm-h:${T.hc};--pm-a:${T.ac};--pm-ad:${T.acd}">
+  <div class="pm-card pm-purpose"><h2 class="h3">Purpose</h2><p>${esc(T.purpose.replace("bottom-up", "bottom‑up"))}</p></div>
+  <div class="pm-card pm-mandate"><div class="pm-mh"><h2 class="h3">Mandate</h2><p>${esc(T.lead)}</p></div><ol class="pm-cols">${pmCols(T.mandate)}</ol>${T.note ? `<p class="pm-note">${esc(T.note)}</p>` : ""}</div>
+</section>`; };
 function pageGroup(key) {
   const gs = data.groups || [], i = gs.findIndex(x => x.key === key), g = gs[i]; if (!g) return notFound();
   return `${crumbs([["Home", "#/"], ["ASLP Groups", "#/groups"], [g.short]])}
@@ -1602,7 +1626,7 @@ function pageGroup(key) {
     <div class="wrap page-body">${DIAGRAMS[g.key] || (V().can_groups || []).includes(g.key) ? `<div class="grp-actions">${DIAGRAMS[g.key] ? `<button type="button" class="btn fill" data-grp-pdf="${esc(g.key)}">Download one-page summary (PDF)</button>` : ""}${(V().can_groups || []).includes(g.key) ? `<a class="btn" href="#/console/group/${esc(g.key)}">Edit this group</a>` : ""}</div>` : ""}<div class="two-col">
       <div class="stack"><h2 class="h2">About the ${esc(g.short)}</h2>${g.description ? g.description.split(/\n\s*\n/).map(paraHtml).join("") : `<p class="empty">A description of the ${esc(g.name)} is coming soon.</p>`}</div>
       <div class="aside-box"><h2 class="h3">Members</h2>${(g.members || []).length ? `<div>${g.members.map(m => contactHtml({ ...m, groupRole: m.groupRole, role: [m.role, m.office, m.territory && (terrName(m.territory) || m.territory)].filter(Boolean).join(", ") })).join("")}</div>` : `<p class="empty">Members will be listed here.</p>`}</div>
-    </div>${(g.key === "apsg" ? apsgPurpose() : "") + (DIAGRAMS[g.key] ? (pendingMaps.push(() => mountDiagram(g.key)), diagramHtml(g.key)) : "")}</div>`;
+    </div>${groupPurpose(g.key) + (DIAGRAMS[g.key] ? (pendingMaps.push(() => mountDiagram(g.key)), diagramHtml(g.key)) : "")}</div>`;
 }
 
 
@@ -1749,7 +1773,7 @@ async function groupPDF(key, btn) {
         });
         return Math.max(...ys);
       };
-      const hasM = (g.members || []).length > 0, apsg = key === "apsg", wideM = hasM && (apsg || g.members.length > 5);
+      const hasM = (g.members || []).length > 0, apsg = !!TORS[key], wideM = hasM && (apsg || g.members.length > 5);
       // section 1: description on the left; on the right the purpose and mandate (APSG) or the members
       const LW = 108, RX = M + LW + 8, RW = CW - LW - 8;
       const side = apsg || (hasM && !wideM);   // something to show beside the description?
@@ -1769,9 +1793,9 @@ async function groupPDF(key, btn) {
       }
       let yr = y;
       if (apsg) {
-        const T = apsgTor();
+        const T = groupTor(key);
         yr = head("Purpose", RX, yr, RW); yr = txt(T.purpose, RX, yr, RW, body) + 2.6 * sc;
-        yr = head("Mandate", RX, yr, RW); yr = txt("The APSG makes sure the regional strategy:", RX, yr, RW, small, [110, 110, 105]) + 0.6;
+        yr = head("Mandate", RX, yr, RW); yr = txt(T.lead, RX, yr, RW, small, [110, 110, 105]) + 0.6;
         T.mandate.forEach((m, n) => { doc.setFont("ArchivoX", "normal"); doc.setFontSize(small); doc.setTextColor(...accent); doc.text(String(n + 1), RX, yr); yr = txt(m, RX + 4.5, yr, RW - 4.5, small) + 1.2 * sc; });
       } else if (side) { yr = head("Members", RX, yr, RW); yr = members(RX, yr, RW, 1); }
       if (side) { doc.setDrawColor(228, 227, 223); doc.setLineWidth(0.3); doc.line(RX - 4, y - 3.5, RX - 4, Math.max(yl, yr) - 2); }
@@ -1903,13 +1927,13 @@ function pageConsole(a, b) {
 const GRP_COLS = [["groupRole", "Role in this group", "e.g. Chair, SASIA 1 CWG lead"], ["rank", "Rank (officers only)", "Empty if not an officer"], ["name", "Name"], ["role", "Job title or appointment", "e.g. Chief Secretary, Programme Manager"], ["office", "Office", "e.g. Bangladesh Territory, Salvation Army Switzerland"], ["email", "Email"]];
 function groupEditor(key) {
   const box = $("grp-editor"), g = (data.groups || []).find(x => x.key === key); if (!box || !g) return;
-  const admin = !!V().is_full_admin, tor = apsgTor();
+  const admin = !!V().is_full_admin, tor = groupTor(key);
   box.innerHTML = `<div class="ed-grid">
       ${admin ? `<label class="full"><span>Full name</span><input id="g-name" value="${esc(g.name || "")}"></label>` : ""}
       <label class="full"><span>About the ${esc(g.short)} <span class="ed-hint">Leave a blank line between paragraphs. Start a paragraph with "What it does:", "Who sits on it:" or "How often it meets:" to give it a heading.</span></span>
         <textarea id="g-desc" rows="10">${esc(g.description || "")}</textarea></label>
-      ${key === "apsg" ? `<label class="full"><span>Purpose</span><textarea id="g-purpose" rows="3">${esc(tor.purpose)}</textarea></label>
-      <label class="full"><span>Mandate <span class="ed-hint">One point per line. The page says "The APSG makes sure the regional strategy:" before them.</span></span><textarea id="g-mandate" rows="6">${esc(tor.mandate.join("\n"))}</textarea></label>` : ""}
+      ${tor ? `<label class="full"><span>Purpose</span><textarea id="g-purpose" rows="3">${esc(tor.purpose)}</textarea></label>
+      <label class="full"><span>Mandate <span class="ed-hint">One point per line. The page says "${esc(tor ? tor.lead : "")}" before them.</span></span><textarea id="g-mandate" rows="6">${esc(tor.mandate.join("\n"))}</textarea></label>` : ""}
     </div>
     <h3 class="h3" style="margin-top:var(--g5)">Members</h3>
     <p class="small">Listed on the ${esc(g.short)} page in this order. Use the arrows to move someone up or down. "Role in this group" is what they do in the ${esc(g.short)}, for example Chair. "Job title or appointment" and "Office" are their own work: an officer's appointment and territory, or an employee's job title and office. Leave Rank empty for anyone who isn't an officer. Being listed doesn't give anyone access to this console.</p>
@@ -1920,8 +1944,8 @@ function groupEditor(key) {
   makeDraftable(box, `grp:${key}`, () => groupEditor(key));
   $("g-save").addEventListener("click", () => saveWith("g-save", "g-msg", async () => {
     const r = await db.rpc("aslp_save_group", { p_key: key, p_group: { ...(admin ? { name: $("g-name").value.trim() } : {}), description: $("g-desc").value.trim(), members: readRows($("gm-box")) } });
-    if (r.error || key !== "apsg") return r;
-    return db.rpc("aslp_save_content", { p_key: "apsg_tor", p_title: "APSG purpose and mandate", p_body: JSON.stringify({ purpose: $("g-purpose").value.trim(), mandate: $("g-mandate").value.split("\n").map(x => x.trim()).filter(Boolean) }) });
+    if (r.error || !TORS[key]) return r;
+    return db.rpc("aslp_save_content", { p_key: key + "_tor", p_title: `${g.short} purpose and mandate`, p_body: JSON.stringify({ purpose: $("g-purpose").value.trim(), mandate: $("g-mandate").value.split("\n").map(x => x.trim()).filter(Boolean) }) });
   }, `${g.short} saved.`));
 }
 // ---- console: programme updates (CWG leads and admins) ----
