@@ -909,6 +909,58 @@
     .rv { opacity: 1 !important; transform: none !important; transition: none !important; }
     .cwg-panel, .grp-card, .act-card, .ex-card, .hi-card, .door, .issue, .mem-group, .btn, .terr-row .nm, .up-card img, .zone-tile .zmap, .grp-card .decor > *, .door .decor > * { transition: none !important; transform: none !important; translate: none !important; rotate: none !important; }
   }
+  /* ---------- console welcome ---------- */
+  .wel { overflow: hidden; }
+  .wel-hero { position: relative; padding: var(--g2) 0 var(--g4); }
+  .wel-lll { display: flex; gap: .3em; font-weight: 900; font-stretch: 115%; letter-spacing: -.02em; font-size: clamp(15px, 1.6vw, 19px); margin-bottom: var(--g2); }
+  .wel-lll span { opacity: 0; transform: translateY(8px); animation: welIn .9s cubic-bezier(.16,1,.3,1) forwards; }
+  .wel-lll span:nth-child(1) { color: #0a84ff; } .wel-lll span:nth-child(2) { color: #f5c400; animation-delay: .15s; } .wel-lll span:nth-child(3) { color: #e14b1e; animation-delay: .3s; }
+  .wel-hi { font-size: clamp(38px, 5.5vw, 64px); font-weight: 850; font-stretch: 108%; letter-spacing: -.03em; line-height: 1; opacity: 0; animation: welIn 1.1s .35s cubic-bezier(.16,1,.3,1) forwards; }
+  .wel-sub { font-size: clamp(17px, 1.5vw, 20px); color: var(--ink-2); margin-top: var(--g2); opacity: 0; animation: welIn 1.1s .5s cubic-bezier(.16,1,.3,1) forwards; }
+  .wel-roles { display: flex; flex-wrap: wrap; gap: 6px; margin-top: var(--g3); opacity: 0; animation: welIn 1s .65s cubic-bezier(.16,1,.3,1) forwards; }
+  .wel-roles span { background: var(--ink); color: var(--paper); border-radius: 999px; padding: 3px 12px; font-size: 13px; font-weight: 700; }
+  .wel-h { margin: var(--g4) 0 var(--g3); }
+  .wel-steps { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; counter-reset: ws; }
+  .wel-steps li { counter-increment: ws; display: grid; grid-template-columns: 64px minmax(0, 1fr) auto; gap: var(--g3); align-items: center; background: var(--paper); border-radius: 16px; padding: 14px 16px;
+    opacity: 0; transform: translateY(14px); animation: welIn 1s cubic-bezier(.16,1,.3,1) forwards; animation-delay: calc(.75s + var(--i) * .12s); }
+  .wel-tx > b { display: block; font-size: 17px; } .wel-tx > b::before { content: counter(ws) ". "; color: var(--ink-3); font-weight: 700; }
+  .wel-tx p { margin: 2px 0 0; font-size: 15px; color: var(--ink-2); line-height: 1.5; max-width: 70ch; }
+  .wel-ic { width: 56px; height: 56px; border-radius: 14px; background: var(--paper-2); display: grid; place-items: center; }
+  @keyframes welIn { to { opacity: 1; transform: none; } }
+  @media (max-width: 600px) { .wel-steps li { grid-template-columns: 48px minmax(0, 1fr); } .wel-steps li > .btn { grid-column: 2; justify-self: start; } .wel-ic { width: 44px; height: 44px; } }
+  /* the little moving pictures */
+  .wi { width: 36px; height: 36px; fill: none; stroke: var(--ink); stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; overflow: visible; }
+  .wi-explore .n { fill: #e14b1e; stroke: none; transform-origin: 24px 24px; animation: wiSpin 4s ease-in-out infinite; }
+  .wi-write .ln { stroke-dasharray: 14; stroke-dashoffset: 14; animation: wiDraw 3s ease-in-out infinite; } .wi-write .l2 { animation-delay: .3s; } .wi-write .l3 { animation-delay: .6s; }
+  .wi-write .pen { fill: #f5c400; animation: wiPen 3s ease-in-out infinite; }
+  .wi-send .pl { fill: #0a84ff; stroke: #0a84ff; animation: wiFly 2.6s ease-in-out infinite; }
+  .wi-approve .ck { stroke: #1a7f37; stroke-width: 3.2; stroke-dasharray: 26; stroke-dashoffset: 26; animation: wiDraw 2.6s ease-in-out infinite; }
+  .wi-pin .pd { animation: wiDrop 2.4s cubic-bezier(.3,0,.3,1) infinite; } .wi-pin path { fill: #e14b1e; stroke: #e14b1e; } .wi-pin circle { fill: #fff; stroke: none; }
+  .wi-pin .sh { fill: var(--ink-3); stroke: none; opacity: .35; transform-origin: 24px 42px; animation: wiShadow 2.4s cubic-bezier(.3,0,.3,1) infinite; }
+  .wi-people .p2 { stroke: #0a84ff; animation: wiNod 2.4s ease-in-out infinite; } .wi-people .p1 { animation: wiNod 2.4s .4s ease-in-out infinite; }
+  .wi-toggle rect { fill: var(--paper); } .wi-toggle .kb { fill: #0a84ff; stroke: none; animation: wiSlide 2.6s ease-in-out infinite; }
+  .wi-group rect { animation: wiPop 2.8s ease-in-out infinite; transform-box: fill-box; transform-origin: center; } .wi-group .b1 { fill: #e14b1e; stroke: none; } .wi-group .b2 { fill: #005fc0; stroke: none; animation-delay: .2s; } .wi-group .b3 { fill: #f5c400; stroke: none; animation-delay: .4s; } .wi-group .b4 { fill: #24215f; stroke: none; animation-delay: .6s; }
+  .wi-cal circle { fill: var(--ink); stroke: none; opacity: .15; animation: wiDot 2.8s ease-in-out infinite; } .wi-cal .d2 { animation-delay: .25s; } .wi-cal .d3 { animation-delay: .5s; fill: #e14b1e; } .wi-cal .d4 { animation-delay: .75s; }
+  .wi-chart rect { stroke: none; transform-box: fill-box; transform-origin: bottom; animation: wiGrow 2.8s ease-in-out infinite; } .wi-chart .c1 { fill: #f5c400; } .wi-chart .c2 { fill: #0a84ff; animation-delay: .2s; } .wi-chart .c3 { fill: #e14b1e; animation-delay: .4s; }
+  .wi-page .ln { stroke-dasharray: 16; stroke-dashoffset: 16; animation: wiDraw 3s ease-in-out infinite; } .wi-page .l2 { animation-delay: .3s; } .wi-page .l3 { animation-delay: .6s; }
+  .wi-key .ky { transform-origin: 16px 24px; animation: wiTurn 3s ease-in-out infinite; } .wi-key circle { fill: #f5c400; }
+  @keyframes wiSpin { 0%, 100% { transform: rotate(-25deg); } 50% { transform: rotate(25deg); } }
+  @keyframes wiDraw { 0% { stroke-dashoffset: var(--o, 26); } 45%, 80% { stroke-dashoffset: 0; } 100% { stroke-dashoffset: 0; opacity: 0; } }
+  @keyframes wiPen { 0%, 100% { transform: translate(0, 0); } 50% { transform: translate(-6px, 4px); } }
+  @keyframes wiFly { 0% { transform: translate(-4px, 4px); opacity: 0; } 30%, 60% { transform: none; opacity: 1; } 100% { transform: translate(8px, -8px); opacity: 0; } }
+  @keyframes wiDrop { 0% { transform: translateY(-14px); opacity: 0; } 35% { transform: translateY(0); opacity: 1; } 45% { transform: translateY(-3px); } 55%, 85% { transform: translateY(0); opacity: 1; } 100% { opacity: 0; } }
+  @keyframes wiShadow { 0% { transform: scale(.3); } 35%, 85% { transform: scale(1); } }
+  @keyframes wiNod { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-2px); } }
+  @keyframes wiSlide { 0%, 20% { transform: translateX(0); } 45%, 75% { transform: translateX(18px); } 100% { transform: translateX(0); } }
+  @keyframes wiPop { 0%, 100% { transform: scale(1); } 50% { transform: scale(.82); } }
+  @keyframes wiDot { 0%, 100% { opacity: .15; } 40%, 70% { opacity: 1; } }
+  @keyframes wiGrow { 0% { transform: scaleY(.15); } 45%, 80% { transform: scaleY(1); } 100% { transform: scaleY(.15); } }
+  @keyframes wiTurn { 0%, 100% { transform: rotate(0); } 40%, 60% { transform: rotate(-30deg); } }
+  .hello-toast { position: fixed; z-index: 3000; left: 50%; bottom: 24px; transform: translate(-50%, 30px); opacity: 0; background: #000; color: #fff; border-radius: 999px; padding: 12px 14px 12px 22px;
+    font-size: 15.5px; display: flex; gap: 12px; align-items: center; box-shadow: 0 18px 40px -16px rgba(0,0,0,.5); transition: transform .7s cubic-bezier(.16,1,.3,1), opacity .5s; max-width: calc(100vw - 32px); }
+  .hello-toast.in { transform: translate(-50%, 0); opacity: 1; }
+  .hello-toast b { color: #f5c400; } .hello-toast button { border: 0; background: rgba(255,255,255,.15); color: #fff; width: 28px; height: 28px; border-radius: 50%; font-size: 17px; cursor: pointer; flex: none; }
+  @media (prefers-reduced-motion: reduce) { .wel-lll span, .wel-hi, .wel-sub, .wel-roles, .wel-steps li { animation: none; opacity: 1; transform: none; } .wi * { animation: none !important; stroke-dashoffset: 0 !important; } .hello-toast { transition: none; } }
 </style>
 </head>
 <body>
@@ -2156,6 +2208,53 @@ function consoleSignin() {
       <p class="small">The email also has a link. Opening it signs you in too.</p></div>
     <p class="si-msg" id="si-msg" role="status"></p></div>`;
 }
+// ---- console welcome: a greeting and, in plain steps, what this person's access lets them do ----
+const firstName = v => { const n = String(v.name || "").replace(/^(Major|Captain|Lieutenant|Colonel|Commissioner|Lt\.?|Lt-Colonel|Envoy|Mr\.?|Mrs\.?|Ms\.?|Dr\.?)\s+/i, "").trim(); return n ? n.split(/\s+/)[0] : ""; };
+const WICON = {
+  explore: `<svg viewBox="0 0 48 48" class="wi wi-explore"><circle cx="24" cy="24" r="18"/><path class="n" d="M24 10l5 14-5 14-5-14z"/></svg>`,
+  write: `<svg viewBox="0 0 48 48" class="wi wi-write"><rect x="9" y="7" width="26" height="34" rx="4"/><path class="ln l1" d="M15 17h14"/><path class="ln l2" d="M15 24h14"/><path class="ln l3" d="M15 31h9"/><path class="pen" d="M33 30l8-8 3 3-8 8-4 1z"/></svg>`,
+  send: `<svg viewBox="0 0 48 48" class="wi wi-send"><path class="pl" d="M6 24l36-15-9 31-9-11z"/><path d="M24 29l18-20"/></svg>`,
+  approve: `<svg viewBox="0 0 48 48" class="wi wi-approve"><circle cx="24" cy="24" r="18"/><path class="ck" d="M15 25l6 6 12-13"/></svg>`,
+  pin: `<svg viewBox="0 0 48 48" class="wi wi-pin"><ellipse class="sh" cx="24" cy="42" rx="8" ry="2.4"/><g class="pd"><path d="M24 38s-11-11-11-19a11 11 0 0 1 22 0c0 8-11 19-11 19z"/><circle cx="24" cy="19" r="4"/></g></svg>`,
+  people: `<svg viewBox="0 0 48 48" class="wi wi-people"><circle class="p1" cx="17" cy="17" r="6"/><path class="p1" d="M6 38c0-7 5-11 11-11s11 4 11 11"/><circle class="p2" cx="33" cy="19" r="5"/><path class="p2" d="M26 38c1-6 4-9 8-9s8 3 8 9"/></svg>`,
+  toggle: `<svg viewBox="0 0 48 48" class="wi wi-toggle"><rect x="6" y="15" width="36" height="18" rx="9"/><circle class="kb" cx="15" cy="24" r="6"/></svg>`,
+  group: `<svg viewBox="0 0 48 48" class="wi wi-group"><rect class="b1" x="7" y="9" width="15" height="13" rx="3"/><rect class="b2" x="26" y="9" width="15" height="13" rx="3"/><rect class="b3" x="7" y="26" width="15" height="13" rx="3"/><rect class="b4" x="26" y="26" width="15" height="13" rx="3"/></svg>`,
+  cal: `<svg viewBox="0 0 48 48" class="wi wi-cal"><rect x="7" y="10" width="34" height="30" rx="4"/><path d="M7 18h34M16 6v8M32 6v8"/><circle class="d1" cx="16" cy="26" r="2.4"/><circle class="d2" cx="24" cy="26" r="2.4"/><circle class="d3" cx="32" cy="26" r="2.4"/><circle class="d4" cx="16" cy="33" r="2.4"/></svg>`,
+  chart: `<svg viewBox="0 0 48 48" class="wi wi-chart"><path d="M7 41h34"/><rect class="c1" x="10" y="25" width="7" height="16" rx="2"/><rect class="c2" x="21" y="16" width="7" height="25" rx="2"/><rect class="c3" x="32" y="9" width="7" height="32" rx="2"/></svg>`,
+  page: `<svg viewBox="0 0 48 48" class="wi wi-page"><path d="M12 6h17l9 9v27H12z"/><path class="ln l1" d="M17 22h16"/><path class="ln l2" d="M17 29h16"/><path class="ln l3" d="M17 36h10"/></svg>`,
+  key: `<svg viewBox="0 0 48 48" class="wi wi-key"><g class="ky"><circle cx="16" cy="24" r="8"/><path d="M24 24h18M36 24v6M41 24v5"/></g></svg>` };
+function welcomeHtml(v, tabs) {
+  const has = id => tabs.some(t => t[0] === id), go = id => has(id) ? `<button type="button" class="btn sm" data-goto="${id}">Open</button>` : "";
+  const roles = [v.is_full_admin && "Admin", ...(v.zone_coord || []).map(z => `${z} coordinator`), (v.lead_cwgs || []).length && `${v.lead_cwgs.join(" and ")} CWG lead`,
+    v.can_approve && !v.is_full_admin && "ASC member", (v.post_groups || []).includes("apsg") && !v.can_approve && "APSG member",
+    (v.submit_cwgs || []).length && `${v.submit_cwgs.join(" and ")} CWG member`, (v.can_edit || []).length && !(v.lead_cwgs || []).length && !v.is_full_admin && "Contact person",
+    v.cds_access && !(v.lead_cwgs || []).length && !v.is_full_admin && "CD Strategies contact"].filter(Boolean);
+  const steps = [["explore", "Look around", "Use the menu at the top to visit every page. You see the website as everyone does, plus what your access lets you change.", `<a class="btn sm" href="#/">Home</a>`]];
+  if ((v.post_cwgs || []).length || (v.post_groups || []).length) steps.push(["write", "Post an update",
+    `Open <b>Updates</b>, choose <b>Post an update</b>, then write it or upload a PDF or PowerPoint. You can post for ${[...(v.post_cwgs || []).map(c => c), ...(v.post_groups || []).map(k => (grpOf(k) || {}).short || k.toUpperCase())].join(", ")}. It goes live when you publish.`, go("cc-updates")]);
+  if ((v.submit_cwgs || []).length) steps.push(["send", "Send in an update",
+    `Open <b>Updates</b> and post for ${v.submit_cwgs.join(" and ")}. An ASC member or admin checks it first, then it appears on the website.`, go("cc-updates")]);
+  if (v.can_approve) steps.push(["approve", "Approve updates", `Updates sent in by CWG members show in <b>Updates</b> as <b>Waiting for approval</b>. Open one to check it, then select <b>Approve</b>.`, go("cc-updates")]);
+  if (has("cc-terr")) steps.push(["pin", "Update a profile", `Open <b>Territory profiles</b>, pick ${(v.can_edit || []).length + (v.can_units || []).length === 1 ? "your territory" : "a territory or region"}, and fill in where it works, its strengths and the support it offers. Select <b>Save</b>.`, go("cc-terr")]);
+  if (has("cc-members")) steps.push(["people", "Keep your CWG's members up to date", `Open <b>CWG members</b> to add, change or remove members and say which territory each is from.`, go("cc-members")]);
+  if (has("cc-units")) steps.push(["toggle", "Switch regions and countries on", `Open <b>Regions and countries</b>. Tick one to show its profile on the website, and choose its CWG.`, go("cc-units")]);
+  if (has("cc-groups")) steps.push(["group", "Edit your group's page", `Open <b>ASLP Groups</b> to change ${(v.can_groups || []).map(k => (grpOf(k) || {}).short || k).join(", ")}: the description and who sits on it.`, go("cc-groups")]);
+  const cal = { admin: "see every entry and change anything, including who has access", editor: "see every entry with its details and add or change anything",
+    lead: "see all entries, add and change your CWG's entries, and approve the changes your members suggest", apsg: "see every entry's details, add APSG meetings, and link or unlink the APSG on other entries",
+    member: "see your CWG's entries in full and ASC and APSG meetings as summaries, and suggest changes for your CWG lead to approve" }[v.cal_role];
+  if (cal) steps.push(["cal", "Use the Calendar", `On the <b>Calendar</b> you can ${cal}. You're already signed in there.`, `<a class="btn sm" href="/Calendar-2027-2028/">Open</a>`]);
+  if (v.cds_access) steps.push(["chart", "Update CD Strategies", `On <b>CD Strategies</b>, select <b>Update</b> to record your territory's progress${(v.lead_cwgs || []).length || v.is_full_admin ? " (for every territory you look after)" : ""}.`, `<a class="btn sm" href="/cd-strategy/">Open</a>`]);
+  if (has("cc-pages")) steps.push(["page", "Edit pages and the newsletter", `Open <b>Pages and newsletter</b> to change the About text, the home page introduction and newsletter issues.`, go("cc-pages")]);
+  if (has("cc-access")) steps.push(["key", "Decide who can do what", `Open <b>Access</b> to switch editing on or off for each role, name the zone coordinators and choose who edits each group page.`, go("cc-access")]);
+  const fn = firstName(v);
+  return `<section class="console-card wel" id="cc-welcome">
+    <div class="wel-hero"><div class="wel-lll" aria-hidden="true"><span>Listen.</span><span>Learn.</span><span>Lead.</span></div>
+      <h2 class="wel-hi">Hi${fn ? `, ${esc(fn)}` : ""}.</h2><p class="wel-sub">Feel free to roam around the site. Here's how to get around with your access.</p>
+      ${roles.length ? `<div class="wel-roles">${roles.map(r => `<span>${esc(r)}</span>`).join("")}</div>` : ""}</div>
+    <h3 class="h3 wel-h">How to navigate the site with your access</h3>
+    <ol class="wel-steps">${steps.map(([ic, t, d, a], i) => `<li style="--i:${i}"><div class="wel-ic">${WICON[ic]}</div><div class="wel-tx"><b>${esc(t)}</b><p>${d}</p></div>${a}</li>`).join("")}</ol>
+    ${steps.length === 1 ? `<p class="small" style="margin-top:var(--g3)">Your account doesn't edit anything on this website yet. If you think it should, ask your CWG lead or the ASLP team.</p>` : ""}</section>`;
+}
 function pageConsole(a, b) {
   const v = V();
   if (!v.email) return `${crumbs([["Home", "#/"], ["Console"]])}<div class="wrap page-body" style="padding-top:var(--g5)"><h1 class="h1" style="margin-bottom:var(--g5)">Console</h1>${consoleSignin()}</div>`;
@@ -2172,16 +2271,18 @@ function pageConsole(a, b) {
     <p>Update each territory's CD Strategy status and details, focal persons and approvals on the CD Strategies website. You're already signed in there with this account.</p>
     <p class="small">The territory's name, CWG, headquarters, countries, offices, status, strategy period and focal person are kept there and shown on this website automatically.</p>
     <a class="btn fill" href="${CDS_URL}#admin">Open the CD Strategies console</a></div></div>`;
-  if (!terrIds.length && !cwgs.length && !groups.length && !v.is_full_admin) return head + `<div class="wrap page-body"><div class="console-card"><p>This account can't edit any website details yet. CWG leads and admins edit their CWGs; CWG members edit their own territory. Ask your CWG lead or the ASLP Coordinator for access.</p></div></div>`;
+  if (!terrIds.length && !cwgs.length && !groups.length && !v.is_full_admin && !(v.post_cwgs || []).length && !(v.submit_cwgs || []).length && !(v.post_groups || []).length)
+    return head + `<div class="wrap page-body">${welcomeHtml(v, [])}</div>`;
   const unitIds = (v.can_units || []).filter(id => { const u = anyUnitById(id); return u && (u.enabled || canToggleUnit(id)); });
   const toggleIds = (v.can_toggle_units || []).filter(anyUnitById);
   const selT = a === "territory" && terrIds.includes(b) ? b : a === "territory" && unitIds.includes(b) ? "u:" + b : terrIds[0] || (unitIds[0] ? "u:" + unitIds[0] : "");
   const selC = a === "cwg" ? cwgs.find(c => cwgSlug(c) === b) : null;
   pendingMaps.push(() => mountConsole());
   const canUpd = (v.post_cwgs || []).length || (v.submit_cwgs || []).length || Object.keys(PGROUPS).some(canGroupPost);
-  const secs = [canUpd && ["cc-updates", "Updates"], toggleIds.length && ["cc-units", "Regions and countries"], cwgs.length && ["cc-members", "CWG members"], (terrIds.length || unitIds.length) && ["cc-terr", "Territory profiles"], groups.length && ["cc-groups", "ASLP Groups"], v.is_full_admin && ["cc-pages", "Pages and newsletter"], v.is_full_admin && ["cc-access", "Access"]].filter(Boolean);
+  const secs = [["cc-welcome", "Welcome"], canUpd && ["cc-updates", "Updates"], toggleIds.length && ["cc-units", "Regions and countries"], cwgs.length && ["cc-members", "CWG members"], (terrIds.length || unitIds.length) && ["cc-terr", "Territory profiles"], groups.length && ["cc-groups", "ASLP Groups"], v.is_full_admin && ["cc-pages", "Pages and newsletter"], v.is_full_admin && ["cc-access", "Access"]].filter(Boolean);
   return head + `<div class="wrap page-body">
     ${secs.length > 1 ? `<nav class="con-sub" role="tablist" aria-label="Console sections">${secs.map(([id, l]) => `<button type="button" role="tab" data-jump="${id}">${l}</button>`).join("")}</nav>` : ""}
+    ${welcomeHtml(v, secs)}
     ${canUpd ? `<section class="console-card" id="cc-updates"><div class="row-head"><h2 class="h2">Updates</h2><button type="button" class="btn fill sm" id="up-new">Post an update</button></div>
       <p class="small">${cwgs.length ? `CWG activities and news go to <a class="textlink" href="#/updates">CWG Updates</a>.` : ""}${Object.keys(PGROUPS).some(canGroupPost) ? ` News and decisions from the ${Object.keys(PGROUPS).filter(canGroupPost).map(k => esc(grpOf(k).short)).join(" and ")} go to <a class="textlink" href="#/programmatic">Programmatic Updates</a>.` : ""} Write the update here, or upload a PDF or PowerPoint and the website lays it out for you.</p>
       <div id="up-editor"></div><div id="up-list">${loader("Loading your updates…")}</div></section>` : ""}
@@ -2623,6 +2724,9 @@ async function accessEditor() {
     <label class="toggle"><input type="checkbox" id="ac-lead" ${on("lead_web") ? "checked" : ""}><div><b>CWG leads edit their CWG on this website</b><span>Their CWG's members, and the profiles and contacts of its territories.</span></div></label>
     <label class="toggle"><input type="checkbox" id="ac-member" ${on("member_web") ? "checked" : ""}><div><b>Contact persons edit their territory's profile</b><span>People listed as a territory's (or region's) contact persons, with an email, can sign in and edit that profile only. Admins and CWG leads choose the contact persons. CWG members not listed as contacts can't edit profiles.</span></div></label>
     <label class="toggle"><input type="checkbox" id="ac-focal" ${on("focal_cds") ? "checked" : ""}><div><b>CD focal persons update their territory's CD Strategy</b><span>The person named as focal person in the CD Strategies (${a.focalCount || 0} territories). CWG leads and admins keep their access either way.</span></div></label>
+    <h3 class="h3" style="margin-top:var(--g4)">Zone coordinators</h3>
+    <p class="small">A zone coordinator has the same access as the CWG leads of every CWG in their zone: posting CWG updates, territory and region profiles, CWG members, the zone's CD Strategies, and the calendar for those CWGs. Leave empty until there's someone in the role. Separate several emails with commas.</p>
+    <div class="ed-grid">${["SPEA", "SASIA"].map(z => `<label><span>${z} coordinator</span><input type="text" id="ac-zc-${z}" value="${esc(((st.zone_coordinators || {})[z] || []).join(", "))}" placeholder="No ${z} coordinator yet" autocomplete="off"></label>`).join("")}</div>
     <h3 class="h3" style="margin-top:var(--g4)">Who can edit each ASLP Group page</h3>
     <p class="small">Besides admins. Group members listed on a page don't get access.</p>
     <table class="ge-table"><thead><tr><th>Group</th><th>Can edit its page and members</th></tr></thead><tbody>
@@ -2631,7 +2735,10 @@ async function accessEditor() {
     <div class="ed-actions"><button type="button" class="btn fill" id="ac-save">Save access</button><span class="ed-msg" id="ac-msg" role="status"></span></div>`;
   $("ac-save").addEventListener("click", () => saveWith("ac-save", "ac-msg", () => {
     const groupsSel = {}; (data.groups || []).forEach(g => { groupsSel[g.key] = [...box.querySelectorAll(`[data-ge="${g.key}"]:checked`)].map(x => x.value); });
-    return db.rpc("aslp_set_access", { p_settings: { lead_web: $("ac-lead").checked, member_web: $("ac-member").checked, focal_cds: $("ac-focal").checked, group_editors: groupsSel } });
+    const zc = z => $(`ac-zc-${z}`).value.split(/[,;\s]+/).map(x => x.trim()).filter(Boolean);
+    const bad = [...zc("SPEA"), ...zc("SASIA")].find(x => !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(x));
+    if (bad) return Promise.resolve({ error: { message: `This email doesn't look right: ${bad}` } });
+    return db.rpc("aslp_set_access", { p_settings: { lead_web: $("ac-lead").checked, member_web: $("ac-member").checked, focal_cds: $("ac-focal").checked, group_editors: groupsSel, zone_coordinators: { SPEA: zc("SPEA"), SASIA: zc("SASIA") } } });
   }, "Access saved. It applies straight away."));
 }
 // the countries, regions and divisions inside a territory, using The Salvation Army's own terms
@@ -2797,8 +2904,10 @@ function mountConsole() {
     const fromRoute = { cwg: "cc-members", territory: "cc-terr", group: "cc-groups", updates: "cc-updates" }[a];
     let saved = null; try { saved = sessionStorage.getItem("aslp-con-tab"); } catch (e) {}
     const ids = tabs.map(x => x.dataset.jump);
-    show([fromRoute, saved].find(x => x && ids.includes(x)) || ids[0]);
+    let fresh = false; try { fresh = sessionStorage.getItem("aslp-welcomed") !== V().email; if (fresh) sessionStorage.setItem("aslp-welcomed", V().email); } catch (e) {}
+    show([fromRoute, fresh ? "cc-welcome" : saved].find(x => x && ids.includes(x)) || ids[0]);
     tabs.forEach(x => x.addEventListener("click", () => show(x.dataset.jump)));
+    document.querySelectorAll("[data-goto]").forEach(b => b.addEventListener("click", () => { show(b.dataset.goto); window.scrollTo({ top: 0, behavior: "smooth" }); }));
   }
   if ($("grp-editor")) { groupEditor($("g-pick").value); $("g-pick").addEventListener("change", e => groupEditor(e.target.value)); if (a === "group") setTimeout(() => $("cc-groups").scrollIntoView({ block: "start" }), 50); }
   if ($("up-list")) { const id = (location.hash.replace(/^#\/?/, "")).split("/")[3]; updatesConsole(a === "updates" ? { cwg: b, id, open: !id } : {}); if (a === "updates") setTimeout(() => $("cc-updates").scrollIntoView({ block: "start" }), 50); }
@@ -3322,17 +3431,26 @@ function route() {
 window.addEventListener("hashchange", () => { route(); updateAuthLinks(); });
 function updateAuthLinks() { const t = V().email ? "Console" : "Sign in"; ["ft-console", "tb-auth"].forEach(id => { const l = $(id); if (l) l.textContent = t; }); }
 const fromLink = /access_token=|error_description=/.test(location.hash);
+// a short "hello" once someone has signed in
+function hello() {
+  const v = V(); if (!v.email) return; try { if (sessionStorage.getItem("aslp-hello") === v.email) return; sessionStorage.setItem("aslp-hello", v.email); } catch (e) {}
+  const fn = firstName(v), t = document.createElement("div"); t.className = "hello-toast"; t.setAttribute("role", "status");
+  t.innerHTML = `<b>Hi${fn ? `, ${esc(fn)}` : ""}.</b> Feel free to roam around the site.<button type="button" aria-label="Close">×</button>`;
+  document.body.appendChild(t); requestAnimationFrame(() => t.classList.add("in"));
+  const bye = () => { t.classList.remove("in"); setTimeout(() => t.remove(), 600); };
+  t.querySelector("button").onclick = bye; setTimeout(bye, 6000);
+}
 load().then(async () => {
   try { await db.auth.getSession(); } catch (e) {}
   const qp = new URLSearchParams(location.search), th = qp.get("token_hash");
   if (th) { await db.auth.verifyOtp({ token_hash: th, type: "email" }).catch(() => {}); history.replaceState(null, "", location.pathname + "#/console"); }
   if (fromLink) history.replaceState(null, "", location.pathname + "#/console");
-  if (fromLink || th) await refresh();
+  if (fromLink || th) { await refresh(); hello(); }
   db.auth.onAuthStateChange((evt, ses) => {
     if (evt !== "SIGNED_IN" && evt !== "SIGNED_OUT") return;
     const em = evt === "SIGNED_OUT" ? "" : String((ses && ses.user && ses.user.email) || "").toLowerCase();
     if (em === String(V().email || "").toLowerCase()) return;   // same person (e.g. the tab came back into view): leave the page and its typing alone
-    setTimeout(() => refresh().then(route), 0);
+    setTimeout(() => refresh().then(() => { route(); if (em) hello(); }), 0);
   });
   buildMenus(); route(); updateAuthLinks();
 }).catch(e => { $("view").innerHTML = `<div class="wrap loading">The site couldn't load its content. Check your connection and refresh the page.</div>`; console.error(e); });
