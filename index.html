@@ -10,8 +10,8 @@
 <meta property="og:site_name" content="Asia-Pacific Sharing &amp; Learning Programme (ASLP)">
 <meta property="og:title" content="ASLP | Asia-Pacific Sharing &amp; Learning Programme">
 <meta property="og:description" content="Listen. Learn. Lead. Cluster Working Groups, territory profiles, ASLP groups and newsletters across South Pacific and East Asia and South Asia.">
-<meta property="og:url" content="https://asia-sharing-and-learning-programme.github.io/ASLP/">
-<meta property="og:image" content="https://asia-sharing-and-learning-programme.github.io/ASLP/og-image.png">
+<meta property="og:url" content="https://salvationarmy-aslp.org/">
+<meta property="og:image" content="https://salvationarmy-aslp.org/og-image.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:image:alt" content="ASLP logo">
@@ -548,8 +548,8 @@
     <div class="dd"><a href="#/cwgs" data-nav="cwgs" class="dd-top" aria-haspopup="true">Cluster Working Groups</a><div class="dd-menu" id="dd-cwgs"></div></div>
     <div class="dd"><a href="#/groups" data-nav="groups" class="dd-top" aria-haspopup="true">ASLP Groups</a><div class="dd-menu" id="dd-groups"></div></div>
     <a href="#/newsletter" data-nav="newsletter">Newsletter</a>
-    <a href="/cd-strategy/">CD Strategies</a>
-    <a href="/Calendar-2027-2028/">Calendar</a>
+    <a href="https://asia-sharing-and-learning-programme.github.io/cd-strategy/">CD Strategies</a>
+    <a href="https://asia-sharing-and-learning-programme.github.io/Calendar-2027-2028/">Calendar</a>
     <div class="theme-in-menu"><div class="seg" role="group" aria-label="Theme"><button data-theme-set="light">Light</button><button data-theme-set="auto">Auto</button><button data-theme-set="dark">Dark</button></div></div>
   </nav>
   <div class="seg theme" role="group" aria-label="Theme"><button data-theme-set="light">Light</button><button data-theme-set="auto">Auto</button><button data-theme-set="dark">Dark</button></div>
@@ -578,7 +578,7 @@
   </div>
   <nav aria-label="Footer">
     <a href="#/about">About ASLP</a><a href="#/cwgs">Cluster Working Groups</a><a href="#/groups">ASLP Groups</a><a href="#/newsletter">Newsletter</a>
-    <a href="/cd-strategy/">CD Strategies</a><a href="/Calendar-2027-2028/">Calendar</a>
+    <a href="https://asia-sharing-and-learning-programme.github.io/cd-strategy/">CD Strategies</a><a href="https://asia-sharing-and-learning-programme.github.io/Calendar-2027-2028/">Calendar</a>
     <a href="#/console" id="ft-console">Sign in</a>
   </nav>
   <div class="copy-line">© 2026 Asia-Pacific Sharing &amp; Learning Programme, The Salvation Army</div>
@@ -604,8 +604,10 @@ document.querySelectorAll("[data-theme-set]").forEach(b => b.addEventListener("c
 $("menu-btn").addEventListener("click", () => { const o = $("menu").classList.toggle("open"); $("menu-btn").setAttribute("aria-expanded", o); });
 
 
+// the CD Strategies and Calendar websites live at their own addresses (this site is at salvationarmy-aslp.org)
+const CDS_URL = "https://asia-sharing-and-learning-programme.github.io/cd-strategy/", CAL_URL = "https://asia-sharing-and-learning-programme.github.io/Calendar-2027-2028/";
 // ---- share ----
-const SITE_URL = "https://asia-sharing-and-learning-programme.github.io/ASLP/";
+const SITE_URL = "https://salvationarmy-aslp.org/";
 $("share-btn").addEventListener("click", () => {
   $("sdlg-url").value = SITE_URL; $("sdlg-native").hidden = !navigator.share;
   const subj = "Asia-Pacific Sharing & Learning Programme (ASLP) website", msg = `Here is the link to the Asia-Pacific Sharing & Learning Programme (ASLP) website: ${SITE_URL}`;
@@ -837,7 +839,7 @@ function pageHome() {
           <div class="panel"><h3 class="h3">Status by CWG</h3><p class="small">Number of territories at each stage.</p>${statusByCwg()}</div>
           <div class="panel"><h3 class="h3">Strategy implementation by year, ${new Date().getFullYear()}–${new Date().getFullYear() + 9}</h3><p class="small">Strategies starting and ending each year.</p>${implTimeline()}</div>
         </div>
-        <div class="cds-cta"><a class="btn blue" href="/cd-strategy/">View details of Asia-Pacific's Community Development Strategies</a></div>
+        <div class="cds-cta"><a class="btn blue" href="${CDS_URL}">View details of Asia-Pacific's Community Development Strategies</a></div>
       </div></section>
     <section class="sec band-navy" aria-labelledby="grp-h">${decor([el("g11-02", "top:-46px;right:5%", 150, 0, "float"), el("g8-02", "bottom:-24px;right:30%", 130, 0, "hm"), el("g2-03", "top:28px;left:-14px", 44, 0, "hm"), el("g7-05", "top:58px;right:22%", 64, 10, "hm")])}
       <div class="wrap">
@@ -847,7 +849,7 @@ function pageHome() {
     <section class="sec tight"><div class="wrap doors">
       <a class="door d1" href="#/newsletter"><div class="stack"><div class="h3">Newsletter</div><p>Read each ASLP newsletter as a digital book.</p></div>
         ${cluster([cl("g6-09", 0, 50, 62), cl("g8-03", 66, 0, 18, 8), cl("g6-08", 30, 4, 30), cl("g6-06", 78, 46, 18, -14)])}</a>
-      <a class="door d3" href="/Calendar-2027-2028/"><div class="stack"><div class="h3">Calendar</div><p>ASLP dates and events for 2027 and 2028. Sign-in needed.</p></div>
+      <a class="door d3" href="${CAL_URL}"><div class="stack"><div class="h3">Calendar</div><p>ASLP dates and events for 2027 and 2028. Sign-in needed.</p></div>
         ${cluster([cl("sas1-18", 0, 10, 36), cl("sas1-14", 44, 0, 28), cl("sas1-17", 36, 56, 40), cl("sas-05", 82, 30, 16)])}</a>
     </div></section>`;
 }
@@ -977,7 +979,7 @@ function pageTerritory(id) {
         <div class="aside-box"><h2 class="h3">Contact persons</h2>${terrContacts(t).length ? `<div>${terrContacts(t).map(contactHtml).join("")}</div>` : `<p class="empty">Contacts will be listed here. Until then, reach the territory through its CWG lead.</p>`}</div>
         <div class="aside-box"><h2 class="h3">CD Strategy</h2><div class="stack" style="--gap:var(--g1)"><div>${statusChip(t)}</div>${t.strategyPeriod ? `<div class="small">Strategy period ${esc(t.strategyPeriod)}</div>` : ""}
           ${t.focal ? `<div class="small">CD focal person: <b style="color:var(--ink)">${esc(t.focal.name)}</b>${t.focal.role ? `, ${esc(t.focal.role)}` : ""}</div>` : ""}
-          <div style="margin-top:var(--g2)"><a class="textlink" href="/cd-strategy/#territory-${esc(t.id)}">See CD Strategy details</a></div></div></div>
+          <div style="margin-top:var(--g2)"><a class="textlink" href="${CDS_URL}#territory-${esc(t.id)}">See CD Strategy details</a></div></div></div>
         ${l ? `<div class="aside-box"><h2 class="h3">${esc(c)} CWG lead</h2><div>${contactHtml({ name: l.name, role: [l.role, terrName(l.territory)].filter(Boolean).join(", "), email: l.email })}
           <div style="margin-top:var(--g2)"><a class="textlink" href="#/cwg/${cwgSlug(c)}">Other territories in ${esc(c)}</a></div></div></div>` : ""}
       </aside>
@@ -1376,11 +1378,11 @@ document.addEventListener("click", e => { const b = e.target.closest("[data-grp-
 
 
 // ---- console: sign in once, then edit the strategies or the website ----
-const CDS_URL = "/cd-strategy/";
+
 let signinEmail = "";
 function consoleSignin() {
   return `<div class="console-card"><h2 class="h2">Sign in</h2>
-    <p class="small">CWG leads, admins and CWG members use the same sign-in as the CD Strategies website. If you're already signed in there, you're signed in here too.</p>
+    <p class="small">CWG leads, admins and CWG members sign in with the same email as on the CD Strategies website.</p>
     <form id="si-form" class="si-form" autocomplete="on"><label for="si-email">Your email</label>
       <div class="copy-row"><input type="email" id="si-email" required autocomplete="email" value="${esc(signinEmail)}" placeholder="name@salvationarmy.org"><button class="btn fill sm" id="si-go">Email me a sign-in code</button></div></form>
     <div id="si-code" ${signinEmail ? "" : "hidden"}><label for="si-token">Code from the email</label>
@@ -1400,7 +1402,7 @@ function pageConsole(a, b) {
     <div class="ctabs" role="tablist"><a role="tab" aria-selected="${tab === "website"}" class="${tab === "website" ? "on" : ""}" href="#/console">Website details</a>${v.cds_access ? `<a role="tab" aria-selected="${tab === "strategies"}" class="${tab === "strategies" ? "on" : ""}" href="#/console/strategies">CD Strategies</a>` : ""}</div></div>`;
   if (tab === "strategies" && !v.cds_access) return head + `<div class="wrap page-body"><div class="console-card"><p>This account doesn't use the CD Strategies console. Territories' CD focal persons, CWG leads and admins update the CD Strategies.</p></div></div>`;
   if (tab === "strategies") return head + `<div class="wrap page-body"><div class="console-card"><h2 class="h2">CD Strategies console</h2>
-    <p>Update each territory's CD Strategy status and details, focal persons and approvals on the CD Strategies website. You're already signed in there with this account.</p>
+    <p>Update each territory's CD Strategy status and details, focal persons and approvals on the CD Strategies website. Sign in there with the same email.</p>
     <p class="small">The territory's name, CWG, headquarters, countries, offices, status, strategy period and focal person are kept there and shown on this website automatically.</p>
     <a class="btn fill" href="${CDS_URL}#admin">Open the CD Strategies console</a></div></div>`;
   if (!terrIds.length && !cwgs.length && !groups.length && !v.is_full_admin) return head + `<div class="wrap page-body"><div class="console-card"><p>This account can't edit any website details yet. CWG leads and admins edit their CWGs; CWG members edit their own territory. Ask your CWG lead or the ASLP Coordinator for access.</p></div></div>`;
