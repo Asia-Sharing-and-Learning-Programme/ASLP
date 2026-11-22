@@ -2024,14 +2024,36 @@ async function shrinkImage(blob, maxW = 1600) {
   const out = await canvasBlob(cv); return { blob: out, w: bm.width, h: bm.height, ext: out.type === "image/webp" ? "webp" : "png" };
 }
 // PDF: every page drawn as a picture, so it reads like the original
-const STORE_MAX = 50 * 1024 * 1024;   // largest single file storage accepts on the current plan
+const STORE_MAX = 50 * 1024 * 1024;   // larger originals go to the ASLP Google Drive instead of website storage
+// send a big file straight from this computer to the ASLP Google Drive (the server only hands out the upload link)
+async function driveUpload(file, slug, type, note) {
+  const call = async b => { const { data, error } = await db.functions.invoke("drive-upload", { body: b });
+    if (error) { let m = ""; try { m = (await error.context.json()).error; } catch (e) {} throw new Error(m || "Google Drive couldn't be reached. Please try again."); }
+    if (data && data.error) throw new Error(data.error); return data; };
+  const st = await call({ action: "start", folder: slug, name: file.name, size: file.size, type });
+  const res = await new Promise((ok, bad) => {
+    const x = new XMLHttpRequest(); x.open("PUT", st.uploadUrl); x.setRequestHeader("Content-Type", type);
+    x.upload.onprogress = e => { if (e.lengthComputable) note(`Uploading the file to Google Drive… ${Math.floor(e.loaded / e.total * 100)}%`); };
+    x.onload = () => { if (x.status >= 200 && x.status < 300) { try { ok(JSON.parse(x.responseText || "{}")); } catch (e) { bad(new Error("Google Drive gave an unexpected answer.")); } } else bad(new Error(`Google Drive didn't accept the file (${x.status}).`)); };
+    x.onerror = () => bad(new Error("The upload was interrupted. Check your connection and try again."));
+    x.send(file);
+  });
+  if (!res.id) throw new Error("Google Drive didn't return the file.");
+  note("Finishing the upload…");
+  const fin = await call({ action: "finish", fileId: res.id });
+  return { url: fin.url, download: fin.download, drive: res.id };
+}
+// keep the original: website storage up to 50 MB, Google Drive above that (or, if Drive fails, a pasted link)
+async function keepOriginal(file, folder, type, kind, note) {
+  if (file.size <= STORE_MAX) { note(`Uploading the ${kind}…`); return { url: await upPut(`${folder}/${safeName(file.name)}`, file, type) }; }
+  try { return await driveUpload(file, folder.split("/")[0], type, note); }
+  catch (e) { console.error(e); return { url: null, big: true, driveError: (e && e.message) || "" }; }
+}
 async function processPdf(file, folder, note) {
   await loadScript("vendor/pdf.min.js"); window.pdfjsLib.GlobalWorkerOptions.workerSrc = "vendor/pdf.worker.min.js";
   note("Opening the PDF…");
-  const keep = file.size <= STORE_MAX, src = URL.createObjectURL(file);
+  const src = URL.createObjectURL(file);
   const pdf = await window.pdfjsLib.getDocument({ url: src }).promise, n = Math.min(pdf.numPages, 60), pages = [];
-  let url = null;
-  if (keep) { note("Uploading the PDF…"); url = await upPut(`${folder}/${safeName(file.name)}`, file, "application/pdf"); }
   for (let i = 1; i <= n; i++) {
     note(`Preparing page ${i} of ${n}…`);
     const page = await pdf.getPage(i), vp0 = page.getViewport({ scale: 1 }), vp = page.getViewport({ scale: Math.min(2.2, 1500 / vp0.width) });
@@ -2044,7 +2066,8 @@ async function processPdf(file, folder, note) {
   try { const tc = await (await pdf.getPage(1)).getTextContent(); const big = tc.items.filter(t => t.str.trim()).sort((a, b) => Math.abs(b.transform[3]) - Math.abs(a.transform[3]));
     if (big.length) { const h = Math.abs(big[0].transform[3]); title = tc.items.filter(t => Math.abs(Math.abs(t.transform[3]) - h) < .5).map(t => t.str).join(" ").replace(/\s+/g, " ").trim().slice(0, 140); } } catch (e) {}
   URL.revokeObjectURL(src);
-  return { file: { name: file.name, url, type: "pdf", big: !keep }, pages, title, more: pdf.numPages > n ? pdf.numPages - n : 0 };
+  const o = await keepOriginal(file, folder, "application/pdf", "PDF", note);
+  return { file: { name: file.name, type: "pdf", ...o }, pages, title, more: pdf.numPages > n ? pdf.numPages - n : 0 };
 }
 // PowerPoint (.pptx): each slide's title, text and pictures, laid out in the site's own style
 async function processPptx(file, folder, note) {
@@ -2089,8 +2112,7 @@ async function processPptx(file, folder, note) {
   const uses = {}; raw.forEach(s => s.media.forEach(([m]) => uses[m] = (uses[m] || 0) + 1));
   const skip = ([m, a]) => a < .06 && raw.length >= 3 && uses[m] >= Math.max(3, raw.length * .5);
   const done = {}; let k = 0; const total = new Set(raw.flatMap(s => s.media.filter(x => !skip(x)).map(x => x[0]))).size;
-  const keep = file.size <= STORE_MAX; let url = null;
-  if (keep) { note("Uploading the PowerPoint…"); url = await upPut(`${folder}/${safeName(file.name)}`, file, file.type || "application/vnd.openxmlformats-officedocument.presentationml.presentation"); }
+
   for (const s of raw) {
     s.images = [];
     for (const x of s.media) { const m = x[0];
@@ -2105,7 +2127,8 @@ async function processPptx(file, folder, note) {
     delete s.media;
   }
   const slides = raw.filter(s => s.title || s.paras.length || s.images.length);
-  return { file: { name: file.name, url, type: "pptx", big: !keep }, slides, title: (slides[0] || {}).title || "" };
+  const o = await keepOriginal(file, folder, file.type || "application/vnd.openxmlformats-officedocument.presentationml.presentation", "PowerPoint", note);
+  return { file: { name: file.name, type: "pptx", ...o }, slides, title: (slides[0] || {}).title || "" };
 }
 function updatesConsole(sel) {
   const list = $("up-list"); if (!list) return;
@@ -2126,6 +2149,7 @@ function updatesConsole(sel) {
     if (error) { del.textContent = error.message || "Couldn't delete"; return; }
     const ps = [u.file && u.file.url, ...(u.pages || []), ...(u.photos || []), ...(u.slides || []).flatMap(s => s.images || [])].map(pathOf).filter(Boolean);
     if (ps.length) UPB().remove(ps).catch(() => {});
+    if (u.file && u.file.drive) db.functions.invoke("drive-upload", { body: { action: "delete", fileId: u.file.drive } }).catch(() => {});
     await loadUpdates(true); draw();
   };
   $("up-new").onclick = () => updateEditor({ src: pickSrc(sel.cwg) }, draw);
@@ -2182,7 +2206,7 @@ function updateEditor(u, redraw) {
         <label class="btn sm" style="cursor:pointer">${has ? "Choose a different file" : "Choose a file"}<input type="file" id="ue-f-in" accept="${st.kind === "pdf" ? ".pdf,application/pdf" : ".pptx,.ppt"}" hidden></label><div id="ue-prog"></div></div>
       ${has ? `<div class="prev-strip">${st.kind === "pdf" ? st.pages.slice(0, 12).map(p => `<img src="${esc(p)}" alt="">`).join("")
         : st.slides.slice(0, 12).map((s, n) => `<div class="prev-slide"><b>${n + 1}. ${esc(s.title || "Untitled slide")}</b>${esc((s.paras || []).slice(0, 2).map(p => p.t).join(" · ").slice(0, 90))}${(s.images || [])[0] ? `<br><img src="${esc(s.images[0])}" alt="">` : ""}</div>`).join("")}</div>` : ""}`;
-    if (has && st.file.big) { f.insertAdjacentHTML("beforeend", `<label class="ed-field" style="margin-top:var(--g3);display:grid;gap:6px"><span>Link for downloading the full file <span class="ed-hint">optional: a OneDrive, SharePoint or Google Drive link anyone can open</span></span><input type="url" id="ue-link" placeholder="https://…" value="${esc(st.file.link || "")}"></label>`);
+    if (has && st.file.big && !st.file.drive) { f.insertAdjacentHTML("beforeend", `<label class="ed-field" style="margin-top:var(--g3);display:grid;gap:6px"><span>Link for downloading the full file <span class="ed-hint">optional: a OneDrive, SharePoint or Google Drive link anyone can open</span></span><input type="url" id="ue-link" placeholder="https://…" value="${esc(st.file.link || "")}"></label>`);
       $("ue-link").oninput = e => { st.file.link = e.target.value.trim(); }; }
     $("ue-f-in").onchange = e => takeFile(e.target.files[0]);
     const d = $("ue-drop");
@@ -2205,7 +2229,8 @@ function updateEditor(u, redraw) {
       st.file = r.file; st.pages = r.pages || []; st.slides = r.slides || [];
       if (!$("ue-title").value.trim()) $("ue-title").value = r.title || file.name.replace(/\.[^.]+$/, "").replace(/[_-]+/g, " ");
       drawKind(); keep();
-      msg(r.file.big ? `Ready. This file is over 50 MB, so the website keeps its ${st.kind === "pdf" ? "pages" : "slides"} but not the file itself. To let people download it, paste a link to it (OneDrive, SharePoint or Google Drive) below.`
+      msg(r.file.drive ? `Ready. The full file is saved in the ASLP Google Drive, so people can download it. Check the title, then publish.`
+        : r.file.big ? `Ready, but the full file couldn't be saved to Google Drive${r.file.driveError ? ` (${esc(r.file.driveError)})` : ""}. The ${st.kind === "pdf" ? "pages" : "slides"} are kept. To let people download the file, paste a link to it below.`
         : r.more ? `Ready. Only the first 60 pages are shown on the website; the full PDF stays downloadable.` : "Ready. Check the title, then publish.", "ok");
     } catch (e) { console.error(e); drawKind(); msg(esc(e && e.message) || "The file couldn't be read. Try saving it again, or upload it as a PDF.", "err"); }
     st.busy = false; $("ue-save").disabled = false;
@@ -2227,7 +2252,7 @@ function updateEditor(u, redraw) {
     if (!title) return msg("Give the update a title.", "err");
     if (st.kind === "text" && !body && !st.photos.length) return msg("Write your update, or add some photos.", "err");
     if (st.kind !== "text" && !(st.file && st.file.type === st.kind)) return msg(`Upload the ${st.kind === "pdf" ? "PDF" : "PowerPoint"} first.`, "err");
-    if (st.file && st.file.big) { const l = (st.file.link || "").trim(); if (l && !/^https:\/\//.test(l)) return msg("The download link should start with https://", "err"); st.file.url = l || null; }
+    if (st.file && st.file.big && !st.file.drive) { const l = (st.file.link || "").trim(); if (l && !/^https:\/\//.test(l)) return msg("The download link should start with https://", "err"); st.file.url = l || null; }
     const keep = st.kind !== "text";
     const [ptype, psrc] = $("ue-cwg").value.split("|");
     const p = { type: ptype === "group" ? "group" : "cwg", cwg: psrc, title, date: $("ue-date").value, kind: st.kind, body, photos: st.photos,
@@ -2591,7 +2616,7 @@ function pageUpdate(id) {
           return `<article class="slide ${cls}"><div><div class="sl-n">Slide ${n + 1}</div>${s.title ? `<h2 class="sl-t">${esc(s.title)}</h2>` : ""}
             ${paras.map(p => `<p class="sl-p l${Math.min(p.l || 0, 2)}${p.b ? " b" : ""}">${linkify(p.t)}</p>`).join("")}</div>
             ${imgs.length ? `<div class="sl-imgs">${imgs.map(src => `<button type="button" data-gal="${esc(u.id)}:slides" data-k="${si++}" aria-label="Open picture"><img src="${esc(src)}" alt="" loading="lazy"></button>`).join("")}</div>` : ""}</article>`; }).join("")}</div>` : ""}
-      ${f && f.url ? `<div class="ud-acts"><a class="btn fill" href="${esc(f.url)}" target="_blank" rel="noopener noreferrer" download>Download the ${u.kind === "pptx" ? "PowerPoint" : "PDF"}</a>
+      ${f && f.url ? `<div class="ud-acts"><a class="btn fill" href="${esc(f.download || f.url)}" target="_blank" rel="noopener noreferrer" download>Download the ${u.kind === "pptx" ? "PowerPoint" : "PDF"}</a>
         ${office ? `<a class="btn" href="${esc(office)}" target="_blank" rel="noopener noreferrer">View the original slides</a>` : ""}
         ${canPost(u) ? `<a class="btn" href="#/console/updates/${srcSlug(u)}/${esc(u.id)}">Edit this update</a>` : ""}</div>`
         : canPost(u) ? `<div class="ud-acts"><a class="btn" href="#/console/updates/${srcSlug(u)}/${esc(u.id)}">Edit this update</a></div>` : ""}
