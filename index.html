@@ -549,7 +549,11 @@
   .ab-aims { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--g4); }
   .ab-aim { border-top: 6px solid var(--ac); padding-top: var(--g3); } .ab-aim p { margin-top: var(--g1); color: var(--ink-2); }
   .ab-n { display: block; font-size: 48px; font-weight: 900; font-stretch: 112%; color: var(--ac); line-height: 1; margin-bottom: var(--g1); }
-  .ab-how { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: var(--g3); }
+  /* five cards: one even row on wide screens; 3 + 2 on medium ones, the bottom two filling the width */
+  .ab-how { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: var(--g3); }
+  .ab-how .h3 { font-size: 17.5px; }
+  @media (max-width: 1150px) { .ab-how { grid-template-columns: repeat(6, minmax(0, 1fr)); } .ab-how > div { grid-column: span 2; } .ab-how > div:nth-child(n+4) { grid-column: span 3; } }
+  @media (max-width: 640px) { .ab-how { grid-template-columns: 1fr; } .ab-how > div, .ab-how > div:nth-child(n+4) { grid-column: auto; } }
   .ab-how > div { background: var(--paper-2); border-radius: 18px; padding: var(--g4); } .ab-how p, .ab-out p { margin-top: 6px; font-size: 15.5px; color: var(--ink-2); }
   .ab-out { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--g4) var(--g5); }
   .ab-out > div { border-left: 3px solid #005fc0; padding-left: var(--g3); }
