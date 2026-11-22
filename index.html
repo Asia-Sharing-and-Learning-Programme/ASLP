@@ -106,7 +106,7 @@
   .dd-top::after { content: ""; display: inline-block; width: 7px; height: 7px; border-right: 2px solid currentColor; border-bottom: 2px solid currentColor; transform: rotate(45deg) translateY(-3px); margin-left: 8px; opacity: .55; }
   .dd-menu { position: absolute; left: 0; top: 100%; min-width: 300px; background: var(--paper); border: 1px solid var(--line); border-radius: 16px; box-shadow: 0 14px 36px rgba(0,0,0,.13); padding: var(--g2); display: none; z-index: 60; }
   #dd-cwgs { min-width: 380px; }
-  #dd-about { min-width: 300px; } #dd-about a { display: grid; gap: 2px; } #dd-about a b { min-width: 0; font-size: 16px; }
+  #dd-about, #dd-updates { min-width: 300px; } #dd-about a, #dd-updates a { display: grid; gap: 2px; } #dd-about a b, #dd-updates a b { min-width: 0; font-size: 16px; }
   .dd:hover .dd-menu, .dd:focus-within .dd-menu { display: block; }
   .dd-menu .dd-h { font-size: 13px; font-weight: 700; color: var(--ink-3); padding: var(--g1) 10px 2px; }
   .dd-menu a { display: flex; align-items: center; gap: var(--g2); padding: var(--g1) 10px; border-radius: 10px; text-decoration: none; font-weight: 600; font-size: 15px; line-height: 1.35; }
@@ -532,6 +532,7 @@
   .ed-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--g3); margin-top: var(--g4); }
   .ed-grid .full { grid-column: 1 / -1; }
   .ed-grid textarea { resize: vertical; line-height: 1.5; }
+  .ed-grid .ed-field { display: grid; gap: 6px; font-size: 12.5px; font-weight: 700; color: var(--ink-2); }
   .synced { background: var(--paper); border-radius: 16px; padding: var(--g4); margin-top: var(--g3); border-left: 5px solid var(--blue); }
   .synced-h { display: flex; flex-wrap: wrap; gap: 4px var(--g2); align-items: baseline; }
   .synced dl { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 6px var(--g3); margin: var(--g3) 0; font-size: 14.5px; }
@@ -666,6 +667,86 @@
   .lll.inline { display: inline-grid; grid-auto-flow: column; align-items: center; gap: 10px; } .lll.inline .lll-w { font-size: 15px; }
   .map-lll { position: absolute; inset: 0; z-index: 900; display: grid; place-items: center; background: color-mix(in srgb, var(--paper) 70%, transparent); pointer-events: none; }
   @media (prefers-reduced-motion: reduce) { .lll-w span { animation: none; background-size: 100% 100%, 100% 100%; } }
+  /* ---- ASLP Updates: programme updates ---- */
+  .up-filter { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: var(--g5); }
+  .up-filter a { text-decoration: none; } .up-filter .chip-btn.on { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+  .up-sec { margin-top: var(--g6); } .up-sec:first-of-type { margin-top: 0; }
+  .up-sec-h { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--g2) var(--g4); padding-bottom: var(--g3); margin-bottom: var(--g4); border-bottom: 3px solid var(--cwg-a); }
+  .up-sec-h img { height: 46px; width: auto; display: block; } .up-sec-h .h2 { margin: 0; }
+  .up-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--g4); } .up-grid.n2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .up-grid.n1 { grid-template-columns: 1fr; } .up-grid.n1 .up-card { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); }
+  .up-grid.n1 .up-cov { aspect-ratio: auto; height: 300px; } .up-grid.n1 .up-cov.doc img { width: 62%; } .up-grid.n1 .up-in { align-content: center; padding: var(--g5); } .up-grid.n1 .up-t { font-size: 24px; }
+  @media (max-width: 700px) { .up-grid.n1 .up-card { grid-template-columns: 1fr; } .up-grid.n1 .up-cov { aspect-ratio: 16 / 9; height: auto; } .up-grid.n1 .up-in { padding: var(--g3) var(--g4) var(--g4); } .up-grid.n1 .up-t { font-size: 19px; } }
+  @media (max-width: 980px) { .up-grid, .up-grid.n2 { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  @media (max-width: 600px) { .up-grid, .up-grid.n2 { grid-template-columns: 1fr; } }
+  .up-card { display: flex; flex-direction: column; text-decoration: none; color: inherit; background: var(--paper-2); border-radius: 20px; overflow: hidden; transition: transform .15s; }
+  .up-card:hover { transform: translateY(-3px); } .up-card:hover .up-t { text-decoration: underline; }
+  .up-cov { aspect-ratio: 16 / 9; background: var(--cwg-a); position: relative; overflow: hidden; }
+  .up-cov img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .up-cov.doc { background: #e9e8e4; } .up-cov.doc img { width: 78%; height: auto; margin: 18px auto 0; object-fit: initial; box-shadow: 0 2px 12px rgba(0,0,0,.18); }
+  .up-cov .el { position: absolute; } .up-cov .e1 { width: 44%; right: -8%; top: -14%; } .up-cov .e2 { width: 24%; right: 30%; bottom: -8%; }
+  .up-cov .up-cw { position: absolute; left: 16px; top: 14px; color: #fff; font-weight: 900; font-stretch: 115%; font-size: 26px; letter-spacing: -.02em; }
+  .up-in { padding: var(--g3) var(--g4) var(--g4); display: grid; gap: 6px; }
+  .up-meta { display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; font-size: 13.5px; color: var(--ink-3); }
+  .up-kind { border-radius: 999px; padding: 2px 10px; font-weight: 700; font-size: 12.5px; background: var(--paper); color: var(--ink-2); }
+  .up-t { font-weight: 800; font-size: 19px; line-height: 1.25; }
+  .up-x { color: var(--ink-2); font-size: 15px; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+  .up-more { margin-top: var(--g4); }
+  .up-news { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--g3); background: var(--navy); color: #fff; border-radius: 20px; padding: var(--g4) var(--g5); margin-top: var(--g7); }
+  .up-news .btn { border-color: #fff; color: #fff; }
+  /* one update */
+  .ud-head { padding-top: var(--g5); padding-bottom: var(--g5); border-bottom: 6px solid var(--cwg-a); margin-bottom: var(--g6); }
+  .ud-head .up-meta { font-size: 15px; margin-bottom: var(--g3); } .ud-head .h1 { max-width: 22ch; }
+  .ud-cwg { color: #fff; background: var(--cwg-a); border-radius: 999px; padding: 4px 12px; font-weight: 800; text-decoration: none; }
+  .ud-body { max-width: 72ch; font-size: 17.5px; line-height: 1.65; }
+  .ud-body p { margin: 0 0 var(--g3); } .ud-body ul { margin: 0 0 var(--g3); padding-left: 1.2em; } .ud-body li { margin-bottom: 4px; }
+  .ud-acts { display: flex; flex-wrap: wrap; gap: var(--g2); margin: var(--g4) 0 var(--g6); } .ud-acts .btn { margin: 0; }
+  .ud-photos { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: var(--g2); margin: var(--g5) 0; }
+  .ud-photos button { padding: 0; border: 0; background: none; cursor: zoom-in; border-radius: 14px; overflow: hidden; aspect-ratio: 4 / 3; }
+  .ud-photos img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  /* PDF reader */
+  .reader { display: grid; gap: var(--g3); margin: var(--g4) 0 var(--g5); }
+  .rd-stage { position: relative; background: var(--paper-2); border-radius: 20px; padding: var(--g4); display: grid; place-items: center; }
+  .rd-stage img { max-width: 100%; max-height: 84vh; display: block; box-shadow: 0 2px 14px rgba(0,0,0,.14); background: #fff; cursor: zoom-in; }
+  .rd-nav { position: absolute; top: 50%; transform: translateY(-50%); width: 46px; height: 46px; border-radius: 50%; border: 0; background: var(--ink); color: var(--paper); font-size: 26px; cursor: pointer; }
+  .rd-nav.prev { left: 10px; } .rd-nav.next { right: 10px; } .rd-nav:disabled { opacity: .2; cursor: default; }
+  .rd-bar { display: flex; align-items: center; justify-content: space-between; gap: var(--g3); font-size: 14px; color: var(--ink-3); }
+  .rd-thumbs { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 6px; }
+  .rd-thumbs button { flex: 0 0 auto; width: 74px; padding: 0; border: 2px solid transparent; border-radius: 6px; background: #fff; cursor: pointer; overflow: hidden; }
+  .rd-thumbs button.on { border-color: var(--cwg-a); } .rd-thumbs img { width: 100%; display: block; }
+  /* PowerPoint slides */
+  .slides { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--g4); margin: var(--g4) 0 var(--g5); }
+  .slide { grid-column: 1 / -1; } .slide.half { grid-column: auto; }
+  @media (max-width: 760px) { .slides { grid-template-columns: 1fr; } .slide.half { grid-column: 1 / -1; } }
+  .slide { position: relative; background: var(--paper-2); border-radius: 20px; padding: var(--g5); display: grid; gap: var(--g4); grid-template-columns: minmax(0, 1fr); border-left: 8px solid var(--cwg-a); }
+  .slide.has-img { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: start; }
+  .slide.img-only { grid-template-columns: minmax(0, 1fr); }
+  .slide.divider { background: var(--cwg-a); color: #fff; border-left-color: var(--cwg-b); min-height: 160px; align-content: center; }
+  .slide.divider .sl-n { color: rgba(255,255,255,.75); }
+  .sl-n { font-size: 13px; font-weight: 700; color: var(--ink-3); margin-bottom: 6px; }
+  .sl-t { font-weight: 900; font-stretch: 110%; font-size: clamp(22px, 2.6vw, 30px); line-height: 1.15; letter-spacing: -.015em; margin: 0 0 var(--g3); }
+  .sl-p { margin: 0 0 8px; line-height: 1.55; } .sl-p.l1 { padding-left: 1.2em; } .sl-p.l2 { padding-left: 2.4em; font-size: 15px; }
+  .sl-p.b::before { content: ""; display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--cwg-a); margin: 0 10px 2px -17px; }
+  .sl-imgs { display: grid; gap: var(--g2); grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); }
+  .sl-imgs button { padding: 0; border: 0; background: transparent; border-radius: 12px; overflow: hidden; cursor: zoom-in; }
+  .sl-imgs img { width: 100%; max-height: 420px; object-fit: contain; display: block; }
+  .slide.img-only .sl-t { margin-bottom: 0; } .slide.img-only .sl-imgs img { max-height: 620px; }
+  @media (max-width: 760px) { .slide.has-img { grid-template-columns: 1fr; } .slide { padding: var(--g4); } }
+  .ud-more { margin-top: var(--g7); }
+  /* console: programme updates */
+  .up-list { display: grid; gap: 8px; margin-top: var(--g3); }
+  .up-li { display: grid; grid-template-columns: 74px minmax(0, 1fr) auto; gap: var(--g3); align-items: center; background: var(--paper); border-radius: 14px; padding: 10px; }
+  .up-li .th { width: 74px; height: 52px; border-radius: 8px; background: var(--cwg-a, var(--blue)); overflow: hidden; } .up-li .th img { width: 100%; height: 100%; object-fit: cover; }
+  .up-li b { display: block; } .up-li .small { margin: 0; } .up-li .acts { display: flex; gap: 6px; } .up-li .acts .btn { margin: 0; }
+  .up-ed { background: var(--paper); border-radius: 18px; padding: var(--g4); margin-top: var(--g4); border: 2px solid var(--ink); }
+  .seg-pick { display: flex; flex-wrap: wrap; gap: 8px; } .seg-pick .chip-btn.on { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+  .drop { border: 2px dashed var(--line); border-radius: 16px; padding: var(--g4); text-align: center; display: grid; gap: 8px; justify-items: center; }
+  .drop.over { border-color: var(--blue); background: color-mix(in srgb, var(--blue) 6%, transparent); }
+  .prev-strip { display: flex; gap: 8px; overflow-x: auto; margin-top: var(--g3); padding-bottom: 4px; }
+  .prev-strip img { height: 92px; border-radius: 6px; background: #fff; box-shadow: 0 1px 4px rgba(0,0,0,.15); }
+  .prev-slide { flex: 0 0 180px; background: var(--paper-2); border-radius: 10px; padding: 10px; font-size: 13px; line-height: 1.35; }
+  .prev-slide b { display: block; margin-bottom: 4px; } .prev-slide img { height: 54px; margin-top: 6px; }
+  @media (max-width: 600px) { .up-li { grid-template-columns: 56px minmax(0, 1fr); } .up-li .th { width: 56px; height: 42px; } .up-li .acts { grid-column: 1 / -1; } }
 </style>
 </head>
 <body>
@@ -678,7 +759,7 @@
     <div class="dd"><a href="#/about" data-nav="about" class="dd-top" aria-haspopup="true">About</a><div class="dd-menu" id="dd-about"><a href="#/about"><b>About ASLP</b><span>What the programme is, what it aims for and how it works</span></a><a href="#/history"><b>History of ASLP</b><span>The journey from 2016 to today</span></a></div></div>
     <div class="dd"><a href="#/cwgs" data-nav="cwgs" class="dd-top" aria-haspopup="true">Cluster Working Groups</a><div class="dd-menu" id="dd-cwgs"></div></div>
     <div class="dd"><a href="#/groups" data-nav="groups" class="dd-top" aria-haspopup="true">ASLP Groups</a><div class="dd-menu" id="dd-groups"></div></div>
-    <a href="#/newsletter" data-nav="newsletter">Newsletter</a>
+    <div class="dd"><a href="#/updates" data-nav="updates" class="dd-top" aria-haspopup="true">ASLP Updates</a><div class="dd-menu" id="dd-updates"><a href="#/newsletter"><b>Newsletter</b><span>Every issue of the ASLP newsletter</span></a><a href="#/updates"><b>Programme Updates</b><span>Activities and news from each CWG</span></a></div></div>
     <a href="/cd-strategy/">CD Strategies</a>
     <a href="/Calendar-2027-2028/">Calendar</a>
     <div class="theme-in-menu"><div class="seg" role="group" aria-label="Theme"><button data-theme-set="light">Light</button><button data-theme-set="auto">Auto</button><button data-theme-set="dark">Dark</button></div></div>
@@ -707,7 +788,7 @@
     <div class="tagline"><span class="a">LISTEN.</span> <span class="b">LEARN.</span> <span class="c">LEAD.</span></div>
   </div>
   <nav aria-label="Footer">
-    <a href="#/about">About ASLP</a><a href="#/cwgs">Cluster Working Groups</a><a href="#/groups">ASLP Groups</a><a href="#/newsletter">Newsletter</a>
+    <a href="#/about">About ASLP</a><a href="#/cwgs">Cluster Working Groups</a><a href="#/groups">ASLP Groups</a><a href="#/newsletter">Newsletter</a><a href="#/updates">Programme Updates</a>
     <a href="/cd-strategy/">CD Strategies</a><a href="/Calendar-2027-2028/">Calendar</a>
     <a href="#/console" id="ft-console">Sign in</a>
   </nav>
@@ -980,7 +1061,7 @@ function pageHome() {
         <div class="grp-row">${(data.groups || []).map(g => `<a href="#/group/${esc(g.key)}"><b>${esc(g.short)}</b><span>${esc(g.name)}</span></a>`).join("")}</div>
       </div></section>
     <section class="sec tight"><div class="wrap doors">
-      <a class="door d1" href="#/newsletter"><div class="stack"><div class="h3">Newsletter</div><p>Read each ASLP newsletter as a digital book.</p></div>
+      <a class="door d1" href="#/updates"><div class="stack"><div class="h3">ASLP Updates</div><p>Activities and news from each CWG, and every issue of the ASLP newsletter.</p></div>
         ${cluster([cl("g6-09", 0, 50, 62), cl("g8-03", 66, 0, 18, 8), cl("g6-08", 30, 4, 30), cl("g6-06", 78, 46, 18, -14)])}</a>
       <a class="door d3" href="${CAL_URL}"><div class="stack"><div class="h3">Calendar</div><p>ASLP dates and events for 2027 and 2028. Sign-in needed.</p></div>
         ${cluster([cl("sas1-18", 0, 10, 36), cl("sas1-14", 44, 0, 28), cl("sas1-17", 36, 56, 40), cl("sas-05", 82, 30, 16)])}</a>
@@ -1772,9 +1853,12 @@ function pageConsole(a, b) {
   const selT = a === "territory" && terrIds.includes(b) ? b : terrIds[0];
   const selC = a === "cwg" ? cwgs.find(c => cwgSlug(c) === b) : null;
   pendingMaps.push(() => mountConsole());
-  const secs = [cwgs.length && ["cc-members", "CWG members"], terrIds.length && ["cc-terr", "Territory profiles"], groups.length && ["cc-groups", "ASLP Groups"], v.is_full_admin && ["cc-pages", "Pages and newsletter"], v.is_full_admin && ["cc-access", "Access"]].filter(Boolean);
+  const secs = [cwgs.length && ["cc-updates", "Programme updates"], cwgs.length && ["cc-members", "CWG members"], terrIds.length && ["cc-terr", "Territory profiles"], groups.length && ["cc-groups", "ASLP Groups"], v.is_full_admin && ["cc-pages", "Pages and newsletter"], v.is_full_admin && ["cc-access", "Access"]].filter(Boolean);
   return head + `<div class="wrap page-body">
     ${secs.length > 1 ? `<nav class="con-nav" aria-label="Console sections">${secs.map(([id, l]) => `<button type="button" class="chip-btn" data-jump="${id}">${l}</button>`).join("")}</nav>` : ""}
+    ${cwgs.length ? `<section class="console-card" id="cc-updates"><div class="row-head"><h2 class="h2">Programme updates</h2><button type="button" class="btn fill sm" id="up-new">Post an update</button></div>
+      <p class="small">Share your CWG's activities and news. Write the update here, or upload a PDF or PowerPoint and the website lays it out for you. Updates show on the <a class="textlink" href="#/updates">Programme Updates</a> page.</p>
+      <div id="up-editor"></div><div id="up-list">${loader("Loading your updates…")}</div></section>` : ""}
     ${cwgs.length ? `<section class="console-card" id="cc-members"><div class="row-head"><h2 class="h2">CWG members</h2></div>
       <p class="small">Add each CWG member's rank (if an officer), name, appointment or role and email. Members linked to a territory are listed on that territory's page and can sign in to edit its profile.</p>
       ${cwgs.length > 1 ? `<div class="cw-pick" role="tablist">${cwgs.map(c => `<button type="button" role="tab" class="chip-btn${c === (selC || cwgs[0]) ? " on" : ""}" data-cw="${esc(c)}">${esc(c)}</button>`).join("")}</div>` : ""}
@@ -1813,6 +1897,217 @@ function groupEditor(key) {
     return db.rpc("aslp_save_content", { p_key: "apsg_tor", p_title: "APSG purpose and mandate", p_body: JSON.stringify({ purpose: $("g-purpose").value.trim(), mandate: $("g-mandate").value.split("\n").map(x => x.trim()).filter(Boolean) }) });
   }, `${g.short} saved.`));
 }
+// ---- console: programme updates (CWG leads and admins) ----
+const UPB = () => db.storage.from("updates");
+const newId = () => (crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36).slice(2));
+const safeName = n => String(n || "file").toLowerCase().replace(/[^a-z0-9.]+/g, "-").replace(/^-+|-+$/g, "") || "file";
+async function upPut(path, blob, type) {
+  const { error } = await UPB().upload(path, blob, { contentType: type, upsert: true, cacheControl: "31536000" });
+  if (error) throw new Error(/row-level|security|unauthor/i.test(error.message || "") ? "You don't have permission to upload for this CWG." : (error.message || "The upload didn't work."));
+  return UPB().getPublicUrl(path).data.publicUrl;
+}
+const pathOf = url => { const m = String(url || "").match(/\/object\/public\/updates\/(.+)$/); return m ? decodeURIComponent(m[1]) : ""; };
+const canvasBlob = (cv, q = .84) => new Promise(r => cv.toBlob(b => r(b), "image/webp", q));
+async function shrinkImage(blob, maxW = 1600) {
+  const bm = await createImageBitmap(blob); const s = Math.min(1, maxW / bm.width);
+  const cv = document.createElement("canvas"); cv.width = Math.round(bm.width * s); cv.height = Math.round(bm.height * s);
+  cv.getContext("2d").drawImage(bm, 0, 0, cv.width, cv.height);
+  const out = await canvasBlob(cv); return { blob: out, w: bm.width, h: bm.height, ext: out.type === "image/webp" ? "webp" : "png" };
+}
+// PDF: every page drawn as a picture, so it reads like the original
+async function processPdf(file, folder, note) {
+  await loadScript("vendor/pdf.min.js"); window.pdfjsLib.GlobalWorkerOptions.workerSrc = "vendor/pdf.worker.min.js";
+  note("Opening the PDF…");
+  const pdf = await window.pdfjsLib.getDocument({ data: await file.arrayBuffer() }).promise, n = Math.min(pdf.numPages, 60), pages = [];
+  note("Uploading the PDF…");
+  const url = await upPut(`${folder}/${safeName(file.name)}`, file, "application/pdf");
+  for (let i = 1; i <= n; i++) {
+    note(`Preparing page ${i} of ${n}…`);
+    const page = await pdf.getPage(i), vp0 = page.getViewport({ scale: 1 }), vp = page.getViewport({ scale: Math.min(2.2, 1500 / vp0.width) });
+    const cv = document.createElement("canvas"); cv.width = Math.round(vp.width); cv.height = Math.round(vp.height);
+    const cx = cv.getContext("2d"); cx.fillStyle = "#fff"; cx.fillRect(0, 0, cv.width, cv.height);
+    await page.render({ canvasContext: cx, viewport: vp }).promise;
+    const b = await canvasBlob(cv, .82); pages.push(await upPut(`${folder}/page-${String(i).padStart(2, "0")}.${b.type === "image/webp" ? "webp" : "png"}`, b, b.type));
+  }
+  let title = "";
+  try { const tc = await (await pdf.getPage(1)).getTextContent(); const big = tc.items.filter(t => t.str.trim()).sort((a, b) => Math.abs(b.transform[3]) - Math.abs(a.transform[3]));
+    if (big.length) { const h = Math.abs(big[0].transform[3]); title = tc.items.filter(t => Math.abs(Math.abs(t.transform[3]) - h) < .5).map(t => t.str).join(" ").replace(/\s+/g, " ").trim().slice(0, 140); } } catch (e) {}
+  return { file: { name: file.name, url, type: "pdf" }, pages, title, more: pdf.numPages > n ? pdf.numPages - n : 0 };
+}
+// PowerPoint (.pptx): each slide's title, text and pictures, laid out in the site's own style
+async function processPptx(file, folder, note) {
+  await loadScript("vendor/jszip.min.js");
+  note("Opening the PowerPoint…");
+  const zip = await window.JSZip.loadAsync(file);
+  const xml = async p => { const f = zip.file(p); return f ? new DOMParser().parseFromString(await f.async("text"), "application/xml") : null; };
+  const all = (el, n) => [...el.getElementsByTagNameNS("*", n)];
+  const rels = d => Object.fromEntries(d ? all(d, "Relationship").map(r => [r.getAttribute("Id"), r.getAttribute("Target")]) : []);
+  const join = (base, t) => { if (t.startsWith("/")) return t.slice(1); const p = base.split("/"); p.pop(); t.split("/").forEach(s => s === ".." ? p.pop() : s !== "." && p.push(s)); return p.join("/"); };
+  const pres = await xml("ppt/presentation.xml"); if (!pres) throw new Error("This doesn't look like a PowerPoint (.pptx) file.");
+  const sz = all(pres, "sldSz")[0], slideArea = sz ? (+sz.getAttribute("cx") || 9144000) * (+sz.getAttribute("cy") || 6858000) : 9144000 * 6858000;
+  const areaOf = el => { const e = all(el, "ext").find(x => x.getAttribute("cx")); return e ? (+e.getAttribute("cx") * +e.getAttribute("cy")) / slideArea : 1; };
+  const prel = rels(await xml("ppt/_rels/presentation.xml.rels"));
+  const paths = all(pres, "sldId").map(e => prel[e.getAttribute("r:id")]).filter(Boolean).map(t => join("ppt/presentation.xml", t));
+  const raw = [];
+  for (const sp of paths) {
+    const d = await xml(sp); if (!d || d.documentElement.getAttribute("show") === "0") continue;
+    const sr = rels(await xml(sp.replace(/slides\/(slide\d+\.xml)$/, "slides/_rels/$1.rels")));
+    const s = { title: "", paras: [], media: [] };
+    const paraOf = (p, inBody) => { const t = all(p, "*").filter(x => x.localName === "t" || x.localName === "br").map(x => x.localName === "br" ? " " : x.textContent).join("").replace(/\s+/g, " ").trim();
+      if (!t) return null; const pr = all(p, "pPr")[0], l = pr ? +(pr.getAttribute("lvl") || 0) : 0;
+      const none = all(p, "buNone").length, bu = all(p, "buChar").length || all(p, "buAutoNum").length; return { t, l, b: !none && (bu > 0 || inBody) }; };
+    for (const el of all(d, "*")) {
+      if (el.localName === "sp") {
+        const ph = all(el, "ph")[0], type = ph ? (ph.getAttribute("type") || "body") : "";
+        if (["sldNum", "dt", "ftr", "hdr"].includes(type)) continue;
+        const ps = all(el, "txBody")[0] ? all(all(el, "txBody")[0], "p").map(p => paraOf(p, type === "body" || type === "obj")).filter(Boolean) : [];
+        if ((type === "title" || type === "ctrTitle") && !s.title) s.title = ps.map(p => p.t).join(" ");
+        else s.paras.push(...ps.map(p => type === "subTitle" ? { ...p, b: false } : p));
+        all(el, "blip").forEach(b => s.media.push([b.getAttribute("r:embed"), areaOf(el)]));
+      } else if (el.localName === "graphicFrame") {
+        all(el, "tr").forEach(tr => { const t = all(tr, "tc").map(tc => all(tc, "t").map(x => x.textContent).join(" ").trim()).filter(Boolean).join("  |  "); if (t) s.paras.push({ t, l: 0, b: false }); });
+      } else if (el.localName === "pic") all(el, "blip").forEach(b => s.media.push([b.getAttribute("r:embed"), areaOf(el)]));
+    }
+    const seen = {}; s.media = s.media.filter(([id]) => id && sr[id]).map(([id, a]) => [join(sp, sr[id]), a]).filter(([m]) => !seen[m] && (seen[m] = 1));
+    if (!s.title && s.paras.length > 1 && s.paras[0].t.length < 90) s.title = s.paras.shift().t;
+    raw.push(s);
+  }
+  if (!raw.length) throw new Error("No slides were found in this file.");
+  // small pictures repeated on most slides are the template's logo: leave them out; real photos stay
+  const uses = {}; raw.forEach(s => s.media.forEach(([m]) => uses[m] = (uses[m] || 0) + 1));
+  const skip = ([m, a]) => a < .06 && raw.length >= 3 && uses[m] >= Math.max(3, raw.length * .5);
+  const done = {}; let k = 0; const total = new Set(raw.flatMap(s => s.media.filter(x => !skip(x)).map(x => x[0]))).size;
+  note("Uploading the PowerPoint…");
+  const url = await upPut(`${folder}/${safeName(file.name)}`, file, file.type || "application/vnd.openxmlformats-officedocument.presentationml.presentation");
+  for (const s of raw) {
+    s.images = [];
+    for (const x of s.media) { const m = x[0];
+      if (skip(x) || !/\.(png|jpe?g|gif|webp|bmp)$/i.test(m)) continue;
+      if (!(m in done)) {
+        note(`Preparing picture ${++k} of ${total}…`); done[m] = "";
+        try { const im = await shrinkImage(await zip.file(m).async("blob"));
+          if (im.w >= 100 || im.h >= 100) done[m] = await upPut(`${folder}/img-${k}.${im.ext}`, im.blob, im.blob.type); } catch (e) {}
+      }
+      if (done[m]) s.images.push(done[m]);
+    }
+    delete s.media;
+  }
+  const slides = raw.filter(s => s.title || s.paras.length || s.images.length);
+  return { file: { name: file.name, url, type: "pptx" }, slides, title: (slides[0] || {}).title || "" };
+}
+function updatesConsole(sel) {
+  const list = $("up-list"); if (!list) return;
+  const mine = () => (updates || []).filter(u => canCwg(u.cwg));
+  const draw = () => { const us = mine();
+    list.innerHTML = us.length ? `<div class="up-list">${us.map(u => { const cov = upCover(u);
+      return `<div class="up-li" style="${cwgVars(u.cwg)}"><div class="th">${cov ? `<img src="${esc(cov)}" alt="">` : ""}</div>
+        <div><b>${esc(u.title)}</b><p class="small">${esc(u.cwg)}${u.date ? ` · ${esc(fmtDate(u.date))}` : ""}${UKIND[u.kind] ? ` · ${UKIND[u.kind]}` : ""}</p></div>
+        <div class="acts"><a class="btn sm" href="#/update/${esc(u.id)}">View</a><button type="button" class="btn sm" data-ue="${esc(u.id)}">Edit</button><button type="button" class="btn sm" data-ud="${esc(u.id)}">Delete</button></div></div>`; }).join("")}</div>`
+      : `<p class="empty" style="margin-top:var(--g3)">No updates yet. Select "Post an update" to share your first one.</p>`; };
+  list.onclick = async e => {
+    const ed = e.target.closest("[data-ue]"); if (ed) return updateEditor(mine().find(u => u.id === ed.dataset.ue), draw);
+    const del = e.target.closest("[data-ud]"); if (!del) return;
+    if (!del.classList.contains("sure")) { del.classList.add("sure"); del.textContent = "Select again to delete"; setTimeout(() => { if (del.isConnected) { del.classList.remove("sure"); del.textContent = "Delete"; } }, 4000); return; }
+    const u = mine().find(x => x.id === del.dataset.ud); del.disabled = true; del.textContent = "Deleting…";
+    const { error } = await db.rpc("aslp_delete_update", { p_id: u.id });
+    if (error) { del.textContent = error.message || "Couldn't delete"; return; }
+    const ps = [u.file && u.file.url, ...(u.pages || []), ...(u.photos || []), ...(u.slides || []).flatMap(s => s.images || [])].map(pathOf).filter(Boolean);
+    if (ps.length) UPB().remove(ps).catch(() => {});
+    await loadUpdates(true); draw();
+  };
+  $("up-new").onclick = () => updateEditor({ cwg: (v => v.find(c => cwgSlug(c) === sel.cwg) || v[0])(V().can_cwgs || []) }, draw);
+  loadUpdates(true).then(() => {
+    draw();
+    if (sel.id) { const u = mine().find(x => x.id === sel.id); if (u) updateEditor(u, draw); }
+    else if (sel.open) updateEditor({ cwg: (V().can_cwgs || []).find(c => cwgSlug(c) === sel.cwg) || (V().can_cwgs || [])[0] }, draw);
+  }).catch(() => { list.innerHTML = `<p class="ed-msg err">Your updates couldn't load. Refresh the page to try again.</p>`; });
+}
+function updateEditor(u, redraw) {
+  const box = $("up-editor"); if (!box || !u) return;
+  const cwgs = V().can_cwgs || [];
+  const st = { id: u.id || null, cwg: u.cwg || cwgs[0], kind: u.kind || "text", file: u.file || null, pages: u.pages || [], slides: u.slides || [], photos: [...(u.photos || [])], busy: false,
+    folder: (u.file && pathOf(u.file.url).replace(/\/[^/]+$/, "")) || "" };
+  const folder = () => st.folder || (st.folder = `${cwgSlug($("ue-cwg").value)}/${newId()}`);
+  box.innerHTML = `<div class="up-ed"><h3 class="h3">${st.id ? "Edit this update" : "New update"}</h3>
+    <div class="ed-grid">
+      <label><span>CWG</span><select id="ue-cwg">${cwgs.map(c => `<option${c === st.cwg ? " selected" : ""}>${esc(c)}</option>`).join("")}</select></label>
+      <label><span>Date of the activity <span class="ed-hint">or of the update</span></span><input type="date" id="ue-date" value="${esc(u.date || new Date().toISOString().slice(0, 10))}"></label>
+      <label class="full"><span>Title</span><input id="ue-title" value="${esc(u.title || "")}" placeholder="e.g. SASIA 1 meeting on disaster response, Dhaka"></label>
+      <div class="full ed-field"><span>How do you want to share it?</span><div class="seg-pick" role="radiogroup">
+        ${[["text", "Write it here"], ["pdf", "Upload a PDF"], ["pptx", "Upload a PowerPoint"]].map(([k, l]) => `<button type="button" class="chip-btn${st.kind === k ? " on" : ""}" role="radio" aria-checked="${st.kind === k}" data-kind="${k}">${l}</button>`).join("")}</div></div>
+      <div class="full" id="ue-file"></div>
+      <label class="full"><span id="ue-body-l"></span><textarea id="ue-body" rows="8">${esc(u.body || "")}</textarea></label>
+      <div class="full ed-field"><span>Photos <span class="ed-hint">optional, shown with the update</span></span>
+        <div id="ue-photos"></div><label class="btn sm" style="justify-self:start;cursor:pointer;margin-top:6px">Add photos<input type="file" id="ue-ph-in" accept="image/*" multiple hidden></label></div>
+    </div>
+    <div class="ed-actions"><button type="button" class="btn fill sm" id="ue-save">${st.id ? "Save changes" : "Publish the update"}</button><button type="button" class="btn sm" id="ue-cancel">Cancel</button><span class="ed-msg" id="ue-msg" role="status"></span></div></div>`;
+  const msg = (t, c = "") => { const m = $("ue-msg"); m.className = "ed-msg " + c; m.innerHTML = t; };
+  const drawKind = () => {
+    box.querySelectorAll("[data-kind]").forEach(b => { b.classList.toggle("on", b.dataset.kind === st.kind); b.setAttribute("aria-checked", b.dataset.kind === st.kind); });
+    $("ue-body-l").innerHTML = st.kind === "text" ? `Your update <span class="ed-hint">Leave a blank line between paragraphs. Start a line with "-" to make a list.</span>` : `Short introduction <span class="ed-hint">optional, shown above the ${st.kind === "pdf" ? "pages" : "slides"}</span>`;
+    $("ue-body").rows = st.kind === "text" ? 10 : 3;
+    const f = $("ue-file");
+    if (st.kind === "text") { f.innerHTML = ""; return; }
+    const has = st.file && st.file.type === st.kind;
+    f.innerHTML = `<div class="drop" id="ue-drop">${has ? `<b>${esc(st.file.name)}</b><span class="small">${st.kind === "pdf" ? `${st.pages.length} pages ready` : `${st.slides.length} slides ready`}</span>` : `<b>Drop your ${st.kind === "pdf" ? "PDF" : "PowerPoint (.pptx)"} here</b><span class="small">The website ${st.kind === "pdf" ? "shows each page" : "lays out each slide's title, text and pictures"} for you.</span>`}
+        <label class="btn sm" style="cursor:pointer">${has ? "Choose a different file" : "Choose a file"}<input type="file" id="ue-f-in" accept="${st.kind === "pdf" ? ".pdf,application/pdf" : ".pptx,.ppt"}" hidden></label><div id="ue-prog"></div></div>
+      ${has ? `<div class="prev-strip">${st.kind === "pdf" ? st.pages.slice(0, 12).map(p => `<img src="${esc(p)}" alt="">`).join("")
+        : st.slides.slice(0, 12).map((s, n) => `<div class="prev-slide"><b>${n + 1}. ${esc(s.title || "Untitled slide")}</b>${esc((s.paras || []).slice(0, 2).map(p => p.t).join(" · ").slice(0, 90))}${(s.images || [])[0] ? `<br><img src="${esc(s.images[0])}" alt="">` : ""}</div>`).join("")}</div>` : ""}`;
+    $("ue-f-in").onchange = e => takeFile(e.target.files[0]);
+    const d = $("ue-drop");
+    d.ondragover = e => { e.preventDefault(); d.classList.add("over"); }; d.ondragleave = () => d.classList.remove("over");
+    d.ondrop = e => { e.preventDefault(); d.classList.remove("over"); takeFile(e.dataTransfer.files[0]); };
+  };
+  const drawPhotos = () => { $("ue-photos").innerHTML = st.photos.length ? `<div class="prev-strip">${st.photos.map((p, k) => `<span style="position:relative;flex:0 0 auto"><img src="${esc(p)}" alt=""><button type="button" class="md-x" data-rmph="${k}" aria-label="Remove photo" style="position:absolute;top:2px;right:2px;background:#fff;border-radius:50%;width:26px;height:26px;line-height:1">×</button></span>`).join("")}</div>` : ""; };
+  async function takeFile(file) {
+    if (!file || st.busy) return;
+    const isPdf = /\.pdf$/i.test(file.name) || file.type === "application/pdf", isPptx = /\.pptx$/i.test(file.name);
+    if (/\.ppt$/i.test(file.name)) return msg("This is an older PowerPoint file (.ppt). Open it in PowerPoint, save it as .pptx or PDF, then upload that.", "err");
+    if (st.kind === "pdf" && !isPdf) return msg("Choose a PDF file, or switch to \"Upload a PowerPoint\".", "err");
+    if (st.kind === "pptx" && !isPptx) return msg("Choose a PowerPoint (.pptx) file, or switch to \"Upload a PDF\".", "err");
+    if (file.size > 50 * 1024 * 1024) return msg("This file is over 50 MB. Save a smaller copy (for example with compressed pictures) and try again.", "err");
+    st.busy = true; $("ue-save").disabled = true; msg("");
+    const note = t => { const p = $("ue-prog"); if (p) p.innerHTML = loader(t, "sm inline"); };
+    try {
+      st.folder = `${cwgSlug($("ue-cwg").value)}/${newId()}`;
+      const r = isPdf ? await processPdf(file, folder(), note) : await processPptx(file, folder(), note);
+      st.file = r.file; st.pages = r.pages || []; st.slides = r.slides || [];
+      if (!$("ue-title").value.trim()) $("ue-title").value = r.title || file.name.replace(/\.[^.]+$/, "").replace(/[_-]+/g, " ");
+      drawKind(); msg(r.more ? `Ready. Only the first 60 pages are shown on the website; the full PDF stays downloadable.` : "Ready. Check the title, then publish.", "ok");
+    } catch (e) { console.error(e); drawKind(); msg(esc(e && e.message) || "The file couldn't be read. Try saving it again, or upload it as a PDF.", "err"); }
+    st.busy = false; $("ue-save").disabled = false;
+  }
+  box.querySelectorAll("[data-kind]").forEach(b => b.onclick = () => { st.kind = b.dataset.kind; drawKind(); });
+  $("ue-photos").onclick = e => { const r = e.target.closest("[data-rmph]"); if (r) { st.photos.splice(+r.dataset.rmph, 1); drawPhotos(); } };
+  $("ue-ph-in").onchange = async e => {
+    const fs = [...e.target.files]; e.target.value = ""; if (!fs.length || st.busy) return;
+    st.busy = true; $("ue-save").disabled = true;
+    try { for (let i = 0; i < fs.length; i++) { msg(loader(`Uploading photo ${i + 1} of ${fs.length}…`, "sm inline"));
+        const im = await shrinkImage(fs[i]); st.photos.push(await upPut(`${folder()}/photo-${newId().slice(0, 8)}.${im.ext}`, im.blob, im.blob.type)); drawPhotos(); }
+      msg("Photos added.", "ok");
+    } catch (er) { msg(esc(er && er.message) || "A photo couldn't be uploaded.", "err"); }
+    st.busy = false; $("ue-save").disabled = false;
+  };
+  $("ue-cancel").onclick = () => { box.innerHTML = ""; };
+  $("ue-save").onclick = async () => {
+    const title = $("ue-title").value.trim(), body = $("ue-body").value.trim();
+    if (!title) return msg("Give the update a title.", "err");
+    if (st.kind === "text" && !body && !st.photos.length) return msg("Write your update, or add some photos.", "err");
+    if (st.kind !== "text" && !(st.file && st.file.type === st.kind)) return msg(`Upload the ${st.kind === "pdf" ? "PDF" : "PowerPoint"} first.`, "err");
+    const keep = st.kind !== "text";
+    const p = { cwg: $("ue-cwg").value, title, date: $("ue-date").value, kind: st.kind, body, photos: st.photos,
+      file: keep ? st.file : null, pages: st.kind === "pdf" ? st.pages : [], slides: st.kind === "pptx" ? st.slides : [] };
+    $("ue-save").disabled = true; msg(loader("Saving…", "sm inline"));
+    const { data: id, error } = await db.rpc("aslp_save_update", { p_id: st.id, p_update: p });
+    $("ue-save").disabled = false;
+    if (error) return msg(esc(error.message || "Couldn't save. Please try again."), "err");
+    await loadUpdates(true); redraw();
+    box.innerHTML = `<p class="ed-msg ok" style="margin-top:var(--g3)">${st.id ? "Changes saved." : "Published."} <a class="textlink" href="#/update/${esc(id)}">See it on the Programme Updates page</a></p>`;
+  };
+  drawKind(); drawPhotos();
+  setTimeout(() => box.scrollIntoView({ behavior: "smooth", block: "start" }), 30);
+}
+
 // ---- console (admins): About, home introduction and newsletter issues ----
 const NEWS_COLS = [["title", "Issue title", "e.g. Issue 1: Listening first"], ["date", "Month and year", "e.g. March 2027"], ["url", "PDF link", "Upload a PDF or paste a link"]];
 function pagesEditor() {
@@ -1948,6 +2243,7 @@ function mountConsole() {
   }
   document.querySelectorAll("[data-jump]").forEach(x => x.addEventListener("click", () => $(x.dataset.jump).scrollIntoView({ behavior: "smooth", block: "start" })));
   if ($("grp-editor")) { groupEditor($("g-pick").value); $("g-pick").addEventListener("change", e => groupEditor(e.target.value)); if (a === "group") setTimeout(() => $("cc-groups").scrollIntoView({ block: "start" }), 50); }
+  if ($("up-list")) { const id = (location.hash.replace(/^#\/?/, "")).split("/")[3]; updatesConsole(a === "updates" ? { cwg: b, id, open: !id } : {}); if (a === "updates") setTimeout(() => $("cc-updates").scrollIntoView({ block: "start" }), 50); }
   if ($("pages-editor")) pagesEditor();
   if ($("access-editor")) accessEditor();
   if ($("terr-editor")) {
@@ -1980,15 +2276,129 @@ function mountSignin() {
   });
 }
 
+// ---- PROGRAMME UPDATES (ASLP Updates) ----
+let updates = null, updatesP = null;
+const loadUpdates = (force) => (!force && updates) ? Promise.resolve(updates)
+  : (updatesP = (!force && updatesP) || db.rpc("aslp_list_updates").then(({ data: d, error }) => { updatesP = null; if (error) throw error; return (updates = Array.isArray(d) ? d : []); }));
+// a page that needs the updates: show the loader, fetch, then draw the page again if the reader is still on it
+function needUpdates() {
+  const h = location.hash;
+  loadUpdates().then(() => { if (location.hash === h) route(); }).catch(() => { if (location.hash === h) $("view").innerHTML = `<div class="wrap loading">The updates couldn't load. Check your connection and refresh the page.</div>`; });
+  return `<div class="lll page" role="status"><div class="lll-w" aria-hidden="true"><span style="--c:#0a84ff">Listen.</span><span style="--c:#f5c400">Learn.</span><span style="--c:#e14b1e">Lead.</span></div><div class="lll-l">Loading programme updates…</div></div>`;
+}
+const UKIND = { pdf: "PDF", pptx: "Slides" };
+const fmtDate = d => { if (!d) return ""; const x = new Date(String(d).slice(0, 10) + "T00:00:00"); return isNaN(x) ? "" : x.toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" }); };
+const upCover = u => u.cover || (u.photos || [])[0] || (u.pages || [])[0] || ((u.slides || []).find(s => (s.images || []).length) || { images: [] }).images[0] || "";
+const upExcerpt = u => { const t = (u.body || "").trim() || (u.slides || []).flatMap(s => s.paras || []).map(p => p.t || p).slice(0, 4).join(" · "); return t.replace(/^[-•]\s*/gm, "").replace(/\s+/g, " ").slice(0, 220); };
+const linkify = t => esc(t).replace(/(https?:\/\/[^\s<]+[^\s<.,;:)])/g, '<a class="textlink" href="$1" target="_blank" rel="noopener noreferrer">$1</a>');
+// typed text: a blank line starts a new paragraph; lines starting with "-" or "•" become a list
+function fmtBody(t) {
+  return String(t || "").trim().split(/\n\s*\n/).map(b => {
+    const ls = b.split("\n").map(x => x.trim()).filter(Boolean);
+    if (ls.length && ls.every(x => /^[-•*]\s+/.test(x))) return `<ul>${ls.map(x => `<li>${linkify(x.replace(/^[-•*]\s+/, ""))}</li>`).join("")}</ul>`;
+    return ls.length ? `<p>${ls.map(linkify).join("<br>")}</p>` : "";
+  }).join("");
+}
+const UP_ART = [["g11-02", "g7-05"], ["g2-04", "g8-05"], ["g7-03", "g11-04"], ["g8-08", "g2-01"], ["g6-09", "g11-01"]];
+const upArt = u => { const h = [...String(u.id)].reduce((a, c) => a + c.charCodeAt(0), 0), [a, b] = UP_ART[h % UP_ART.length];
+  return `<span class="up-cw">${esc(u.cwg)}</span><img class="el e1" src="brand/el/${a}.webp" alt="" aria-hidden="true"><img class="el e2" src="brand/el/${b}.webp" alt="" aria-hidden="true">`; };
+const upGrid = us => { const n = us.length, cols = n === 1 ? "n1" : n === 2 || n === 4 ? "n2" : "n3"; return `<div class="up-grid ${cols}">${us.map(upCard).join("")}</div>`; };
+function upCard(u) {
+  const cov = upCover(u), doc = !u.cover && !(u.photos || []).length && (u.pages || []).length;
+  return `<a class="up-card" href="#/update/${esc(u.id)}" style="${cwgVars(u.cwg)}">
+    <div class="up-cov${doc ? " doc" : ""}">${cov ? `<img src="${esc(cov)}" alt="" loading="lazy">` : upArt(u)}</div>
+    <div class="up-in"><div class="up-meta"><span>${esc(u.cwg)}</span>${u.date ? `<span>${esc(fmtDate(u.date))}</span>` : ""}${UKIND[u.kind] ? `<span class="up-kind">${UKIND[u.kind]}</span>` : ""}</div>
+      <div class="up-t">${esc(u.title)}</div>${upExcerpt(u) ? `<div class="up-x">${esc(upExcerpt(u))}</div>` : ""}</div></a>`;
+}
+function pageUpdates(cs) {
+  if (!updates) return needUpdates();
+  const cwgs = cwgList(), sel = cs ? cwgs.find(c => cwgSlug(c) === cs) : null;
+  if (cs && !sel) return notFound();
+  const sec = (c, all) => { const us = updates.filter(u => u.cwg === c), a = ART(c), show = all ? us : us.slice(0, 3);
+    return `<section class="up-sec" style="${cwgVars(c)}" aria-label="${esc(c)} updates"><div class="up-sec-h">${a ? `<a href="#/cwg/${cwgSlug(c)}"><img src="${a.h}" alt="${esc(c)} Cluster Working Group"></a>` : `<h2 class="h2">${esc(c)}</h2>`}
+        ${canCwg(c) ? `<a class="btn sm" href="#/console/updates/${cwgSlug(c)}">Post a ${esc(c)} update</a>` : ""}</div>
+      ${show.length ? `${upGrid(show)}${!all && us.length > 3 ? `<div class="up-more"><a class="btn sm" href="#/updates/${cwgSlug(c)}">See all ${us.length} ${esc(c)} updates</a></div>` : ""}`
+        : `<p class="empty">No updates from ${esc(c)} yet. Its CWG lead can post activities and news from the console.</p>`}</section>`; };
+  return `${crumbs([["Home", "#/"], ["ASLP Updates"], ...(sel ? [["Programme Updates", "#/updates"], [sel]] : [["Programme Updates"]])])}
+    <div class="wrap page-hero"><div class="stack"><h1 class="h1">${sel ? `${esc(sel)} updates` : "Programme Updates"}</h1>
+      <p class="lede">${sel ? `Activities and news from the ${esc(sel)} Cluster Working Group.` : "Activities and news from each Cluster Working Group, shared by the CWG leads."}</p></div>
+      ${cluster([cl("g6-05", 4, 10, 40), cl("g2-04", 50, 0, 24), cl("g8-03", 70, 40, 22, 8), cl("g6-08", 30, 52, 30), cl("g6-06", 82, 6, 14, -14)])}</div>
+    <div class="wrap page-body">
+      <nav class="up-filter" aria-label="Filter by CWG"><a class="chip-btn${sel ? "" : " on"}" href="#/updates">All CWGs</a>${cwgs.map(c => `<a class="chip-btn${c === sel ? " on" : ""}" href="#/updates/${cwgSlug(c)}">${esc(c)}</a>`).join("")}</nav>
+      ${sel ? sec(sel, true) : cwgs.map(c => sec(c, false)).join("")}
+      <div class="up-news"><div><div class="h3">ASLP Newsletter</div><p style="margin:4px 0 0;opacity:.85">Every issue of the newsletter, to read or download.</p></div><a class="btn" href="#/newsletter">Read the newsletter</a></div>
+    </div>`;
+}
+function pageUpdate(id) {
+  if (!updates) return needUpdates();
+  const u = updates.find(x => x.id === id); if (!u) return notFound();
+  const pages = u.pages || [], slides = u.slides || [], photos = u.photos || [], f = u.file;
+  const office = f && u.kind === "pptx" ? `https://view.officeapps.live.com/op/view.aspx?src=${encodeURIComponent(f.url)}` : "";
+  if (pages.length) pendingMaps.push(() => mountReader(u));
+  const more = updates.filter(x => x.cwg === u.cwg && x.id !== u.id).slice(0, 3);
+  const pics = list => list.map(s => ({ src: s, cap: u.title }));
+  galleries[u.id + ":photos"] = pics(photos);
+  galleries[u.id + ":slides"] = pics(slides.flatMap(s => s.images || []));
+  let si = 0;
+  return `<div style="${cwgVars(u.cwg)}">${crumbs([["Home", "#/"], ["Programme Updates", "#/updates"], [u.cwg, `#/updates/${cwgSlug(u.cwg)}`], [u.title]])}
+    <div class="wrap ud-head"><div class="up-meta"><a class="ud-cwg" href="#/updates/${cwgSlug(u.cwg)}">${esc(u.cwg)}</a>${u.date ? `<span>${esc(fmtDate(u.date))}</span>` : ""}${UKIND[u.kind] ? `<span class="up-kind">${UKIND[u.kind]}</span>` : ""}</div>
+      <h1 class="h1">${esc(u.title)}</h1></div>
+    <div class="wrap page-body">
+      ${u.body ? `<div class="ud-body">${fmtBody(u.body)}</div>` : ""}
+      ${photos.length ? `<div class="ud-photos">${photos.map((p, k) => `<button type="button" data-gal="${esc(u.id)}:photos" data-k="${k}" aria-label="Open photo ${k + 1}"><img src="${esc(p)}" alt="" loading="lazy"></button>`).join("")}</div>` : ""}
+      ${pages.length ? `<div class="reader" id="reader"></div>` : ""}
+      ${slides.length ? `<div class="slides">${slides.map((s, n) => { const imgs = s.images || [], paras = s.paras || [];
+          const txt = x => x && !(x.images || []).length && (x.paras || []).length, pos = (() => { if (!txt(s)) return 0; let i = n; while (i > 0 && txt(slides[i - 1])) i--; let j = n; while (j < slides.length - 1 && txt(slides[j + 1])) j++; const len = j - i + 1, k = n - i; return len % 2 && k === len - 1 ? 0 : 1; })();
+          const cls = (!paras.length && !imgs.length ? "divider" : !paras.length ? "img-only" : imgs.length ? "has-img" : "") + (pos ? " half" : "");
+          return `<article class="slide ${cls}"><div><div class="sl-n">Slide ${n + 1}</div>${s.title ? `<h2 class="sl-t">${esc(s.title)}</h2>` : ""}
+            ${paras.map(p => `<p class="sl-p l${Math.min(p.l || 0, 2)}${p.b ? " b" : ""}">${linkify(p.t)}</p>`).join("")}</div>
+            ${imgs.length ? `<div class="sl-imgs">${imgs.map(src => `<button type="button" data-gal="${esc(u.id)}:slides" data-k="${si++}" aria-label="Open picture"><img src="${esc(src)}" alt="" loading="lazy"></button>`).join("")}</div>` : ""}</article>`; }).join("")}</div>` : ""}
+      ${f ? `<div class="ud-acts"><a class="btn fill" href="${esc(f.url)}" target="_blank" rel="noopener noreferrer" download>Download the ${u.kind === "pptx" ? "PowerPoint" : "PDF"}</a>
+        ${office ? `<a class="btn" href="${esc(office)}" target="_blank" rel="noopener noreferrer">View the original slides</a>` : ""}
+        ${canCwg(u.cwg) ? `<a class="btn" href="#/console/updates/${cwgSlug(u.cwg)}/${esc(u.id)}">Edit this update</a>` : ""}</div>`
+        : canCwg(u.cwg) ? `<div class="ud-acts"><a class="btn" href="#/console/updates/${cwgSlug(u.cwg)}/${esc(u.id)}">Edit this update</a></div>` : ""}
+      ${more.length ? `<section class="ud-more"><div class="row-head"><h2 class="h2">More from ${esc(u.cwg)}</h2><a class="btn sm" href="#/updates/${cwgSlug(u.cwg)}">All ${esc(u.cwg)} updates</a></div><div style="margin-top:var(--g4)">${upGrid(more)}</div></section>` : ""}
+    </div></div>`;
+}
+// PDF pages: one page at a time, with page thumbnails
+function mountReader(u) {
+  const box = $("reader"); if (!box) return; const pg = u.pages; let k = 0;
+  galleries[u.id + ":pages"] = pg.map((s, n) => ({ src: s, cap: `${u.title}, page ${n + 1}` }));
+  const draw = () => {
+    box.innerHTML = `<div class="rd-stage"><button type="button" class="rd-nav prev" data-rd="-1" aria-label="Previous page"${k ? "" : " disabled"}>‹</button>
+        <img src="${esc(pg[k])}" alt="Page ${k + 1} of ${pg.length}" data-gal="${esc(u.id)}:pages" data-k="${k}">
+        <button type="button" class="rd-nav next" data-rd="1" aria-label="Next page"${k < pg.length - 1 ? "" : " disabled"}>›</button></div>
+      <div class="rd-bar"><span>Page ${k + 1} of ${pg.length}</span><span>Select the page to see it full screen</span></div>
+      ${pg.length > 1 ? `<div class="rd-thumbs">${pg.map((s, n) => `<button type="button" class="${n === k ? "on" : ""}" data-rdp="${n}" aria-label="Page ${n + 1}"><img src="${esc(s)}" alt="" loading="lazy"></button>`).join("")}</div>` : ""}`;
+    const on = box.querySelector(".rd-thumbs .on"); if (on) on.scrollIntoView({ block: "nearest", inline: "nearest" });
+  };
+  box.onclick = e => { const n = e.target.closest("[data-rd]"), t = e.target.closest("[data-rdp]");
+    if (n) { k = Math.max(0, Math.min(pg.length - 1, k + +n.dataset.rd)); draw(); } if (t) { k = +t.dataset.rdp; draw(); } };
+  draw();
+}
+const galleries = {};
+document.addEventListener("click", e => { const b = e.target.closest("[data-gal]"); if (!b) return; const g = galleries[b.dataset.gal]; if (g && g.length) openGallery(g, +b.dataset.k || 0); });
+function openGallery(list, k) {
+  let lb = $("lightbox"); if (!lb) { lb = document.createElement("dialog"); lb.id = "lightbox"; lb.className = "lb"; document.body.appendChild(lb); }
+  const show = n => { k = (n + list.length) % list.length; const it = list[k];
+    lb.innerHTML = `<button type="button" class="lb-x" data-lbx aria-label="Close">×</button><figure><img src="${esc(it.src)}" alt="${esc(it.cap || "")}"><figcaption>${it.lead ? `<b>${esc(it.lead)}</b> ` : ""}${esc(it.cap || "")}<span>${k + 1} / ${list.length}</span></figcaption></figure>
+      ${list.length > 1 ? `<button type="button" class="lb-nav prev" data-lbn="-1" aria-label="Previous">‹</button><button type="button" class="lb-nav next" data-lbn="1" aria-label="Next">›</button>` : ""}`; };
+  show(k);
+  lb.onclick = e => { if (e.target === lb || e.target.closest("[data-lbx]")) return lb.close(); const n = e.target.closest("[data-lbn]"); if (n) show(k + +n.dataset.lbn); };
+  lb.onkeydown = e => { if (e.key === "ArrowRight") show(k + 1); if (e.key === "ArrowLeft") show(k - 1); };
+  if (!lb.open) lb.showModal();
+}
+
 // ---- NEWSLETTER ----
 function pageNewsletter() {
-  return `${crumbs([["Home", "#/"], ["Newsletter"]])}
+  return `${crumbs([["Home", "#/"], ["ASLP Updates"], ["Newsletter"]])}
     <div class="wrap page-hero"><div class="stack"><h1 class="h1"><span class="lt">ASLP</span> Newsletter</h1><p class="lede">Every issue, readable as a book with turnable pages, or as a PDF to download.</p></div>
       ${cluster([cl("g6-09", 4, 52, 46), cl("g6-02", 10, 4, 9, 8), cl("g6-03", 22, 0, 9, 2), cl("g6-04", 34, 4, 9, 14), cl("g6-05", 54, 8, 36), cl("g2-04", 62, 44, 22), cl("g6-10", 86, 56, 14, -8)])}</div>
     <div class="wrap page-body">${newsIssues().length ? `<div class="shelf">${newsIssues().map((n, k) => `<a class="issue c${k % 4}" href="${esc(n.url)}" target="_blank" rel="noopener noreferrer">
         <span class="i-top">ASLP Newsletter</span><b>${esc(n.title)}</b><span class="i-date">${esc(n.date || "")}</span><span class="i-open">Open the PDF</span></a>`).join("")}</div>`
       : `<div class="soon" style="max-width:720px"><h2 class="h3">The first issues are on their way</h2><p>New issues will appear on this shelf as soon as they're uploaded.</p></div>
-      <div class="shelf" aria-hidden="true">${[1, 2, 3, 4].map(() => `<div class="spine">Issue coming soon</div>`).join("")}</div>`}</div>`;
+      <div class="shelf" aria-hidden="true">${[1, 2, 3, 4].map(() => `<div class="spine">Issue coming soon</div>`).join("")}</div>`}
+      <div class="up-news"><div><div class="h3">Programme Updates</div><p style="margin:4px 0 0;opacity:.85">Activities and news from each Cluster Working Group.</p></div><a class="btn" href="#/updates">See the latest updates</a></div></div>`;
 }
 function newsIssues() { try { const c = data.content && data.content.newsletter; const a = c && c.body ? JSON.parse(c.body) : []; return Array.isArray(a) ? a.filter(n => n && n.title && /^https:\/\//.test(n.url || "")) : []; } catch (e) { return []; } }
 const paraHtml = p => { const m = p.match(/^([A-Z][^:]{2,28}):\s+([\s\S]*)$/); return m ? `<p><b>${esc(m[1])}.</b> ${esc(m[2].charAt(0).toUpperCase() + m[2].slice(1))}</p>` : `<p class="lede" style="color:var(--ink)">${esc(p)}</p>`; };
@@ -2007,12 +2417,12 @@ function route() {
   maps.forEach(m => m.remove()); maps = []; pendingMaps = [];
   const [p, a] = (location.hash.replace(/^#\/?/, "") || "").split("/").filter(Boolean);
   const html = !p ? pageHome() : p === "about" ? pageAbout() : p === "history" ? (pendingMaps.push(watchYears), pageHistory()) : p === "cwgs" ? pageCwgs() : p === "zone" ? pageZone(a) : p === "cwg" ? pageCwg(a)
-    : p === "territory" ? pageTerritory(a) : p === "groups" ? pageGroups() : p === "group" ? pageGroup(a) : p === "newsletter" ? pageNewsletter() : p === "console" ? pageConsole(a, (location.hash.replace(/^#\/?/, "").split("/")[2] || "")) : notFound();
+    : p === "territory" ? pageTerritory(a) : p === "groups" ? pageGroups() : p === "group" ? pageGroup(a) : p === "newsletter" ? pageNewsletter() : p === "updates" ? pageUpdates(a) : p === "update" ? pageUpdate(a) : p === "console" ? pageConsole(a, (location.hash.replace(/^#\/?/, "").split("/")[2] || "")) : notFound();
   $("view").innerHTML = html;
   document.body.classList.toggle("is-home", !p);
   pendingMaps.forEach(f => f()); pendingMaps = [];
   if (p === "console") mountSignin();
-  const nav = p === "zone" || p === "cwg" || p === "territory" ? "cwgs" : p === "group" ? "groups" : p === "history" ? "about" : p;
+  const nav = p === "zone" || p === "cwg" || p === "territory" ? "cwgs" : p === "group" ? "groups" : p === "history" ? "about" : p === "newsletter" || p === "update" ? "updates" : p;
   document.querySelectorAll("[data-nav]").forEach(x => x.classList.toggle("on", x.dataset.nav === nav));
   $("menu").classList.remove("open"); $("menu-btn").setAttribute("aria-expanded", "false");
   const h1 = $("view").querySelector("h1"); const t1 = h1 ? (h1.textContent.trim() || (h1.querySelector("img") || {}).alt || "") : "";
