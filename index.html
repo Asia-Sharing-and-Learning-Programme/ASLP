@@ -2383,10 +2383,18 @@ function updatesConsole(sel) {
     if (error) { del.textContent = error.message || "Couldn't delete"; return; }
     const ps = [u.file && u.file.url, ...(u.pages || []), ...(u.photos || []), ...(u.slides || []).flatMap(s => s.images || []), ...(u.sections || []).flatMap(s => s.images || [])].map(pathOf).filter(Boolean);
     if (ps.length) UPB().remove(ps).catch(() => {});
-    if (u.file && u.file.drive) db.functions.invoke("drive-upload", { body: { action: "delete", fileId: u.file.drive } }).catch(() => {});
+    // the full file kept in the ASLP Google Drive goes too (and any leftovers no update uses)
+    let driveNote = "";
+    if (u.file && u.file.drive) { del.textContent = "Removing the file from Google Drive…";
+      const r = await db.functions.invoke("drive-upload", { body: { action: "delete", fileId: u.file.drive } }).catch(e => ({ error: e }));
+      if (r.error || (r.data && r.data.error)) driveNote = "The update is deleted, but its file couldn't be removed from Google Drive. It will be cleared automatically next time, or delete it from the \"ASLP Website Files\" folder."; }
+    else db.functions.invoke("drive-upload", { body: { action: "sweep" } }).catch(() => {});
     await loadUpdates(true); draw();
+    if (driveNote) list.insertAdjacentHTML("afterbegin", `<p class="ed-msg err" style="margin:0 0 var(--g3)">${esc(driveNote)}</p>`);
   };
   $("up-new").onclick = () => updateEditor({ src: pickSrc(sel.cwg) }, draw);
+  // once a session, clear Google Drive files that no update or draft uses any more
+  try { if (!sessionStorage.getItem("aslp-drive-swept")) { sessionStorage.setItem("aslp-drive-swept", "1"); db.functions.invoke("drive-upload", { body: { action: "sweep" } }).catch(() => {}); } } catch (e) {}
   loadUpdates(true).then(() => {
     draw();
     if (!sel.id && !sel.open) getDraft("upd:new").then(d => { if (d && d.f && list.isConnected && !$("ue-title"))
@@ -2533,6 +2541,8 @@ function updateEditor(u, redraw) {
     $("ue-save").disabled = false;
     if (error) return msg(esc(error.message || "Couldn't save. Please try again."), "err");
     clearTimeout(kt); putDraft(dkey, null); delete box.dataset.draft;
+    if (u.file && u.file.drive && !(st.file && st.file.drive === u.file.drive))   // the old big file was replaced or dropped
+      db.functions.invoke("drive-upload", { body: { action: "delete", fileId: u.file.drive } }).catch(() => {});
     await loadUpdates(true); redraw();
     box.innerHTML = `<p class="ed-msg ok" style="margin-top:var(--g3)">${st.id ? "Changes saved." : "Published."} <a class="textlink" href="#/update/${esc(id)}">See it on the website</a></p>`;
   };
