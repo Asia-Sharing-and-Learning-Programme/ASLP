@@ -73,7 +73,7 @@
         if (/^(\d)\1+$/.test(a) || /^(012345|123456|234567|345678|456789|654321|password)/i.test(a)) { m.textContent = 'That PIN is too easy to guess. Please choose another.'; return; }
         if (a !== b2) { m.textContent = 'The two PINs don’t match.'; return; }
         var btn = box.querySelector('#pin-send'); btn.disabled = true; m.className = 'pin-msg'; m.textContent = 'Sending…';
-        var r = await db.rpc('aslp_pin_request', { p_email: email, p_pin: a }); btn.disabled = false;
+        var r = await db.functions.invoke('aslp-signin', { body: { action: 'pin_request', email: email, pin: a } }); btn.disabled = false;
         var d = (r && r.data) || {};
         if (r.error || !d.ok) {
           m.className = 'pin-msg err';
@@ -83,10 +83,74 @@
           return;
         }
         try { localStorage.setItem(REMEMBER, email); } catch (e) {}
-        signInView('<b>Sent for approval.</b> Your CWG lead or an admin will see it in their console. Once they approve it, sign in here with your email and new PIN.', 'ok');
+        signInView('<b>Sent for approval.</b> ' + (d.notified ? 'We\u2019ve emailed your CWG lead and the admins. ' : 'Your CWG lead and the admins will see it in their console. ') + 'Once one of them approves it, sign in here with your email and new PIN.', 'ok');
       };
     }
     signInView();
   }
-  window.ASLPPin = { mount: mount };
+  // sign-in emails go to the person's own Gmail if they added one (fast), otherwise to their registered email
+  async function sendEmail(db, email, site) {
+    var r = await db.functions.invoke('aslp-signin', { body: { action: 'send', email: norm(email), site: site || 'aslp', redirect: location.origin + location.pathname } });
+    if (r.error) return { ok: false, reason: 'error' };
+    return r.data || { ok: false, reason: 'error' };
+  }
+  async function verifyCode(db, email, token) {
+    var r = await db.functions.invoke('aslp-signin', { body: { action: 'verify', email: norm(email), token: String(token || '') } });
+    var d = (r && r.data) || {};
+    if (r.error || !d.ok || !d.session) return { ok: false };
+    var s = await db.auth.setSession(d.session);
+    return { ok: !s.error };
+  }
+  var mcss = '.alt-ov{position:fixed;inset:0;z-index:2147482000;background:rgba(10,10,20,.5);display:flex;align-items:center;justify-content:center;padding:16px}' +
+    '.alt-dlg{background:#fff;color:#111;border-radius:18px;max-width:460px;width:100%;padding:22px 22px 18px;box-shadow:0 24px 60px -20px rgba(0,0,0,.55);font-family:inherit;animation:altIn .4s cubic-bezier(.16,1,.3,1)}' +
+    '@keyframes altIn{from{opacity:0;transform:translateY(10px) scale(.98)}}@media (prefers-reduced-motion:reduce){.alt-dlg{animation:none}}' +
+    '.alt-dlg h3{margin:0 0 8px;font-size:21px;line-height:1.25}.alt-dlg p{margin:0 0 8px;font-size:15px;line-height:1.5;opacity:.85}' +
+    '.alt-dlg .pin-go{margin-top:14px}';
+  var ms = document.createElement('style'); ms.textContent = mcss; (document.head || document.documentElement).appendChild(ms);
+  function altForm(box, db, cur, done, inDialog) {
+    var P = inDialog ? 'altd' : 'alt';
+    box.innerHTML = '<form class="pin" novalidate>' + (inDialog ? '<h3>Would you like an alternative sign-in email via Gmail?</h3>' : '') +
+      '<p class="pin-note" style="margin:0 0 6px">Gmail gets sign-in links and codes much faster than work email. If you add one, every sign-in email for you goes there. If you\u2019d rather not, that\u2019s fine: just make sure you don\u2019t forget your PIN.</p>' +
+      '<label for="' + P + '-in">Your Gmail</label><input type="email" id="' + P + '-in" autocomplete="email" placeholder="yourname@gmail.com" value="' + esc(cur || '') + '">' +
+      '<div class="pin-go"><button type="submit" class="pin-btn" id="' + P + '-save">' + (cur ? 'Save' : 'Use this Gmail') + '</button>' +
+      (inDialog ? '<button type="button" class="pin-link" id="' + P + '-no">No thanks, I\u2019ll remember my PIN</button><button type="button" class="pin-link" id="' + P + '-later">Ask me later</button>'
+        : (cur ? '<button type="button" class="pin-link" id="' + P + '-rm">Stop using it</button>' : '')) + '</div>' +
+      '<div class="pin-msg" role="status" id="' + P + '-msg"></div></form>';
+    var m = box.querySelector('#' + P + '-msg');
+    async function save(val, decline) {
+      m.className = 'pin-msg'; m.textContent = 'Saving\u2026';
+      var r = await db.rpc('aslp_set_alt_email', { p_alt: val, p_decline: !!decline });
+      if (r.error) { m.className = 'pin-msg err'; m.textContent = (r.error.message || 'That didn\u2019t work.').replace(/^.*?:\s*/, ''); return false; }
+      return true;
+    }
+    box.querySelector('form').onsubmit = async function (ev) {
+      ev.preventDefault(); var v = norm(box.querySelector('#' + P + '-in').value);
+      if (!okEmail(v)) { m.className = 'pin-msg err'; m.textContent = 'Please enter your Gmail address.'; return; }
+      if (await save(v, false)) { if (done) done('set', v); else { m.className = 'pin-msg ok'; m.textContent = 'Saved. Sign-in emails now go to ' + v + '.'; } }
+    };
+    var no = box.querySelector('#' + P + '-no'); if (no) no.onclick = async function () { if (await save('', true) && done) done('declined'); };
+    var later = box.querySelector('#' + P + '-later'); if (later) later.onclick = function () { if (done) done('later'); };
+    var rm = box.querySelector('#' + P + '-rm'); if (rm) rm.onclick = async function () { if (await save('', true)) altForm(box, db, '', done, inDialog); };
+  }
+  // ask once, after someone signs in, until they answer (\u201cAsk me later\u201d waits until their next visit)
+  async function altPrompt(db) {
+    try { if (sessionStorage.getItem('aslp-alt-later')) return; } catch (e) {}
+    if (document.querySelector('.alt-ov')) return;
+    var r = await db.rpc('aslp_alt_status'); var s = (r && r.data) || {};
+    if (r.error || !s.registered || s.answered || s.via_alt) return;
+    var ov = document.createElement('div'); ov.className = 'alt-ov'; ov.innerHTML = '<div class="alt-dlg" role="dialog" aria-modal="true" aria-label="Alternative sign-in email"></div>';
+    document.body.appendChild(ov);
+    altForm(ov.firstChild, db, '', function (how, v) {
+      if (how === 'later') { try { sessionStorage.setItem('aslp-alt-later', '1'); } catch (e) {} ov.remove(); return; }
+      ov.firstChild.innerHTML = '<div class="pin"><h3>' + (how === 'set' ? 'Done' : 'All right') + '</h3><p>' + (how === 'set' ? 'From now on, sign-in emails for you go to <b>' + esc(v) + '</b>. You can change this any time in your console under <b>My PIN</b>.' : 'Sign in with your email and PIN. If you ever change your mind, add a Gmail in your console under <b>My PIN</b>.') +
+        '</p><div class="pin-go"><button type="button" class="pin-btn" id="alt-ok">OK</button></div></div>';
+      ov.querySelector('#alt-ok').onclick = function () { ov.remove(); };
+    }, true);
+  }
+  async function altManager(box, db) {
+    if (!box) return; var r = await db.rpc('aslp_alt_status'); var s = (r && r.data) || {};
+    if (s.via_alt) { box.innerHTML = '<p class="pin-note">You signed in with your Gmail, <b>' + esc(s.alt || '') + '</b>. To change it, sign in with your registered email and PIN.</p>'; return; }
+    altForm(box, db, s.alt || '', null, false);
+  }
+  window.ASLPPin = { mount: mount, sendEmail: sendEmail, verifyCode: verifyCode, altPrompt: altPrompt, altManager: altManager };
 })();
