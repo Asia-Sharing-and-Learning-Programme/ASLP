@@ -933,7 +933,18 @@
   .wel-steps li { counter-increment: ws; display: grid; grid-template-columns: 64px minmax(0, 1fr) auto; gap: var(--g3); align-items: center; background: var(--paper); border-radius: 16px; padding: 14px 16px;
     opacity: 0; transform: translateY(14px); animation: welIn 1s cubic-bezier(.16,1,.3,1) forwards; animation-delay: calc(.75s + var(--i) * .12s); }
   body.view-only #view button:not([data-jump]):not([data-goto]):not([data-tour]):not([data-ue]):not(#up-new):not(#ue-cancel):not(#si-out):not([data-ro-ok]) { opacity: .45; cursor: not-allowed; }
+  .si-card { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr); gap: var(--g5); align-items: start; }
   .si-pin { max-width: 560px; margin-top: var(--g3); }
+  .si-guide { background: var(--paper); border-radius: 16px; padding: 22px 24px; border: 1px solid var(--line); }
+  .si-gk { font-size: 13px; font-weight: 800; color: #e14b1e; margin-bottom: 2px; } .si-guide h3 { font-size: 22px; font-weight: 800; letter-spacing: -.01em; margin-bottom: 12px; }
+  .si-guide ol { list-style: none; counter-reset: sg; display: grid; gap: 14px; padding: 0; margin: 0; }
+  .si-guide li { counter-increment: sg; position: relative; padding-left: 40px; }
+  .si-guide li::before { content: counter(sg); position: absolute; left: 0; top: -1px; width: 28px; height: 28px; border-radius: 50%; background: #24215f; color: #fff; font-weight: 800; font-size: 14px; display: grid; place-items: center; }
+  .si-guide li > b, .si-forgot > b { display: block; font-size: 15.5px; } .si-guide li > span, .si-forgot > span { display: block; font-size: 14.5px; line-height: 1.5; color: var(--ink-2); margin-top: 3px; }
+  .si-guide li em { font-style: normal; font-weight: 700; color: var(--ink); }
+  .si-forgot { margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--line); }
+  @media (prefers-reduced-motion: no-preference) { .si-guide li { opacity: 0; animation: welIn .8s cubic-bezier(.16,1,.3,1) forwards; } .si-guide li:nth-child(2) { animation-delay: .08s; } .si-guide li:nth-child(3) { animation-delay: .16s; } .si-guide li:nth-child(4) { animation-delay: .24s; } }
+  @media (max-width: 900px) { .si-card { grid-template-columns: minmax(0, 1fr); } }
   .si-alt { margin-top: var(--g4); border-top: 1px solid var(--line); padding-top: var(--g3); }
   .si-alt summary { cursor: pointer; font-weight: 700; font-size: 15px; color: var(--ink-2); }
   .si-alt[open] summary { margin-bottom: var(--g2); }
@@ -2388,7 +2399,7 @@ function signinLimitBox(st) {
     <p>${left ? `You can request ${left} more sign-in email${left === 1 ? "" : "s"} this hour.${left === 1 ? " Check your inbox and spam folder before asking for another." : ""}` : `You've used all ${lim} for this hour. You can ask for another at about <b>${esc(at)}</b>. The newest email in your inbox may still work.`}</p></div>`;
 }
 function consoleSignin() {
-  return `<div class="console-card"><h2 class="h2">Sign in</h2>
+  return `<div class="console-card si-card"><div class="si-main"><h2 class="h2">Sign in</h2>
     <p class="small">Sign in with your email and PIN. It's the same sign-in for this website, the Calendar and CD Strategies: sign in once and you're signed in on all three.</p>
     <div id="pin-box" class="si-pin"></div>
     <details class="si-alt"${signinEmail ? " open" : ""}><summary>Or email me a sign-in code instead (fastest with Gmail)</summary>
@@ -2398,7 +2409,17 @@ function consoleSignin() {
     <div id="si-code" ${signinEmail ? "" : "hidden"}><label for="si-token">Code from the email</label>
       <div class="copy-row"><input type="text" id="si-token" inputmode="numeric" autocomplete="one-time-code" placeholder="123456"><button class="btn fill sm" id="si-verify">Sign in</button></div>
       <p class="small">The email also has a link. Opening it signs you in too.</p></div>
-    <p class="si-msg" id="si-msg" role="status"></p></details></div>`;
+    <p class="si-msg" id="si-msg" role="status"></p></details></div>
+    <aside class="si-guide" aria-label="How to get set up">
+      <p class="si-gk">New here?</p><h3>How to get set up</h3>
+      <ol>
+        <li><b>Check you're registered.</b><span>Your CWG lead or an ASLP admin adds your email. Not sure? Ask them.</span></li>
+        <li><b>Sign in the first time, one of two ways.</b><span><em>With a PIN:</em> select <b>First time? Set up your PIN</b>. Your CWG lead or an admin approves it, then sign in with your email and PIN.</span><span><em>With an email code:</em> open <b>Or email me a sign-in code</b> below. It can be slow in work Outlook.</span></li>
+        <li><b>Finish setting up.</b><span>Once you're in, the site asks you to choose a PIN (if you haven't) and, if you like, to add your Gmail. Gmail gets sign-in emails fast and lets you reset a forgotten PIN yourself.</span></li>
+        <li><b>Next time.</b><span>Just your email and PIN, on any of the three sites.</span></li>
+      </ol>
+      <div class="si-forgot"><b>Forgot your PIN?</b><span>Select <b>Forgot your PIN?</b>. If you added a Gmail, a reset link goes there. If not, add your Gmail; once your CWG lead or an admin approves it, the reset link goes to it.</span></div>
+    </aside></div>`;
 }
 // ---- console welcome: a greeting and, in plain steps, what this person's access lets them do ----
 const firstName = v => { const n = String(v.name || "").replace(/^(Major|Captain|Lieutenant|Colonel|Commissioner|Lt\.?|Lt-Colonel|Envoy|Mr\.?|Mrs\.?|Ms\.?|Dr\.?)\s+/i, "").trim(); return n ? n.split(/\s+/)[0] : ""; };
@@ -2626,7 +2647,7 @@ function pageConsole(a, b) {
     <section class="console-card" id="cc-access"><h2 class="h2">Access</h2><div id="access-editor">${loader("Loading access settings…")}</div></section>` : ""}
     <section class="console-card" id="cc-pin">
       ${pinApprover(v) ? `<h2 class="h2">PIN requests</h2>
-      <p class="small">People who chose a new PIN, or forgot theirs, wait here for approval. ${v.is_full_admin ? "As an admin you approve anyone's, including CWG leads' and other admins'." : "You approve PINs for people in your CWG: members, contact persons and focal persons. Admins approve CWG leads' and admins' PINs."} Approve only if you know the request is really from them, for example after a quick message.</p>
+      <p class="small">People who chose a PIN, or who forgot theirs and asked to add a Gmail, wait here for approval. You also get an email for each. ${v.is_full_admin ? "As an admin you approve anyone's, including CWG leads' and other admins'." : "You approve PINs for people in your CWG: members, contact persons and focal persons. Admins approve CWG leads' and admins' PINs."} Approve only if you know the request is really from them, for example after a quick message.</p>
       <div id="pin-reqs">${loader("Loading requests…")}</div>
       <h2 class="h2" style="margin-top:var(--g5)">Your PIN</h2>` : `<h2 class="h2">Your PIN</h2>`}
       <p class="small">You sign in with your email and PIN on this website, the Calendar and CD Strategies. Change it here any time. You're signed in, so no approval is needed.</p>
@@ -3263,10 +3284,9 @@ async function pinConsole() {
     if (/^(\d)\1+$/.test(a) || /^(012345|123456|234567|345678|456789|654321|password)/i.test(a)) return m.textContent = "That PIN is too easy to guess. Please choose another.";
     if (a !== b) return m.textContent = "The two PINs don't match.";
     $("mp-save").disabled = true; m.className = "ed-msg"; m.textContent = "Saving…";
-    const { error } = await db.auth.updateUser({ password: a });
+    const res = await ASLPPin.setMyPin(db, a);
     $("mp-save").disabled = false;
-    if (error) { m.className = "ed-msg err"; m.textContent = /same|different/i.test(error.message) ? "That's already your PIN." : /reauth|recent/i.test(error.message) ? "Please sign out and in again, then change your PIN." : (error.message || "That didn't work."); return; }
-    db.rpc("aslp_pin_mark_set").then(() => {}, () => {});
+    if (!res.ok) { m.className = "ed-msg err"; m.textContent = res.message; return; }
     $("mp-a").value = $("mp-b").value = ""; m.className = "ed-msg ok"; m.textContent = "PIN changed. Use it next time you sign in.";
   });
   const box = $("pin-reqs"); if (!box) return;
@@ -3275,13 +3295,13 @@ async function pinConsole() {
     if (error) { box.innerHTML = `<p class="small">Couldn't load the requests. ${esc(error.message || "")}</p>`; return; }
     const n = (rs || []).length, tab = document.querySelector('.con-sub [data-jump="cc-pin"]');
     if (tab) tab.textContent = n ? `PINs (${n})` : "PINs";
-    box.innerHTML = n ? rs.map(r => `<div class="pin-req"><div><b>${esc(r.name || r.email)}</b><small>${esc(r.email)}${(r.cwgs || []).length ? ` · ${esc(r.cwgs.join(", "))}` : ""} · ${r.kind === "reset" ? "Forgot PIN, chose a new one" : "First PIN"} · ${esc(new Date(r.at).toLocaleString(undefined, { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }))}</small></div>
-      <div class="acts"><button type="button" class="btn fill sm" data-pin-ok="${esc(r.id)}">Approve</button><button type="button" class="btn sm" data-pin-no="${esc(r.id)}">Decline</button></div></div>`).join("")
+    box.innerHTML = n ? rs.map(r => `<div class="pin-req"><div><b>${esc(r.name || r.email)}</b><small>${esc(r.email)}${(r.cwgs || []).length ? ` · ${esc(r.cwgs.join(", "))}` : ""} · ${r.type === "gmail" ? `Forgot PIN, asks to add Gmail <b>${esc(r.alt)}</b> (a reset link goes there once approved)` : r.kind === "reset" ? "Forgot PIN, chose a new one" : "First PIN"} · ${esc(new Date(r.at).toLocaleString(undefined, { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }))}</small></div>
+      <div class="acts"><button type="button" class="btn fill sm" data-pin-ok="${esc(r.id)}" data-pt="${esc(r.type || "pin")}">Approve</button><button type="button" class="btn sm" data-pin-no="${esc(r.id)}" data-pt="${esc(r.type || "pin")}">Decline</button></div></div>`).join("")
       : `<p class="small">No requests waiting.</p>`;
     box.querySelectorAll("[data-pin-ok], [data-pin-no]").forEach(btn => btn.addEventListener("click", async () => {
       const ok = !!btn.dataset.pinOk, id = btn.dataset.pinOk || btn.dataset.pinNo;
       box.querySelectorAll("button").forEach(x => x.disabled = true); btn.textContent = ok ? "Approving…" : "Declining…";
-      const { data: r, error: e2 } = await db.functions.invoke("aslp-pin", { body: { action: "review", id, ok } });
+      const { data: r, error: e2 } = await db.functions.invoke("aslp-pin", { body: { action: btn.dataset.pt === "gmail" ? "review_alt" : "review", id, ok } });
       if (e2 || (r && r.error)) { let msg = (r && r.error) || ""; try { if (!msg && e2 && e2.context) msg = (await e2.context.json()).error; } catch (x) {} alert0(msg || "That didn't work. Please try again."); }
       draw();
     }));
