@@ -356,6 +356,7 @@
   .aside-box + .aside-box { margin-top: var(--g3); }
   .aside-box .h3 + * { margin-top: var(--g2); }
   .contact + .contact { margin-top: var(--g2); padding-top: var(--g2); border-top: 1px solid var(--line); }
+  .contact .gr { display: inline-block; font-size: 12.5px; font-weight: 750; color: var(--ink); background: color-mix(in srgb, #f5c400 45%, var(--paper)); border-radius: 999px; padding: 2px 10px; margin-bottom: 4px; }
   .contact .nm { font-weight: 750; line-height: 1.35; } .contact .rl { color: var(--ink-2); font-size: 14.5px; line-height: 1.45; margin-top: 2px; }
   .contact .em { margin-top: 4px; display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; }
   .contact a { font-size: 14.5px; word-break: break-all; color: var(--blue); }
@@ -503,9 +504,15 @@
   .chip-btn { border: 1.5px solid var(--line); background: var(--paper); color: var(--ink); border-radius: 999px; padding: 6px 14px; font: inherit; font-weight: 700; font-size: 14px; cursor: pointer; }
   .chip-btn.on { background: var(--ink); color: var(--paper); border-color: var(--ink); }
   .ed-rows { display: grid; gap: var(--g2); margin-top: var(--g3); }
-  .ed-row { display: grid; grid-template-columns: .7fr 1.1fr 1.3fr 1.3fr 1fr auto; gap: var(--g2); align-items: end; background: var(--paper); border-radius: 14px; padding: var(--g2); }
-  #con-box .ed-row, #gm-box .ed-row { grid-template-columns: .7fr 1.1fr 1.4fr 1.4fr auto; }
-  #nw-box .ed-row { grid-template-columns: 1.4fr .8fr 2fr auto; }
+  .ed-row { display: grid; grid-template-columns: .7fr 1.1fr 1.3fr 1.3fr 1fr auto auto; gap: var(--g2); align-items: end; background: var(--paper); border-radius: 14px; padding: var(--g2); }
+  #con-box .ed-row { grid-template-columns: .7fr 1.1fr 1.4fr 1.4fr auto auto; }
+  #gm-box .ed-row { grid-template-columns: 1.2fr .7fr 1.1fr 1.4fr 1.3fr auto auto; }
+  #nw-box .ed-row { grid-template-columns: 1.4fr .8fr 2fr auto auto; }
+  .ed-move { display: flex; gap: 4px; padding-bottom: 2px; }
+  .ed-move button { width: 32px; height: 34px; border: 1px solid var(--line); border-radius: 8px; background: var(--paper); color: var(--ink); font-size: 15px; cursor: pointer; }
+  .ed-move button:hover { border-color: var(--ink); }
+  .ed-rows > .ed-row:first-child .ed-up, .ed-rows > .ed-row:last-child .ed-down { opacity: .35; }
+  .ed-row.moved { outline: 2px solid #f5c400; outline-offset: 2px; transition: outline-color .6s; }
   .ed-row label, .ed-grid label { display: grid; gap: 4px; font-size: 12.5px; font-weight: 700; color: var(--ink-2); }
   .ed-row input, .ed-row select, .ed-grid input, .ed-grid textarea { font: inherit; font-size: 14.5px; font-weight: 400; color: var(--ink); padding: 8px 10px; border-radius: 10px; border: 1px solid var(--line); background: var(--paper); width: 100%; min-width: 0; }
   .ed-del { border: 0; background: none; color: var(--ink-3); font: inherit; font-size: 13px; cursor: pointer; padding: 8px 4px; text-decoration: underline; }
@@ -699,7 +706,7 @@ const tags = list => `<div class="tags">${(list || []).map(x => `<span class="ta
 const statusChip = t => { const s = STATUS[t.status]; return s ? `<span class="status-chip"><i style="background:${s[1]}"></i>${s[0]}</span>` : "Not recorded"; };
 function contactHtml(c) {
   const name = [c.rank, c.name].filter(Boolean).join(" ");
-  return `<div class="contact"><div class="nm">${esc(name)}</div>${c.role ? `<div class="rl">${esc(c.role)}</div>` : ""}
+  return `<div class="contact">${c.groupRole ? `<div class="gr">${esc(c.groupRole)}</div>` : ""}<div class="nm">${esc(name)}</div>${c.role ? `<div class="rl">${esc(c.role)}</div>` : ""}
     ${c.email ? `<div class="em"><a href="mailto:${esc(c.email)}">${esc(c.email)}</a><button class="copy" data-copy="${esc(c.email)}">Copy</button></div>` : ""}</div>`;
 }
 document.addEventListener("click", async e => {
@@ -1193,7 +1200,7 @@ function pageGroup(key) {
     <div class="wrap"><div class="grp-hero" style="background:${GBG[i % 4]};${i % 4 === 2 ? "color:#000" : ""}">${decor(GSHAPES[i % 4])}<h1><b>${esc(g.short)}</b></h1><div class="gn">${esc(g.name)}</div></div></div>
     <div class="wrap page-body">${DIAGRAMS[g.key] || (V().can_groups || []).includes(g.key) ? `<div class="grp-actions">${DIAGRAMS[g.key] ? `<button type="button" class="btn fill" data-grp-pdf="${esc(g.key)}">Download one-page summary (PDF)</button>` : ""}${(V().can_groups || []).includes(g.key) ? `<a class="btn" href="#/console/group/${esc(g.key)}">Edit this group</a>` : ""}</div>` : ""}<div class="two-col">
       <div class="stack"><h2 class="h2">About the ${esc(g.short)}</h2>${g.description ? g.description.split(/\n\s*\n/).map(paraHtml).join("") : `<p class="empty">A description of the ${esc(g.name)} is coming soon.</p>`}</div>
-      <div class="aside-box"><h2 class="h3">Members</h2>${(g.members || []).length ? `<div>${g.members.map(m => contactHtml({ ...m, role: [m.role, m.territory && (terrName(m.territory) || m.territory)].filter(Boolean).join(", ") })).join("")}</div>` : `<p class="empty">Members will be listed here.</p>`}</div>
+      <div class="aside-box"><h2 class="h3">Members</h2>${(g.members || []).length ? `<div>${g.members.map(m => contactHtml({ ...m, groupRole: m.groupRole, role: [m.role, m.territory && (terrName(m.territory) || m.territory)].filter(Boolean).join(", ") })).join("")}</div>` : `<p class="empty">Members will be listed here.</p>`}</div>
     </div>${(g.key === "apsg" ? apsgPurpose() : "") + (DIAGRAMS[g.key] ? (pendingMaps.push(() => mountDiagram(g.key)), diagramHtml(g.key)) : "")}</div>`;
 }
 
@@ -1299,7 +1306,7 @@ async function groupPDF(key, btn) {
     const bandPics = pics.slice(0, 3), footPics = pics.slice(3);
     const paras = (g.description || "").split(/\n\s*\n/).map(t => t.trim()).filter(Boolean).map(t => { const m = t.match(/^([A-Z][^:]{2,40}):\s+([\s\S]+)$/); return m ? { h: m[1], t: m[2].charAt(0).toUpperCase() + m[2].slice(1) } : { t }; });
     const pic = (doc, im, x, y, w, rot = 0) => { if (im) doc.addImage(im.url, "PNG", x, y, w, w * im.h / im.w, undefined, "FAST", rot); };
-    const build = async (sc, dW) => {
+    const build = async (sc, dW, plain) => {
       const doc = new jsPDF({ unit: "mm", format: "a4" }); await pdfFonts(doc);
       const M = 15, PW = 210, CW = PW - 2 * M;
       // tagline colours across the top edge
@@ -1326,9 +1333,17 @@ async function groupPDF(key, btn) {
         y += 2.6 * sc;
       }
       if ((g.members || []).length) {
-        headH("Members");
-        g.members.forEach(m => para([[m.rank, m.name].filter(Boolean).join(" "), m.role, m.territory && (terrName(m.territory) || m.territory), m.email].filter(Boolean).join(", "), 9.2));
-        y += 3 * sc;
+        headH("Members"); y += 0.5;
+        const mg = 7, mw = (CW - mg) / 2, ysM = [y, y], f1 = 8.2 * sc, f2 = 7.4 * sc, l1 = f1 * 0.3528 * 1.3, l2 = f2 * 0.3528 * 1.3;
+        g.members.forEach((m, n) => {
+          const c = ysM[0] <= ysM[1] ? 0 : 1, x = M + c * (mw + mg); let yy = ysM[c];
+          doc.setFont("Archivo", "bold"); doc.setFontSize(f1); doc.setTextColor(25, 25, 25);
+          const nm = doc.splitTextToSize(pdfSafe([m.rank, m.name].filter(Boolean).join(" ") + (m.groupRole ? `, ${m.groupRole}` : "")), mw); doc.text(nm, x, yy, { lineHeightFactor: 1.3 }); yy += nm.length * l1;
+          const det = [m.role, m.territory && (terrName(m.territory) || m.territory), m.email].filter(Boolean).join(", ");
+          if (det) { doc.setFont("Archivo", "normal"); doc.setFontSize(f2); doc.setTextColor(80, 80, 76); const dl = doc.splitTextToSize(pdfSafe(det), mw); doc.text(dl, x, yy, { lineHeightFactor: 1.3 }); yy += dl.length * l2; }
+          ysM[c] = yy + 1.8 * sc;
+        });
+        y = Math.max(...ysM) + 2 * sc;
       }
       if (DIAGRAMS[key]) {
         const DD = DIAGRAMS[key];
@@ -1359,7 +1374,7 @@ async function groupPDF(key, btn) {
         y = Math.max(...ys);
       }
       // footer: brand shapes, then the programme line and the page link
-      pic(doc, footPics[0], PW - M - 15, 266, 12, 12); pic(doc, footPics[1], PW - M - 31, 271, 13); pic(doc, footPics[2], PW - M - 40, 268, 6);
+      if (!plain) pic(doc, footPics[0], PW - M - 15, 266, 12, 12); if (!plain) pic(doc, footPics[1], PW - M - 31, 271, 13); if (!plain) pic(doc, footPics[2], PW - M - 40, 268, 6);
       doc.setDrawColor(225, 224, 220); doc.setLineWidth(0.3); doc.line(M, 284, PW - M, 284);
       doc.setFont("Archivo", "bold"); doc.setFontSize(7.6); doc.setTextColor(10, 132, 255); doc.text("LISTEN.", M, 289);
       let fx = M + doc.getTextWidth("LISTEN. "); doc.setTextColor(200, 160, 0); doc.text("LEARN.", fx, 289); fx += doc.getTextWidth("LEARN. "); doc.setTextColor(225, 75, 30); doc.text("LEAD.", fx, 289);
@@ -1369,7 +1384,9 @@ async function groupPDF(key, btn) {
     };
     // shrink text and diagram until everything fits on one page (clear of the footer shapes)
     let out;
-    for (const [sc, dW] of [[1, 1], [1, .9], [.97, .82], [.94, .76], [.91, .72], [.88, .68], [.85, .64], [.82, .6], [.78, .58], [.74, .56]]) { out = await build(sc, dW); if (out.y <= 263) break; }
+    for (const [sc, dW] of [[1, 1], [1, .9], [.97, .82], [.94, .76], [.91, .72], [.88, .68], [.85, .64], [.82, .6], [.78, .58], [.74, .56], [.7, .54], [.66, .52], [.62, .5], [.58, .5]]) { out = await build(sc, dW); if (out.y <= 263) break; }
+    // very long content: drop the footer shapes and use the space down to the footer line
+    if (out.y > 263) for (const [sc, dW] of [[.66, .52], [.6, .5], [.55, .48]]) { out = await build(sc, dW, true); if (out.y <= 280) break; }
     out.doc.save(`ASLP_${g.short}_summary.pdf`);
   } catch (e) { console.error(e); alert("The PDF couldn't be made. Please try again."); }
   btn.disabled = false; btn.textContent = label;
@@ -1427,7 +1444,7 @@ function pageConsole(a, b) {
   </div>`;
 }
 // ---- console: ASLP group details and members ----
-const GRP_COLS = [["rank", "Rank (officers)", "e.g. Major"], ["name", "Name"], ["role", "Appointment / role"], ["email", "Email"]];
+const GRP_COLS = [["groupRole", "Role in this group", "e.g. Chair, SASIA 1 CWG lead"], ["rank", "Rank (officers)", "e.g. Major"], ["name", "Name"], ["role", "Appointment (office role)", "e.g. Chief Secretary, Bangladesh"], ["email", "Email"]];
 function groupEditor(key) {
   const box = $("grp-editor"), g = (data.groups || []).find(x => x.key === key); if (!box || !g) return;
   const admin = !!V().is_full_admin, tor = apsgTor();
@@ -1439,7 +1456,7 @@ function groupEditor(key) {
       <label class="full"><span>Mandate <span class="ed-hint">One point per line. The page says "The APSG makes sure the regional strategy:" before them.</span></span><textarea id="g-mandate" rows="6">${esc(tor.mandate.join("\n"))}</textarea></label>` : ""}
     </div>
     <h3 class="h3" style="margin-top:var(--g5)">Members</h3>
-    <p class="small">Listed on the ${esc(g.short)} page. Being listed doesn't give anyone access to this console.</p>
+    <p class="small">Listed on the ${esc(g.short)} page in this order. Use the arrows to move someone up or down. "Role in this group" is what they do in the ${esc(g.short)} (for example Chair); "Appointment" is their job in The Salvation Army. Being listed doesn't give anyone access to this console.</p>
     <div id="gm-box"><div class="ed-rows">${((g.members || []).length ? g.members : [{}]).map(m => fieldRow(GRP_COLS, m, [])).join("")}</div>
       <div class="ed-actions"><button type="button" class="btn sm ed-add">Add a member</button></div></div>
     <div class="ed-actions sticky"><button type="button" class="btn fill" id="g-save">Save the ${esc(g.short)}</button><a class="textlink" href="#/group/${esc(key)}">View the page</a><span class="ed-msg" id="g-msg" role="status"></span></div>`;
@@ -1511,12 +1528,18 @@ async function accessEditor() {
 const fieldRow = (cols, vals, terrOpts) => `<div class="ed-row">${cols.map(([k, l, ph]) => k === "territory"
   ? `<label><span>${l}</span><select data-k="territory"><option value="">Not linked to a territory</option>${terrOpts.map(t => `<option value="${esc(t.id)}"${vals.territory === t.id ? " selected" : ""}>${esc(shortName(t.name))}</option>`).join("")}</select></label>`
   : `<label><span>${l}</span><input data-k="${k}" type="${k === "email" ? "email" : "text"}" value="${esc(vals[k] || "")}" placeholder="${esc(ph || "")}"></label>`).join("")}
+  <div class="ed-move"><button type="button" class="ed-up" aria-label="Move up" title="Move up">↑</button><button type="button" class="ed-down" aria-label="Move down" title="Move down">↓</button></div>
   <button type="button" class="ed-del" aria-label="Remove">Remove</button></div>`;
 const MEM_COLS = [["rank", "Rank (officers)", "e.g. Captain"], ["name", "Name"], ["role", "Appointment / role"], ["email", "Email"], ["territory", "Territory"]];
 const CON_COLS = [["rank", "Rank (officers)", "e.g. Major"], ["name", "Name"], ["role", "Appointment / role"], ["email", "Email"]];
 const readRows = box => [...box.querySelectorAll(".ed-row")].map(r => Object.fromEntries([...r.querySelectorAll("[data-k]")].map(i => [i.dataset.k, i.value.trim()]))).filter(o => Object.values(o).some(Boolean));
 function wireRows(box, cols, terrOpts) {
-  box.addEventListener("click", e => { const d = e.target.closest(".ed-del"); if (d) d.closest(".ed-row").remove(); });
+  box.addEventListener("click", e => {
+    const d = e.target.closest(".ed-del"); if (d) return d.closest(".ed-row").remove();
+    const up = e.target.closest(".ed-up"), dn = e.target.closest(".ed-down"); if (!up && !dn) return;
+    const row = (up || dn).closest(".ed-row"), sib = up ? row.previousElementSibling : row.nextElementSibling; if (!sib) return;
+    up ? sib.before(row) : sib.after(row); row.classList.add("moved"); setTimeout(() => row.classList.remove("moved"), 600); (up || dn).focus();
+  });
   box.querySelector(".ed-add").addEventListener("click", () => box.querySelector(".ed-rows").insertAdjacentHTML("beforeend", fieldRow(cols, {}, terrOpts)));
 }
 function memEditor(c) {
