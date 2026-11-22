@@ -866,6 +866,9 @@
   .sec-ed-img button { position: absolute; top: -6px; right: -6px; width: 22px; height: 22px; border-radius: 50%; border: 0; background: #000; color: #fff; font-size: 14px; line-height: 1; cursor: pointer; }
   .sec-ed-addimg { height: 70px; padding: 0 14px; border: 1.5px dashed var(--line); border-radius: 8px; display: inline-flex; align-items: center; font-size: 13px; font-weight: 700; cursor: pointer; color: var(--ink-2); }
   .ua { max-width: 860px; margin: var(--g4) 0 var(--g5); }
+  /* whatever people type (even one very long word or link) wraps inside the page */
+  .ud-body, .ua, .ua-h, .ud-head .h1, .up-t, .up-x, .sl-p, .sl-t, .sec-ed textarea { overflow-wrap: anywhere; word-break: break-word; min-width: 0; }
+  .ud-body, .ua-sec { max-width: 100%; }
   .ua-sec { margin-top: var(--g6); } .ua-sec:first-child { margin-top: var(--g4); }
   .ua-h { font-size: clamp(22px, 2.2vw, 28px); font-weight: 800; letter-spacing: -.015em; line-height: 1.2; margin-bottom: var(--g3); padding-left: 14px; border-left: 5px solid var(--cwg-a, var(--orange)); }
   .ua-imgs { display: grid; gap: var(--g2); margin-top: var(--g3); }
@@ -2419,6 +2422,7 @@ function updateEditor(u, redraw) {
     </div>
     <div class="ed-actions"><button type="button" class="btn fill sm" id="ue-save">${st.id ? "Save changes" : "Publish the update"}</button><button type="button" class="btn sm" id="ue-cancel">Cancel</button><span class="ed-msg" id="ue-msg" role="status"></span></div></div>`;
   const msg = (t, c = "") => { const m = $("ue-msg"); m.className = "ed-msg " + c; m.innerHTML = t; };
+  if (u.kind === "pptx" && !Array.isArray(u.sections) && !(u.body || "").trim() && (u.slides || []).length) $("ue-body").value = slidesToSections(u.slides).intro;
   const dkey = `upd:${st.id || "new"}`; box.dataset.draft = dkey;
   const fieldsNow = () => ({ cwg: $("ue-cwg").value, title: $("ue-title").value, date: $("ue-date").value, body: $("ue-body").value });
   const base = JSON.stringify({ f: fieldsNow(), kind: st.kind, file: st.file, photos: st.photos, sections: st.sections });
@@ -2826,7 +2830,7 @@ function needUpdates() {
 const UKIND = { pdf: "PDF", pptx: "Article" };
 const fmtDate = d => { if (!d) return ""; const x = new Date(String(d).slice(0, 10) + "T00:00:00"); return isNaN(x) ? "" : x.toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" }); };
 const upCover = u => u.cover || (u.photos || [])[0] || ((u.sections || []).find(s => (s.images || []).length) || { images: [] }).images[0] || (u.pages || [])[0] || ((u.slides || []).find(s => (s.images || []).length) || { images: [] }).images[0] || "";
-const upExcerpt = u => { const t = (u.body || "").trim() || (u.slides || []).flatMap(s => s.paras || []).map(p => p.t || p).slice(0, 4).join(" · "); return t.replace(/^[-•]\s*/gm, "").replace(/\s+/g, " ").slice(0, 220); };
+const upExcerpt = u => { const t = (u.body || "").trim() || (Array.isArray(u.sections) ? u.sections.map(x => x.t || "").filter(Boolean).join(" ") : (u.slides || []).flatMap(s => s.paras || []).map(p => p.t || p).slice(0, 4).join(" · ")); return t.replace(/^[-•]\s*/gm, "").replace(/\s+/g, " ").slice(0, 220); };
 const linkify = t => esc(t).replace(/(https?:\/\/[^\s<]+[^\s<.,;:)])/g, '<a class="textlink" href="$1" target="_blank" rel="noopener noreferrer">$1</a>');
 // typed text: a blank line starts a new paragraph; lines starting with "-" or "•" become a list
 function fmtBody(t) {
