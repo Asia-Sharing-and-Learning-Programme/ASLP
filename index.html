@@ -591,6 +591,8 @@
   .mg-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: var(--g2); flex: 1; }
   .mg-list .member { height: 100%; }
   .mg-place { display: inline-block; font-size: 12.5px; font-weight: 700; color: var(--cwg-a, var(--blue)); background: color-mix(in srgb, var(--cwg-a, var(--blue)) 10%, transparent); border-radius: 999px; padding: 2px 10px; margin-bottom: 8px; }
+  .ut-group { margin-top: var(--g4); } .ut-group .h3 { font-size: 17px; margin-bottom: var(--g2); }
+  .ut-row { margin: 0 0 8px; }
   .unit-of { font-size: 18px; margin: 0; color: var(--ink-2); } .unit-row .nm::before { content: "↳ "; color: var(--ink-3); }
   .ed-grid .ed-field { display: grid; gap: 6px; font-size: 12.5px; font-weight: 700; color: var(--ink-2); }
   .synced { background: var(--paper); border-radius: 16px; padding: var(--g4); margin-top: var(--g3); border-left: 5px solid var(--blue); }
@@ -1464,8 +1466,11 @@ function pageTerritory(id) {
 }
 
 // ---- REGIONS, DIVISIONS AND COUNTRIES inside a territory (each with its own profile, linked to its territory) ----
-const units = () => data.units || [];
+const allUnits = () => data.units || [];
+const units = () => allUnits().filter(u => u.enabled);          // only profiles a CWG lead has switched on
 const unitById = id => units().find(u => u.id === id);
+const anyUnitById = id => allUnits().find(u => u.id === id);
+const canToggleUnit = id => (V().can_toggle_units || []).includes(id);
 const unitsOf = pid => units().filter(u => u.parent === pid);
 const canUnit = id => (V().can_units || []).includes(id);
 const unitContacts = u => { const seen = new Set(), out = [];
@@ -1515,7 +1520,7 @@ function pageUnit(u) {
 function memberGroups(ms, c) {
   const groups = [], byKey = {};
   ms.forEach(m => {
-    const t = terrs().find(x => x.id === m.territory), u = m.unit && units().find(x => x.parent === m.territory && x.name === m.unit);
+    const t = terrs().find(x => x.id === m.territory), u = m.unit && allUnits().find(x => x.parent === m.territory && x.name === m.unit);
     const key = !t ? "_none" : u && t.cwg !== c ? "u:" + u.id : t.id;
     if (!byKey[key]) { byKey[key] = { key, t, u: key.startsWith("u:") ? u : null, ms: [] }; groups.push(byKey[key]); }
     byKey[key].ms.push(m); });
@@ -1525,7 +1530,7 @@ function memberGroups(ms, c) {
   return `<div class="mem-groups">${groups.map(g => {
     const n = g.ms.length, places = new Set(g.ms.map(m => m.unit || "")), multi = !g.u && g.t && places.size > 1;
     const title = g.key === "_none" ? "Other members" : g.u ? g.u.name : (OFFICIAL_NAME[g.t.id] || g.t.name);
-    const href = g.key === "_none" ? "" : `#/territory/${esc(g.u ? g.u.id : g.t.id)}`;
+    const href = g.key === "_none" || (g.u && !g.u.enabled) ? "" : `#/territory/${esc(g.u ? g.u.id : g.t.id)}`;
     const sub = g.u ? `Part of the ${shortName(OFFICIAL_NAME[g.t.id] || g.t.name)} Territory` : "";
     return `<section class="mem-group" style="--n:${Math.min(n, 4)}" aria-label="${esc(title)}">
       <div class="mg-head">${href ? `<a href="${href}">${esc(title)}</a>` : `<b>${esc(title)}</b>`}${sub ? `<span>${esc(sub)}</span>` : ""}<span class="mg-n">${n} ${n === 1 ? "member" : "members"}</span></div>
@@ -1536,8 +1541,24 @@ const unitRows = us => us.map(u => { const p = u.profile || {}, t = terrs().find
   return `<a class="terr-row unit-row" href="#/territory/${esc(u.id)}"><div class="nm">${esc(u.name)}</div>
     <div class="where">Part of the ${esc(shortName(OFFICIAL_NAME[t.id] || t.name || ""))} Territory${u.location ? ` · ${esc(u.location)}` : ""}</div>
     ${(p.thematic || []).length ? tags(p.thematic.slice(0, 4)) : `<span class="small">Profile coming soon</span>`}</a>`; }).join("");
+// console: CWG leads and admins switch sub-unit profiles on or off
+function unitsToggles() {
+  const box = $("units-editor"); if (!box) return;
+  const ids = (V().can_toggle_units || []).filter(anyUnitById), byParent = {};
+  ids.forEach(id => { const u = anyUnitById(id); (byParent[u.parent] = byParent[u.parent] || []).push(u); });
+  box.innerHTML = Object.keys(byParent).map(pid => `<div class="ut-group"><h3 class="h3">${esc(OFFICIAL_NAME[pid] || terrName(pid))}</h3>
+    ${byParent[pid].map(u => `<label class="toggle ut-row"><input type="checkbox" data-unit="${esc(u.id)}" ${u.enabled ? "checked" : ""}><div><b>${esc(u.name)}</b>
+      <span>${esc(u.kind)} · ${esc(u.cwg)} CWG${u.enabled ? ` · <a class="textlink" href="#/territory/${esc(u.id)}">View</a> · <a class="textlink" href="#/console/territory/${esc(u.id)}">Edit profile</a>` : " · Hidden"}</span></div></label>`).join("")}</div>`).join("")
+    + `<span class="ed-msg" id="units-msg" role="status"></span>`;
+  box.onchange = async e => { const i = e.target.closest("[data-unit]"); if (!i) return;
+    i.disabled = true; const m = $("units-msg"); m.className = "ed-msg"; m.textContent = "Saving…";
+    const { error } = await db.rpc("aslp_set_unit_enabled", { p_id: i.dataset.unit, p_on: i.checked });
+    if (error) { i.checked = !i.checked; i.disabled = false; m.className = "ed-msg err"; m.textContent = error.message || "Couldn't save."; return; }
+    await refresh(); m.className = "ed-msg ok"; m.textContent = `${anyUnitById(i.dataset.unit).name} is now ${i.checked ? "shown on" : "hidden from"} the website.`;
+    unitsToggles(); $("units-msg").className = "ed-msg ok"; $("units-msg").textContent = m.textContent; };
+}
 function unitEditor(id) {
-  const box = $("terr-editor"), u = unitById(id); if (!box || !u) return;
+  const box = $("terr-editor"), u = anyUnitById(id); if (!box || !u) return;
   const p = u.profile || {}, t = terrs().find(x => x.id === u.parent) || {};
   box.innerHTML = `<div class="synced"><div class="synced-h"><b>${esc(u.name)}</b><span class="small">${esc(u.kind === "Country" ? "Part of the" : `A ${u.kind.toLowerCase()} of the`)} ${esc(OFFICIAL_NAME[t.id] || t.name || "")} · ${esc(u.cwg)} CWG. It shares the territory's CD Strategy.</span></div></div>
     <div class="ed-grid">
@@ -2063,24 +2084,28 @@ function pageConsole(a, b) {
     <p class="small">The territory's name, CWG, headquarters, countries, offices, status, strategy period and focal person are kept there and shown on this website automatically.</p>
     <a class="btn fill" href="${CDS_URL}#admin">Open the CD Strategies console</a></div></div>`;
   if (!terrIds.length && !cwgs.length && !groups.length && !v.is_full_admin) return head + `<div class="wrap page-body"><div class="console-card"><p>This account can't edit any website details yet. CWG leads and admins edit their CWGs; CWG members edit their own territory. Ask your CWG lead or the ASLP Coordinator for access.</p></div></div>`;
-  const unitIds = (v.can_units || []).filter(unitById);
+  const unitIds = (v.can_units || []).filter(id => { const u = anyUnitById(id); return u && (u.enabled || canToggleUnit(id)); });
+  const toggleIds = (v.can_toggle_units || []).filter(anyUnitById);
   const selT = a === "territory" && terrIds.includes(b) ? b : a === "territory" && unitIds.includes(b) ? "u:" + b : terrIds[0] || (unitIds[0] ? "u:" + unitIds[0] : "");
   const selC = a === "cwg" ? cwgs.find(c => cwgSlug(c) === b) : null;
   pendingMaps.push(() => mountConsole());
   const canUpd = cwgs.length || Object.keys(PGROUPS).some(canGroupPost);
-  const secs = [canUpd && ["cc-updates", "Updates"], cwgs.length && ["cc-members", "CWG members"], (terrIds.length || unitIds.length) && ["cc-terr", "Territory profiles"], groups.length && ["cc-groups", "ASLP Groups"], v.is_full_admin && ["cc-pages", "Pages and newsletter"], v.is_full_admin && ["cc-access", "Access"]].filter(Boolean);
+  const secs = [canUpd && ["cc-updates", "Updates"], toggleIds.length && ["cc-units", "Regions and countries"], cwgs.length && ["cc-members", "CWG members"], (terrIds.length || unitIds.length) && ["cc-terr", "Territory profiles"], groups.length && ["cc-groups", "ASLP Groups"], v.is_full_admin && ["cc-pages", "Pages and newsletter"], v.is_full_admin && ["cc-access", "Access"]].filter(Boolean);
   return head + `<div class="wrap page-body">
     ${secs.length > 1 ? `<nav class="con-nav" aria-label="Console sections">${secs.map(([id, l]) => `<button type="button" class="chip-btn" data-jump="${id}">${l}</button>`).join("")}</nav>` : ""}
     ${canUpd ? `<section class="console-card" id="cc-updates"><div class="row-head"><h2 class="h2">Updates</h2><button type="button" class="btn fill sm" id="up-new">Post an update</button></div>
       <p class="small">${cwgs.length ? `CWG activities and news go to <a class="textlink" href="#/updates">CWG Updates</a>.` : ""}${Object.keys(PGROUPS).some(canGroupPost) ? ` News and decisions from the ${Object.keys(PGROUPS).filter(canGroupPost).map(k => esc(grpOf(k).short)).join(" and ")} go to <a class="textlink" href="#/programmatic">Programmatic Updates</a>.` : ""} Write the update here, or upload a PDF or PowerPoint and the website lays it out for you.</p>
       <div id="up-editor"></div><div id="up-list">${loader("Loading your updates…")}</div></section>` : ""}
+    ${toggleIds.length ? `<section class="console-card" id="cc-units"><h2 class="h2">Regions, divisions and countries</h2>
+      <p class="small">Switch on a profile for a region, division or country inside one of your territories. Once it's on, it gets its own page linked to its territory, shows on the CWG page, and its profile can be edited under Territory profiles. Switched-off profiles don't appear anywhere on the website.</p>
+      <div id="units-editor"></div></section>` : ""}
     ${cwgs.length ? `<section class="console-card" id="cc-members"><div class="row-head"><h2 class="h2">CWG members</h2></div>
       <p class="small">Add each CWG member's rank (if an officer), name, appointment or role and email. Members linked to a territory are listed on that territory's page and can sign in to edit its profile.</p>
       ${cwgs.length > 1 ? `<div class="cw-pick" role="tablist">${cwgs.map(c => `<button type="button" role="tab" class="chip-btn${c === (selC || cwgs[0]) ? " on" : ""}" data-cw="${esc(c)}">${esc(c)}</button>`).join("")}</div>` : ""}
       <div id="mem-editor"></div></section>` : ""}
     ${terrIds.length || unitIds.length ? `<section class="console-card" id="cc-terr"><div class="row-head"><h2 class="h2">Territory profiles</h2>
       <select id="t-pick" aria-label="Territory">${terrIds.length ? `<optgroup label="Territories">${terrIds.map(id => `<option value="${esc(id)}"${id === selT ? " selected" : ""}>${esc(terrName(id))}</option>`).join("")}</optgroup>` : ""}
-        ${unitIds.length ? `<optgroup label="Regions, divisions and countries">${unitIds.map(id => `<option value="u:${esc(id)}"${"u:" + id === selT ? " selected" : ""}>${esc(unitById(id).name)}</option>`).join("")}</optgroup>` : ""}</select></div>
+        ${unitIds.length ? `<optgroup label="Regions, divisions and countries">${unitIds.map(id => `<option value="u:${esc(id)}"${"u:" + id === selT ? " selected" : ""}>${esc(anyUnitById(id).name)}${anyUnitById(id).enabled ? "" : " (hidden)"}</option>`).join("")}</optgroup>` : ""}</select></div>
       <div id="terr-editor"></div></section>` : ""}
     ${groups.length ? `<section class="console-card" id="cc-groups"><div class="row-head"><h2 class="h2">ASLP Groups</h2>
       <select id="g-pick" aria-label="Group">${groups.map(k => { const g = (data.groups || []).find(x => x.key === k) || { short: k }; return `<option value="${esc(k)}"${a === "group" && b === k ? " selected" : ""}>${esc(g.short)}${g.name ? ` (${esc(g.name)})` : ""}</option>`; }).join("")}</select></div>
@@ -2593,6 +2618,7 @@ function mountConsole() {
   document.querySelectorAll("[data-jump]").forEach(x => x.addEventListener("click", () => $(x.dataset.jump).scrollIntoView({ behavior: "smooth", block: "start" })));
   if ($("grp-editor")) { groupEditor($("g-pick").value); $("g-pick").addEventListener("change", e => groupEditor(e.target.value)); if (a === "group") setTimeout(() => $("cc-groups").scrollIntoView({ block: "start" }), 50); }
   if ($("up-list")) { const id = (location.hash.replace(/^#\/?/, "")).split("/")[3]; updatesConsole(a === "updates" ? { cwg: b, id, open: !id } : {}); if (a === "updates") setTimeout(() => $("cc-updates").scrollIntoView({ block: "start" }), 50); }
+  if ($("units-editor")) unitsToggles();
   if ($("pages-editor")) pagesEditor();
   if ($("access-editor")) accessEditor();
   if ($("terr-editor")) {
