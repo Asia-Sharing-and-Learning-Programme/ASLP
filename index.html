@@ -2918,7 +2918,6 @@ function pageActivities() {
     <div class="wrap page-body">${ACT_PILLARS.map(p => `<section class="act-sec" id="act-${p.key}" style="--ac:${p.c}">
         <div class="act-head"><h2 class="act-name">${p.name}</h2><div><p class="lede">${esc(p.lede)}</p><p class="act-src">${esc(p.src)}</p></div></div>
         <div class="act-grid">${rows(p.acts)}</div></section>`).join("")}
-      <p class="small act-note">Activities are grouped and named for this page from the ASLP 2024–2027 proposal, its logframe and Theory of Change. The grey notes show which logframe outputs and activities each one comes from.</p>
     </div>`;
 }
 document.addEventListener("click", e => { const b = e.target.closest("[data-act-jump]"); if (!b) return; e.preventDefault(); const t = $("act-" + b.dataset.actJump); if (t) t.scrollIntoView({ behavior: "smooth", block: "start" }); });
