@@ -674,7 +674,7 @@
 <dialog id="sdlg" class="mini-dlg" aria-labelledby="sdlg-title">
   <div class="md-head"><h2 class="h3" id="sdlg-title">Share the ASLP website</h2><button type="button" class="md-x" data-close aria-label="Close">×</button></div>
   <p class="small">Anyone with the link can open the site.</p>
-  <div class="copy-row"><input type="text" id="sdlg-url" readonly aria-label="Website link"><button type="button" class="btn fill sm" data-copy="sdlg-url">Copy link</button></div>
+  <div class="copy-row"><input type="text" id="sdlg-url" readonly aria-label="Website link"><button type="button" class="btn fill sm" data-copy-from="sdlg-url">Copy link</button></div>
   <p class="small" style="margin-top:var(--g3)">Share via</p>
   <div class="share-apps">
     <a class="share-app" id="sh-wa" target="_blank" rel="noopener noreferrer"><span class="sa-dot" style="background:#25d366"></span>WhatsApp</a>
@@ -733,8 +733,9 @@ $("share-btn").addEventListener("click", () => {
 $("sdlg-native").addEventListener("click", () => navigator.share({ title: "ASLP | Asia-Pacific Sharing & Learning Programme", url: SITE_URL }).catch(() => {}));
 $("sdlg").addEventListener("click", async e => {
   if (e.target === $("sdlg") || e.target.closest("[data-close]")) return $("sdlg").close();
-  const b = e.target.closest("[data-copy]"); if (!b) return;
-  try { await navigator.clipboard.writeText($(b.dataset.copy).value); } catch (err) { $(b.dataset.copy).select(); document.execCommand("copy"); }
+  const b = e.target.closest("[data-copy-from]"); if (!b) return;
+  const src = $(b.dataset.copyFrom);
+  try { await navigator.clipboard.writeText(src.value); } catch (err) { src.select(); document.execCommand("copy"); }
   const o = b.textContent; b.textContent = "Copied"; setTimeout(() => b.textContent = o, 1500);
 });
 
