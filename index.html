@@ -674,8 +674,7 @@
   <p class="small" style="margin-top:var(--g3)">Share via</p>
   <div class="share-apps">
     <a class="share-app" id="sh-wa" target="_blank" rel="noopener noreferrer"><span class="sa-dot" style="background:#25d366"></span>WhatsApp</a>
-    <a class="share-app" id="sh-ol"><span class="sa-dot" style="background:#0078d4"></span>Outlook</a>
-    <a class="share-app" id="sh-olweb" target="_blank" rel="noopener noreferrer"><span class="sa-dot" style="background:#0f6cbd"></span>Outlook on the web</a>
+    <a class="share-app" id="sh-ol"><span class="sa-dot" style="background:#e14b1e"></span>Email</a>
     <a class="share-app" id="sh-tm" target="_blank" rel="noopener noreferrer"><span class="sa-dot" style="background:#5b5fc7"></span>Teams</a>
     <button type="button" class="share-app" id="sdlg-native" hidden>More…</button>
   </div>
@@ -724,7 +723,6 @@ $("share-btn").addEventListener("click", () => {
   const subj = "Asia-Pacific Sharing & Learning Programme (ASLP) website", msg = `Here is the link to the Asia-Pacific Sharing & Learning Programme (ASLP) website: ${SITE_URL}`;
   $("sh-wa").href = `https://wa.me/?text=${encodeURIComponent(msg)}`;
   $("sh-ol").href = `mailto:?subject=${encodeURIComponent(subj)}&body=${encodeURIComponent(msg)}`;
-  $("sh-olweb").href = `https://outlook.office.com/mail/deeplink/compose?subject=${encodeURIComponent(subj)}&body=${encodeURIComponent(msg)}`;
   $("sh-tm").href = `https://teams.microsoft.com/share?href=${encodeURIComponent(SITE_URL)}&msgText=${encodeURIComponent(subj)}`;
   $("sdlg").showModal(); setTimeout(() => $("sdlg-url").select(), 30);
 });
