@@ -848,6 +848,9 @@
   .up-list { display: grid; gap: 8px; margin-top: var(--g3); }
   .up-li { display: grid; grid-template-columns: 74px minmax(0, 1fr) auto; gap: var(--g3); align-items: center; background: var(--paper); border-radius: 14px; padding: 10px; }
   .up-li .th { width: 74px; height: 52px; border-radius: 8px; background: var(--cwg-a, var(--blue)); overflow: hidden; } .up-li .th img { width: 100%; height: 100%; object-fit: cover; }
+  .ro-cons { display: grid; gap: 6px; background: var(--paper); border-radius: 12px; padding: 12px 14px; font-size: 14.5px; }
+  .wait-tag { display: inline-block; background: #f5c400; color: #000; font-weight: 700; font-size: 12px; border-radius: 999px; padding: 1px 9px; }
+  .wait-note { display: flex; flex-wrap: wrap; gap: 10px 16px; align-items: center; background: #fff6cc; color: #000; border-radius: 14px; padding: 14px 18px; margin-bottom: var(--g4); }
   .up-li b { display: block; } .up-li .small { margin: 0; } .up-li .acts { display: flex; gap: 6px; } .up-li .acts .btn { margin: 0; }
   .up-ed { background: var(--paper); border-radius: 18px; padding: var(--g4); margin-top: var(--g4); border: 2px solid var(--ink); }
   .seg-pick { display: flex; flex-wrap: wrap; gap: 8px; } .seg-pick .chip-btn.on { background: var(--ink); color: var(--paper); border-color: var(--ink); }
@@ -1405,6 +1408,9 @@ function openLightbox(y, k) {
   lb.onkeydown = e => { if (e.key === "ArrowRight") show(k + 1); if (e.key === "ArrowLeft") show(k - 1); };
   lb.showModal();
 }
+document.addEventListener("click", async e => { const b = e.target.closest("[data-uap-page]"); if (!b) return; b.disabled = true; b.textContent = "Publishing…";
+  const { error } = await db.rpc("aslp_approve_update", { p_id: b.dataset.uapPage }); if (error) { b.disabled = false; b.textContent = error.message || "Couldn't approve"; return; }
+  await loadUpdates(true); route(); });
 document.addEventListener("click", e => { const b = e.target.closest("[data-lb]"); if (b) openLightbox(b.dataset.lb, +b.dataset.k); });
 let histTarget = "";
 document.addEventListener("click", e => { const b = e.target.closest("[data-hist-year]"); if (b) histTarget = b.dataset.histYear; });
@@ -1636,8 +1642,11 @@ function unitsToggles() {
     await refresh(); unitsToggles();
     done(i ? `${name} is now ${i.checked ? "activated on" : "hidden from"} the website.` : `${name} now belongs to ${sel.value}.`); };
 }
+// contact persons see who the contacts are; only admins and the CWG's leads change them
+const roContacts = cs => `<div class="ro-cons">${(cs || []).length ? (cs || []).map(c => `<div><b>${esc([c.rank, c.name].filter(Boolean).join(" "))}</b>${c.role ? ` · ${esc(c.role)}` : ""}${c.email ? ` · ${esc(c.email)}` : ""}</div>`).join("") : `<p class="small">No contact persons yet.</p>`}<p class="small">Only admins and the CWG's leads change the contact persons.</p></div>`;
 function unitEditor(id) {
   const box = $("terr-editor"), u = anyUnitById(id); if (!box || !u) return;
+  const canConU = canToggleUnit(id) || canCwg(u.cwg);
   const p = u.profile || {}, t = terrs().find(x => x.id === u.parent) || {};
   box.innerHTML = `<div class="synced"><div class="synced-h"><b>${esc(u.name)}</b><span class="small">${esc(u.kind === "Country" ? "Part of the" : `A ${u.kind.toLowerCase()} of the`)} ${esc(OFFICIAL_NAME[t.id] || t.name || "")} · ${esc(u.cwg)} CWG. It shares the territory's CD Strategy.</span></div></div>
     <div class="ed-grid">
@@ -1647,15 +1656,15 @@ function unitEditor(id) {
       <label><span>Technical support they can offer others</span><textarea id="p-tech" rows="4">${esc(p.techSupport || "")}</textarea></label>
     </div>
     <h3 class="h3" style="margin-top:var(--g5)">Contact persons</h3>
-    <p class="small">CWG members linked to ${esc(u.name)} are added to its contacts automatically.</p>
+    ${canConU ? `<p class="small">Contact persons with an email can sign in and edit this profile. CWG members linked to ${esc(u.name)} also show as contacts on the website.</p>
     <div id="con-box"><div class="ed-rows">${((u.contacts || []).length ? u.contacts : [{}]).map(c => fieldRow(CON_COLS, c, [])).join("")}</div>
-      <div class="ed-actions"><button type="button" class="btn sm ed-add">Add a contact</button></div></div>
+      <div class="ed-actions"><button type="button" class="btn sm ed-add">Add a contact</button></div></div>` : roContacts(u.contacts)}
     <div class="ed-actions sticky"><button type="button" class="btn fill" id="terr-save">Save ${esc(u.name)}</button><a class="textlink" href="#/territory/${esc(u.id)}">View the page</a><span class="ed-msg" id="terr-msg" role="status"></span></div>`;
-  wireRows($("con-box"), CON_COLS, []);
+  if (canConU) wireRows($("con-box"), CON_COLS, []);
   makeDraftable(box, `unit:${id}`, () => unitEditor(id));
   $("terr-save").addEventListener("click", () => saveWith("terr-save", "terr-msg", () => db.rpc("aslp_save_unit", { p_id: id,
     p_profile: { workAreas: $("p-work").value.trim(), thematic: $("p-them").value.split(",").map(x => x.trim()).filter(Boolean), strengths: $("p-str").value.trim(), techSupport: $("p-tech").value.trim() },
-    p_contacts: readRows($("con-box")) }), `${u.name} saved.`));
+    p_contacts: canConU ? readRows($("con-box")) : (u.contacts || []) }), `${u.name} saved.`));
 }
 
 // ---- GROUPS ----
@@ -2152,7 +2161,8 @@ function pageConsole(a, b) {
   if (!v.email) return `${crumbs([["Home", "#/"], ["Console"]])}<div class="wrap page-body" style="padding-top:var(--g5)"><h1 class="h1" style="margin-bottom:var(--g5)">Console</h1>${consoleSignin()}</div>`;
   const terrIds = v.can_edit || [], cwgs = v.can_cwgs || [];
   const groups = v.can_groups || [];
-  const who = v.is_full_admin ? "Admin" : (v.lead_cwgs || []).length ? `${v.lead_cwgs.join(" and ")} CWG lead` : (v.member_of || []).length ? "CWG member" : "Signed in";
+  const who = v.is_full_admin ? "Admin" : [(v.lead_cwgs || []).length && `${v.lead_cwgs.join(" and ")} CWG lead`, v.can_approve && "ASC member", (v.post_groups || []).includes("apsg") && !v.can_approve && "APSG member",
+    (v.submit_cwgs || []).length && `${v.submit_cwgs.join(" and ")} CWG member`, (v.can_edit || []).length && !(v.lead_cwgs || []).length && "Contact person"].filter(Boolean).join(" · ") || "Signed in";
   const tab = a === "strategies" ? "strategies" : "website";
   const head = `${crumbs([["Home", "#/"], ["Console"]])}<div class="wrap" style="padding-top:var(--g4)">
     <div class="console-head"><div><h1 class="h1">Console</h1><p class="small" style="margin-top:6px">${esc(who)} · ${esc(v.email)}</p></div><button type="button" class="btn sm" id="si-out">Sign out</button></div>
@@ -2168,7 +2178,7 @@ function pageConsole(a, b) {
   const selT = a === "territory" && terrIds.includes(b) ? b : a === "territory" && unitIds.includes(b) ? "u:" + b : terrIds[0] || (unitIds[0] ? "u:" + unitIds[0] : "");
   const selC = a === "cwg" ? cwgs.find(c => cwgSlug(c) === b) : null;
   pendingMaps.push(() => mountConsole());
-  const canUpd = cwgs.length || Object.keys(PGROUPS).some(canGroupPost);
+  const canUpd = (v.post_cwgs || []).length || (v.submit_cwgs || []).length || Object.keys(PGROUPS).some(canGroupPost);
   const secs = [canUpd && ["cc-updates", "Updates"], toggleIds.length && ["cc-units", "Regions and countries"], cwgs.length && ["cc-members", "CWG members"], (terrIds.length || unitIds.length) && ["cc-terr", "Territory profiles"], groups.length && ["cc-groups", "ASLP Groups"], v.is_full_admin && ["cc-pages", "Pages and newsletter"], v.is_full_admin && ["cc-access", "Access"]].filter(Boolean);
   return head + `<div class="wrap page-body">
     ${secs.length > 1 ? `<nav class="con-sub" role="tablist" aria-label="Console sections">${secs.map(([id, l]) => `<button type="button" role="tab" data-jump="${id}">${l}</button>`).join("")}</nav>` : ""}
@@ -2366,15 +2376,18 @@ function slidesToSections(slides) {
 }
 function updatesConsole(sel) {
   const list = $("up-list"); if (!list) return;
-  const mine = () => (updates || []).filter(canPost);
-  const pickSrc = slug => { const c = (V().can_cwgs || []).find(x => cwgSlug(x) === slug); if (c) return "cwg|" + c; if (slug && canGroupPost(slug)) return "group|" + slug; return ""; };
+  const mine = () => (updates || []).filter(canPost).sort((a, b) => (isPending(b) ? 1 : 0) - (isPending(a) ? 1 : 0));
+  const pickSrc = slug => { const c = [...(V().post_cwgs || []), ...(V().submit_cwgs || [])].find(x => cwgSlug(x) === slug); if (c) return "cwg|" + c; if (slug && canGroupPost(slug)) return "group|" + slug; return ""; };
   const draw = () => { const us = mine();
     list.innerHTML = us.length ? `<div class="up-list">${us.map(u => { const cov = upCover(u);
       return `<div class="up-li" style="${srcVars(u)}"><div class="th">${cov ? `<img src="${esc(cov)}" alt="">` : ""}</div>
-        <div><b>${esc(u.title)}</b><p class="small">${esc(srcLabel(u))} · ${isGrp(u) ? "Programmatic Updates" : "CWG Updates"}${u.date ? ` · ${esc(fmtDate(u.date))}` : ""}${UKIND[u.kind] ? ` · ${UKIND[u.kind]}` : ""}</p></div>
-        <div class="acts"><a class="btn sm" href="#/update/${esc(u.id)}">View</a><button type="button" class="btn sm" data-ue="${esc(u.id)}">Edit</button><button type="button" class="btn sm" data-ud="${esc(u.id)}">Delete</button></div></div>`; }).join("")}</div>`
+        <div><b>${esc(u.title)}</b><p class="small">${isPending(u) ? `<span class="wait-tag">Waiting for approval</span> ` : ""}${esc(srcLabel(u))} · ${isGrp(u) ? "Programmatic Updates" : "CWG Updates"}${u.date ? ` · ${esc(fmtDate(u.date))}` : ""}${UKIND[u.kind] ? ` · ${UKIND[u.kind]}` : ""}${u.by ? ` · sent by ${esc(u.by)}` : ""}</p></div>
+        <div class="acts">${isPending(u) && V().can_approve ? `<button type="button" class="btn fill sm" data-uap="${esc(u.id)}">Approve</button>` : ""}<a class="btn sm" href="#/update/${esc(u.id)}">View</a><button type="button" class="btn sm" data-ue="${esc(u.id)}">Edit</button><button type="button" class="btn sm" data-ud="${esc(u.id)}">Delete</button></div></div>`; }).join("")}</div>`
       : `<p class="empty" style="margin-top:var(--g3)">No updates yet. Select "Post an update" to share your first one.</p>`; };
   list.onclick = async e => {
+    const ap = e.target.closest("[data-uap]");
+    if (ap) { ap.disabled = true; ap.textContent = "Approving…"; const { error } = await db.rpc("aslp_approve_update", { p_id: ap.dataset.uap });
+      if (error) { ap.disabled = false; ap.textContent = error.message || "Couldn't approve"; return; } await loadUpdates(true); draw(); return; }
     const ed = e.target.closest("[data-ue]"); if (ed) return updateEditor(mine().find(u => u.id === ed.dataset.ue), draw);
     const del = e.target.closest("[data-ud]"); if (!del) return;
     if (!del.classList.contains("sure")) { del.classList.add("sure"); del.textContent = "Select again to delete"; setTimeout(() => { if (del.isConnected) { del.classList.remove("sure"); del.textContent = "Delete"; } }, 4000); return; }
@@ -2406,7 +2419,7 @@ function updatesConsole(sel) {
 }
 function updateEditor(u, redraw) {
   const box = $("up-editor"); if (!box || !u) return;
-  const cwgs = V().can_cwgs || [], grps = Object.keys(PGROUPS).filter(canGroupPost);
+  const cwgs = [...(V().post_cwgs || []), ...(V().submit_cwgs || [])], grps = Object.keys(PGROUPS).filter(canGroupPost);
   const fixSrc = v => !v ? "" : v.includes("|") ? v : "cwg|" + v;   // older drafts kept just the CWG name
   const srcs = [...cwgs.map(c => "cwg|" + c), ...grps.map(k => "group|" + k)];
   const st = { id: u.id || null, src: fixSrc(u.src) || (u.cwg ? (isGrp(u) ? "group|" : "cwg|") + u.cwg : "") || srcs[0], kind: u.kind || "text", file: u.file || null, pages: u.pages || [], slides: u.slides || [], photos: [...(u.photos || [])], busy: false,
@@ -2417,7 +2430,7 @@ function updateEditor(u, redraw) {
   box.innerHTML = `<div class="up-ed"><h3 class="h3">${st.id ? "Edit this update" : "New update"}</h3>
     <div class="ed-grid">
       <label><span>Post to</span><select id="ue-cwg">
-        ${cwgs.length ? `<optgroup label="CWG Updates">${cwgs.map(c => `<option value="cwg|${esc(c)}"${"cwg|" + c === st.src ? " selected" : ""}>${esc(c)}</option>`).join("")}</optgroup>` : ""}
+        ${cwgs.length ? `<optgroup label="CWG Updates">${cwgs.map(c => `<option value="cwg|${esc(c)}"${"cwg|" + c === st.src ? " selected" : ""}>${esc(c)}${canSubmitCwg(c) ? " (sent for approval)" : ""}</option>`).join("")}</optgroup>` : ""}
         ${grps.length ? `<optgroup label="Programmatic Updates">${grps.map(k => `<option value="group|${k}"${"group|" + k === st.src ? " selected" : ""}>${esc(grpOf(k).short)}${grpOf(k).name ? ` (${esc(grpOf(k).name)})` : ""}</option>`).join("")}</optgroup>` : ""}</select></label>
       <label><span>Date of the activity <span class="ed-hint">or of the update</span></span><input type="date" id="ue-date" value="${esc(u.date || new Date().toISOString().slice(0, 10))}"></label>
       <label class="full"><span>Title</span><input id="ue-title" value="${esc(u.title || "")}" placeholder="e.g. SASIA 1 meeting on disaster response, Dhaka; or ASC decisions, March 2027"></label>
@@ -2544,7 +2557,8 @@ function updateEditor(u, redraw) {
     if (u.file && u.file.drive && !(st.file && st.file.drive === u.file.drive))   // the old big file was replaced or dropped
       db.functions.invoke("drive-upload", { body: { action: "delete", fileId: u.file.drive } }).catch(() => {});
     await loadUpdates(true); redraw();
-    box.innerHTML = `<p class="ed-msg ok" style="margin-top:var(--g3)">${st.id ? "Changes saved." : "Published."} <a class="textlink" href="#/update/${esc(id)}">See it on the website</a></p>`;
+    const waits = isPending((updates || []).find(x => x.id === id));
+    box.innerHTML = `<p class="ed-msg ok" style="margin-top:var(--g3)">${waits ? `Sent for approval. An ASC member or admin will check it before it appears on the website. <a class="textlink" href="#/update/${esc(id)}">Preview it</a>` : `${st.id ? "Changes saved." : "Published."} <a class="textlink" href="#/update/${esc(id)}">See it on the website</a>`}</p>`;
   };
   drawKind(); drawPhotos();
   setTimeout(() => box.scrollIntoView({ behavior: "smooth", block: "start" }), 30);
@@ -2607,7 +2621,7 @@ async function accessEditor() {
   const roleOpts = [["coordinators", "ASLP Coordinators"], ["all_leads", "All CWG leads"], ...(a.leads || []).map(l => [`lead:${l.cwg}`, `${l.cwg} CWG lead${l.name ? ` (now ${l.name})` : ""}`])];
   box.innerHTML = `<p class="small">Access goes with a role, not a person. When someone new becomes a CWG lead, a territory's CD focal person or a CWG member, they get the same access as the person before them. Admins can always edit everything.</p>
     <label class="toggle"><input type="checkbox" id="ac-lead" ${on("lead_web") ? "checked" : ""}><div><b>CWG leads edit their CWG on this website</b><span>Their CWG's members, and the profiles and contacts of its territories.</span></div></label>
-    <label class="toggle"><input type="checkbox" id="ac-member" ${on("member_web") ? "checked" : ""}><div><b>CWG members edit their own territory on this website</b><span>Only the territory they're linked to in their CWG's member list (${a.memberCount || 0} members with an email). They don't get the CD Strategies console unless they're also that territory's CD focal person.</span></div></label>
+    <label class="toggle"><input type="checkbox" id="ac-member" ${on("member_web") ? "checked" : ""}><div><b>Contact persons edit their territory's profile</b><span>People listed as a territory's (or region's) contact persons, with an email, can sign in and edit that profile only. Admins and CWG leads choose the contact persons. CWG members not listed as contacts can't edit profiles.</span></div></label>
     <label class="toggle"><input type="checkbox" id="ac-focal" ${on("focal_cds") ? "checked" : ""}><div><b>CD focal persons update their territory's CD Strategy</b><span>The person named as focal person in the CD Strategies (${a.focalCount || 0} territories). CWG leads and admins keep their access either way.</span></div></label>
     <h3 class="h3" style="margin-top:var(--g4)">Who can edit each ASLP Group page</h3>
     <p class="small">Besides admins. Group members listed on a page don't get access.</p>
@@ -2679,6 +2693,7 @@ function memEditor(c) {
 }
 function terrEditor(id) {
   const box = $("terr-editor"), t = terrs().find(x => x.id === id); if (!box || !t) return;
+  const canCon = (V().can_contacts || []).includes(id);
   const p = t.profile || {}, offices = (t.offices || []).map(o => o.name).filter(Boolean);
   const shared = canShared(t), hqL = `${isRegion(t) ? "Regional" : "Territorial"} Headquarters`;
   box.innerHTML = `<div class="synced"><div class="synced-h"><b>Shared with the CD Strategies website</b><span class="small">${shared ? "Kept in one place, so both websites always match. Changes you make here also show on the CD Strategies website and go into this territory's update history there." : "Kept in one place, so both websites always match. The CWG lead, the territory's CD focal person or an admin can change these."}</span></div>
@@ -2695,11 +2710,11 @@ function terrEditor(id) {
       <label><span>Technical support they can offer other territories</span><textarea id="p-tech" rows="4">${esc(p.techSupport || "")}</textarea></label>
     </div>
     <h3 class="h3" style="margin-top:var(--g5)">Contact persons</h3>
-    <p class="small">CWG members linked to this territory are added to its contacts automatically.</p>
+    ${canCon ? `<p class="small">Contact persons with an email can sign in and edit this profile. CWG members linked to this territory also show as contacts on the website.</p>
     <div id="con-box"><div class="ed-rows">${((t.contacts || []).length ? t.contacts : [{}]).map(c => fieldRow(CON_COLS, c, [])).join("")}</div>
-      <div class="ed-actions"><button type="button" class="btn sm ed-add">Add a contact</button></div></div>
+      <div class="ed-actions"><button type="button" class="btn sm ed-add">Add a contact</button></div></div>` : roContacts(t.contacts)}
     <div class="ed-actions sticky"><button type="button" class="btn fill" id="terr-save">Save ${esc(shortName(t.name))}</button><a class="textlink" href="#/territory/${esc(t.id)}">View the page</a><span class="ed-msg" id="terr-msg" role="status"></span></div>`;
-  wireRows($("con-box"), CON_COLS, []);
+  if (canCon) wireRows($("con-box"), CON_COLS, []);
   makeDraftable(box, `terr:${id}`, () => terrEditor(id));
   $("terr-save").addEventListener("click", () => saveWith("terr-save", "terr-msg", async () => {
     if (shared) {   // shared fields go to the one record both websites use
@@ -2709,7 +2724,7 @@ function terrEditor(id) {
       if (Object.keys(det).length) { const r0 = await db.rpc("submit_details_update", { p_email: V().email, p_territory: id, p_details: det }); if (r0.error) return r0; }
     }
     const r1 = await db.rpc("aslp_save_profile", { p_territory: id, p_profile: { workAreas: $("p-work").value.trim(), thematic: $("p-them").value.split(",").map(x => x.trim()).filter(Boolean), strengths: $("p-str").value.trim(), techSupport: $("p-tech").value.trim() } });
-    if (r1.error) return r1;
+    if (r1.error || !canCon) return r1;
     return db.rpc("aslp_set_contacts", { p_territory: id, p_items: readRows($("con-box")) });
   }, `${shortName(t.name)} saved.`));
 }
@@ -2858,8 +2873,12 @@ const srcLabel = u => isGrp(u) ? grpOf(u.cwg).short : u.cwg;
 const srcVars = u => isGrp(u) ? `--cwg-a:${(PGROUPS[u.cwg] || PGROUPS.asc).c};--cwg-b:${(PGROUPS[u.cwg] || PGROUPS.asc).b};` : cwgVars(u.cwg);
 const srcSlug = u => isGrp(u) ? u.cwg : cwgSlug(u.cwg);
 const srcList = u => isGrp(u) ? `#/programmatic/${u.cwg}` : `#/updates/${cwgSlug(u.cwg)}`;
-const canGroupPost = k => k in PGROUPS && (V().can_groups || []).includes(k);
-const canPost = u => isGrp(u) ? canGroupPost(u.cwg) : canCwg(u.cwg);
+const canGroupPost = k => k in PGROUPS && (V().post_groups || []).includes(k);
+const canPostCwg = c => (V().post_cwgs || []).includes(c);
+const canSubmitCwg = c => (V().submit_cwgs || []).includes(c);
+const isPending = u => u && u.status === "pending";
+const canPost = u => (isGrp(u) ? canGroupPost(u.cwg) : canPostCwg(u.cwg)) || !!V().can_approve || (isPending(u) && u.mine);
+const liveUpdates = () => (updates || []).filter(u => !isPending(u));
 const UP_ART = [["g11-02", "g7-05"], ["g2-04", "g8-05"], ["g7-03", "g11-04"], ["g8-08", "g2-01"], ["g6-09", "g11-01"]];
 const upArt = u => { const h = [...String(u.id)].reduce((a, c) => a + c.charCodeAt(0), 0), [a, b] = UP_ART[h % UP_ART.length];
   return `<span class="up-cw">${esc(srcLabel(u))}</span><img class="el e1" src="brand/el/${a}.webp" alt="" aria-hidden="true"><img class="el e2" src="brand/el/${b}.webp" alt="" aria-hidden="true">`; };
@@ -2875,7 +2894,7 @@ function pageUpdates(cs) {
   if (!updates) return needUpdates();
   const cwgs = cwgList(), sel = cs ? cwgs.find(c => cwgSlug(c) === cs) : null;
   if (cs && !sel) return notFound();
-  const sec = (c, all) => { const us = updates.filter(u => !isGrp(u) && u.cwg === c), a = ART(c), show = all ? us : us.slice(0, 3);
+  const sec = (c, all) => { const us = liveUpdates().filter(u => !isGrp(u) && u.cwg === c), a = ART(c), show = all ? us : us.slice(0, 3);
     return `<section class="up-sec" style="${cwgVars(c)}" aria-label="${esc(c)} updates"><div class="up-sec-h">${a ? `<a href="#/cwg/${cwgSlug(c)}"><img src="${a.h}" alt="${esc(c)} Cluster Working Group"></a>` : `<h2 class="h2">${esc(c)}</h2>`}
         ${canCwg(c) ? `<a class="btn sm" href="#/console/updates/${cwgSlug(c)}">Post a ${esc(c)} update</a>` : ""}</div>
       ${show.length ? `${upGrid(show)}${!all && us.length > 3 ? `<div class="up-more"><a class="btn sm" href="#/updates/${cwgSlug(c)}">See all ${us.length} ${esc(c)} updates</a></div>` : ""}`
@@ -2900,7 +2919,7 @@ function pageProgrammatic(ks) {
   if (!updates) return needUpdates();
   const keys = Object.keys(PGROUPS), sel = ks ? keys.find(k => k === ks) : null;
   if (ks && !sel) return notFound();
-  const sec = (k, all) => { const g = grpOf(k), us = updates.filter(u => isGrp(u) && u.cwg === k), show = all ? us : us.slice(0, 3);
+  const sec = (k, all) => { const g = grpOf(k), us = liveUpdates().filter(u => isGrp(u) && u.cwg === k), show = all ? us : us.slice(0, 3);
     return `<section class="up-sec" style="--cwg-a:${PGROUPS[k].c};--cwg-b:${PGROUPS[k].b}" aria-label="${esc(g.short)} updates"><div class="up-sec-h">
         <a class="up-gh" href="#/group/${k}"><b>${esc(g.short)}</b><span>${esc(g.name)}</span></a>
         ${canGroupPost(k) ? `<a class="btn sm" href="#/console/updates/${k}">Post an ${esc(g.short)} update</a>` : ""}</div>
@@ -2923,7 +2942,7 @@ function pageUpdate(id) {
   const pages = u.pages || [], slides = u.slides || [], photos = u.photos || [], f = u.file;
   const office = f && f.url && !f.big && u.kind === "pptx" ? `https://view.officeapps.live.com/op/view.aspx?src=${encodeURIComponent(f.url)}` : "";
   if (pages.length) pendingMaps.push(() => mountReader(u));
-  const more = updates.filter(x => x.type === u.type && x.cwg === u.cwg && x.id !== u.id).slice(0, 3), lab = srcLabel(u), sec = isGrp(u) ? ["Programmatic Updates", "#/programmatic"] : ["CWG Updates", "#/updates"];
+  const more = liveUpdates().filter(x => x.type === u.type && x.cwg === u.cwg && x.id !== u.id).slice(0, 3), lab = srcLabel(u), sec = isGrp(u) ? ["Programmatic Updates", "#/programmatic"] : ["CWG Updates", "#/updates"];
   const pics = list => list.map(s => ({ src: s, cap: u.title }));
   galleries[u.id + ":photos"] = pics(photos);
   galleries[u.id + ":slides"] = pics(slides.flatMap(s => s.images || []));
@@ -2935,6 +2954,7 @@ function pageUpdate(id) {
     <div class="wrap ud-head"><div class="up-meta"><a class="ud-cwg" href="${srcList(u)}">${esc(lab)}</a>${u.date ? `<span>${esc(fmtDate(u.date))}</span>` : ""}${UKIND[u.kind] ? `<span class="up-kind">${UKIND[u.kind]}</span>` : ""}</div>
       <h1 class="h1">${esc(u.title)}</h1></div>
     <div class="wrap page-body">
+      ${isPending(u) ? `<div class="wait-note"><b>Waiting for approval.</b> Only you${V().can_approve ? " and other approvers" : " and the ASC members and admins who approve updates"} can see this. ${V().can_approve ? `<button type="button" class="btn fill sm" data-uap-page="${esc(u.id)}">Approve and publish</button>` : ""}</div>` : ""}
       ${u.body ? `<div class="ud-body">${fmtBody(u.body)}</div>` : ""}
       ${photos.length ? `<div class="ud-photos">${photos.map((p, k) => `<button type="button" data-gal="${esc(u.id)}:photos" data-k="${k}" aria-label="Open photo ${k + 1}"><img src="${esc(p)}" alt="" loading="lazy"></button>`).join("")}</div>` : ""}
       ${pages.length ? `<div class="reader" id="reader"></div>` : ""}
