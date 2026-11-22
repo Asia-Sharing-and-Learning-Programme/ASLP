@@ -1402,7 +1402,7 @@ function pageCwg(cs) {
           <div class="where">${t.location ? `${isRegion(t) ? "Regional" : "Territorial"} Headquarters in ${esc(t.location)}` : ""}</div>
           ${(p.thematic || []).length ? tags(p.thematic.slice(0, 4)) : `<span class="small">Profile coming soon</span>`}</a>`; }).join("")}</div>
       ${(() => { const ms = membersOf(c); return `<div class="stack" style="margin-top:var(--g6)"><div class="row-head"><h2 class="h2">${esc(c)} CWG members</h2>${canCwg(c) ? `<a class="btn sm" href="#/console/cwg/${cwgSlug(c)}">Edit members</a>` : ""}</div>
-        ${ms.length ? `<div class="member-grid">${ms.map(m => `<div class="member">${contactHtml({ ...m, role: [m.role, m.territory && shortName(terrName(m.territory))].filter(Boolean).join(", ") })}</div>`).join("")}</div>` : `<p class="empty">The members of ${esc(c)} will be listed here.</p>`}</div>`; })()}
+        ${ms.length ? `<div class="member-grid">${ms.map(m => `<div class="member">${contactHtml({ ...m, role: [m.role, memberPlace(m)].filter(Boolean).join(", ") })}</div>`).join("")}</div>` : `<p class="empty">The members of ${esc(c)} will be listed here.</p>`}</div>`; })()}
       <div style="margin-top:var(--g6)"><div class="aslp-map" id="map-cwg" role="region" aria-label="Map of ${esc(c)} headquarters"></div>${z ? zoneLegend([z.key]) : ""}</div>
       ${countries.length ? `<div class="stack" style="margin-top:var(--g6)"><h3 class="h3">Countries covered</h3><div class="chips">${countries.map(x => `<span class="chip">${esc(x)}</span>`).join("")}</div></div>` : ""}
     </div></div>`;
@@ -2338,14 +2338,34 @@ async function accessEditor() {
     return db.rpc("aslp_set_access", { p_settings: { lead_web: $("ac-lead").checked, member_web: $("ac-member").checked, focal_cds: $("ac-focal").checked, group_editors: groupsSel } });
   }, "Access saved. It applies straight away."));
 }
+// the countries, regions and divisions inside a territory, using The Salvation Army's own terms
+const TERR_UNITS = {
+  smmt: ["Singapore (Territorial Headquarters)", "Malaysia Region", "Myanmar Region", "Thailand"],
+  hkm: ["Hong Kong (Territorial Headquarters)", "Macau", "Mainland China"],
+  korea: ["South Korea (Territorial Headquarters)", "Mongolia", "Cambodia"],
+  "new-zealand": ["New Zealand (Territorial Headquarters)", "Fiji Division", "Tonga Region", "Samoa Region"],
+  png: ["Papua New Guinea (Territorial Headquarters)", "Solomon Islands District"],
+  "india-eastern": ["India (Territorial Headquarters)", "Nepal"],
+  "middle-east": ["Kuwait (Regional Headquarters)", "Bahrain", "Oman", "United Arab Emirates"] };
+const OFFICIAL_NAME = { "new-zealand": "New Zealand, Fiji, Tonga and Samoa Territory" };
+const terrLabel = t => OFFICIAL_NAME[t.id] || t.name;
+// a member's territory, or the country/region/division within it
+const memberPlace = m => m.unit || (m.territory && shortName(OFFICIAL_NAME[m.territory] || terrName(m.territory))) || "";
+// every territory in the zone (SPEA or SASIA), grouped by CWG, with their countries/regions/divisions under them
+const zoneTerrSelect = (vals, terrOpts) => { const groups = {}; terrOpts.forEach(t => (groups[t.cwg] = groups[t.cwg] || []).push(t));
+  const cur = (vals.territory || "") + "|" + (vals.unit || "");
+  return `<select data-k="territory"><option value="">Not linked to a territory</option>${Object.keys(groups).sort().map(g => `<optgroup label="${esc(g)}">${groups[g].map(t =>
+    `<option value="${esc(t.id)}|"${cur === t.id + "|" ? " selected" : ""}>${esc(terrLabel(t))}</option>${(TERR_UNITS[t.id] || []).map(u => `<option value="${esc(t.id)}|${esc(u)}"${cur === t.id + "|" + u ? " selected" : ""}>\u00a0\u00a0\u00a0↳ ${esc(u)}</option>`).join("")}`).join("")}</optgroup>`).join("")}</select>`; };
 const fieldRow = (cols, vals, terrOpts) => `<div class="ed-row">${cols.map(([k, l, ph]) => k === "territory"
-  ? `<label><span>${l}</span><select data-k="territory"><option value="">Not linked to a territory</option>${terrOpts.map(t => `<option value="${esc(t.id)}"${vals.territory === t.id ? " selected" : ""}>${esc(shortName(t.name))}</option>`).join("")}</select></label>`
+  ? `<label><span>${l}</span>${zoneTerrSelect(vals, terrOpts)}</label>`
   : `<label><span>${l}</span><input data-k="${k}" type="${k === "email" ? "email" : "text"}" value="${esc(vals[k] || "")}" placeholder="${esc(ph || "")}"></label>`).join("")}
   <div class="ed-move"><button type="button" class="ed-up" aria-label="Move up" title="Move up">↑</button><button type="button" class="ed-down" aria-label="Move down" title="Move down">↓</button></div>
   <button type="button" class="ed-del" aria-label="Remove">Remove</button></div>`;
 const MEM_COLS = [["rank", "Rank (officers)", "e.g. Captain"], ["name", "Name"], ["role", "Appointment / role"], ["email", "Email"], ["territory", "Territory"]];
 const CON_COLS = [["rank", "Rank (officers)", "e.g. Major"], ["name", "Name"], ["role", "Appointment / role"], ["email", "Email"]];
-const readRows = box => [...box.querySelectorAll(".ed-row")].map(r => Object.fromEntries([...r.querySelectorAll("[data-k]")].map(i => [i.dataset.k, i.value.trim()]))).filter(o => Object.values(o).some(Boolean));
+const readRows = box => [...box.querySelectorAll(".ed-row")].map(r => Object.fromEntries([...r.querySelectorAll("[data-k]")].flatMap(i => {
+    const v = i.value.trim(); if (i.dataset.k !== "territory") return [[i.dataset.k, v]];
+    const [t, ...u] = v.split("|"); return [["territory", t || ""], ["unit", u.join("|")]]; }))).filter(o => Object.values(o).some(Boolean));
 function wireRows(box, cols, terrOpts) {
   box.addEventListener("click", e => {
     const d = e.target.closest(".ed-del"); if (d) return d.closest(".ed-row").remove();
@@ -2357,7 +2377,7 @@ function wireRows(box, cols, terrOpts) {
 }
 function memEditor(c) {
   const box = $("mem-editor"); if (!box) return;
-  const opts = terrsOf(c), ms = membersOf(c);
+  const zone = c.split(" ")[0], opts = (data.territories || []).filter(t => String(t.cwg || "").split(" ")[0] === zone), ms = membersOf(c);
   box.innerHTML = `<div class="ed-rows">${(ms.length ? ms : [{}]).map(m => fieldRow(MEM_COLS, m, opts)).join("")}</div>
     <div class="ed-actions"><button type="button" class="btn sm ed-add">Add a member</button><button type="button" class="btn fill sm" id="mem-save">Save ${esc(c)} members</button><span class="ed-msg" id="mem-msg" role="status"></span></div>`;
   wireRows(box, MEM_COLS, opts);
