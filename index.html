@@ -573,7 +573,10 @@
   .ed-rows { display: grid; gap: var(--g2); margin-top: var(--g3); }
   .ed-row { display: grid; grid-template-columns: .7fr 1.1fr 1.3fr 1.3fr 1fr auto auto; gap: var(--g2); align-items: end; background: var(--paper); border-radius: 14px; padding: var(--g2); }
   #con-box .ed-row { grid-template-columns: .7fr 1.1fr 1.4fr 1.4fr auto auto; }
-  #gm-box .ed-row { grid-template-columns: 1fr .8fr 1.1fr 1.3fr; }   /* two lines: role, rank, name, job title / office, email, arrows, remove */
+  #gm-box .ed-row { grid-template-columns: 1fr .8fr 1.1fr 1.3fr; }
+  #mem-editor .ed-row { grid-template-columns: .7fr 1.1fr 1.3fr 1.3fr 1.3fr; }
+  #mem-editor .ed-row > label:nth-child(6) { grid-column: span 2; }
+  .ed-row .alt-col input { background: transparent; border-style: dashed; color: var(--ink-2); cursor: default; }   /* two lines: role, rank, name, job title / office, email, arrows, remove */
   #gm-box .ed-move { align-self: end; }
   #nw-box .ed-row { grid-template-columns: 1.4fr .8fr 2fr auto auto; }
   .ed-move { display: flex; gap: 4px; padding-bottom: 2px; }
@@ -2633,7 +2636,7 @@ function pageConsole(a, b) {
       <p class="small">Tick a region, division or country to activate its profile on the website, and choose which CWG it belongs to. This can be a different CWG from its territory's. Unticked ones don't appear on the website. CWG leads can change the ones in their own CWG or their CWG's territories.</p>
       <div id="units-editor"></div></section>` : ""}
     ${cwgs.length ? `<section class="console-card" id="cc-members"><div class="row-head"><h2 class="h2">CWG members</h2></div>
-      <p class="small">Add each CWG member's rank (if an officer), name, appointment or role and email. Members linked to a territory are listed on that territory's page and can sign in to edit its profile.</p>
+      <p class="small">Add each CWG member's rank (if an officer), name, appointment or role and email. "Alternative email (Gmail)" fills in by itself when a member adds their own Gmail for sign-in emails. Members linked to a territory are listed on that territory's page and can sign in to edit its profile.</p>
       ${cwgs.length > 1 ? `<div class="cw-pick" role="tablist">${cwgs.map(c => `<button type="button" role="tab" class="chip-btn${c === (selC || cwgs[0]) ? " on" : ""}" data-cw="${esc(c)}">${esc(c)}</button>`).join("")}</div>` : ""}
       <div id="mem-editor"></div></section>` : ""}
     ${terrIds.length || unitIds.length ? `<section class="console-card" id="cc-terr"><div class="row-head"><h2 class="h2">Territory profiles</h2>
@@ -2662,7 +2665,7 @@ function pageConsole(a, b) {
   </div>`;
 }
 // ---- console: ASLP group details and members ----
-const GRP_COLS = [["groupRole", "Role in this group", "e.g. Chair, SASIA 1 CWG lead"], ["rank", "Rank (officers only)", "Empty if not an officer"], ["name", "Name"], ["role", "Job title or appointment", "e.g. Chief Secretary, Programme Manager"], ["office", "Office", "e.g. Bangladesh Territory, Salvation Army Switzerland"], ["email", "Email"]];
+const GRP_COLS = [["groupRole", "Role in this group", "e.g. Chair, SASIA 1 CWG lead"], ["rank", "Rank (officers only)", "Empty if not an officer"], ["name", "Name"], ["role", "Job title or appointment", "e.g. Chief Secretary, Programme Manager"], ["office", "Office", "e.g. Bangladesh Territory, Salvation Army Switzerland"], ["email", "Email"], ["alt", "Alternative email (Gmail)"]];
 function groupEditor(key) {
   const box = $("grp-editor"), g = (data.groups || []).find(x => x.key === key); if (!box || !g) return;
   const admin = !!V().is_full_admin, tor = groupTor(key);
@@ -2674,11 +2677,12 @@ function groupEditor(key) {
       <label class="full"><span>Mandate <span class="ed-hint">One point per line. The page says "${esc(tor ? tor.lead : "")}" before them.</span></span><textarea id="g-mandate" rows="6">${esc(tor.mandate.join("\n"))}</textarea></label>` : ""}
     </div>
     <h3 class="h3" style="margin-top:var(--g5)">Members</h3>
-    <p class="small">Listed on the ${esc(g.short)} page in this order. Use the arrows to move someone up or down. "Role in this group" is what they do in the ${esc(g.short)}, for example Chair. "Job title or appointment" and "Office" are their own work: an officer's appointment and territory, or an employee's job title and office. Leave Rank empty for anyone who isn't an officer. Being listed doesn't give anyone access to this console.</p>
+    <p class="small">Listed on the ${esc(g.short)} page in this order. Use the arrows to move someone up or down. "Role in this group" is what they do in the ${esc(g.short)}, for example Chair. "Alternative email (Gmail)" fills in by itself when a member adds their own Gmail for sign-in emails. "Job title or appointment" and "Office" are their own work: an officer's appointment and territory, or an employee's job title and office. Leave Rank empty for anyone who isn't an officer. Being listed doesn't give anyone access to this console.</p>
     <div id="gm-box"><div class="ed-rows">${((g.members || []).length ? g.members : [{}]).map(m => fieldRow(GRP_COLS, m, [])).join("")}</div>
       <div class="ed-actions"><button type="button" class="btn sm ed-add">Add a member</button></div></div>
     <div class="ed-actions sticky"><button type="button" class="btn fill" id="g-save">Save the ${esc(g.short)}</button><a class="textlink" href="#/group/${esc(key)}">View the page</a><span class="ed-msg" id="g-msg" role="status"></span></div>`;
   wireRows($("gm-box"), GRP_COLS, []);
+  fillAlts($("gm-box"));
   makeDraftable(box, `grp:${key}`, () => groupEditor(key));
   $("g-save").addEventListener("click", () => saveWith("g-save", "g-msg", async () => {
     const r = await db.rpc("aslp_save_group", { p_key: key, p_group: { ...(admin ? { name: $("g-name").value.trim() } : {}), description: $("g-desc").value.trim(), members: readRows($("gm-box")) } });
@@ -3155,10 +3159,20 @@ const zoneTerrSelect = (vals, terrOpts) => { const groups = {}; terrOpts.forEach
     `<option value="${esc(u.parent)}|${esc(u.name)}">${esc(u.name)} (${esc(shortName(terrName(u.parent)))} Territory)</option>`).join("")}</optgroup>`).join("")}</select>`; };
 const fieldRow = (cols, vals, terrOpts) => `<div class="ed-row">${cols.map(([k, l, ph]) => k === "territory"
   ? `<label><span>${l}</span>${zoneTerrSelect(vals, terrOpts)}</label>`
+  : k === "alt" ? `<label class="alt-col"><span>${l}</span><input type="email" data-alt-of readonly tabindex="-1" placeholder="Not added yet" title="Each person adds their own Gmail when they sign in"></label>`
   : `<label><span>${l}</span><input data-k="${k}" type="${k === "email" ? "email" : "text"}" value="${esc(vals[k] || "")}" placeholder="${esc(ph || "")}"></label>`).join("")}
   <div class="ed-move"><button type="button" class="ed-up" aria-label="Move up" title="Move up">↑</button><button type="button" class="ed-down" aria-label="Move down" title="Move down">↓</button></div>
   <button type="button" class="ed-del" aria-label="Remove">Remove</button></div>`;
-const MEM_COLS = [["rank", "Rank (officers)", "e.g. Captain"], ["name", "Name"], ["role", "Appointment / role"], ["email", "Email"], ["territory", "Territory"]];
+const MEM_COLS = [["rank", "Rank (officers)", "e.g. Captain"], ["name", "Name"], ["role", "Appointment / role"], ["email", "Email"], ["alt", "Alternative email (Gmail)"], ["territory", "Territory"]];
+// each member's own Gmail for sign-in emails: filled in automatically once they add it, never typed here
+async function fillAlts(box) {
+  if (!box) return; const rows = [...box.querySelectorAll(".ed-row")];
+  const emails = rows.map(r => ((r.querySelector('[data-k="email"]') || {}).value || "").trim().toLowerCase()).filter(Boolean);
+  let map = {}; if (emails.length) { const { data } = await db.rpc("aslp_member_alts", { p_emails: emails }); map = data || {}; }
+  const put = r => { const e = ((r.querySelector('[data-k="email"]') || {}).value || "").trim().toLowerCase(), a = r.querySelector("[data-alt-of]"); if (a) a.value = map[e] || ""; };
+  rows.forEach(put);
+  if (!box.dataset.altWired) { box.dataset.altWired = "1"; box.addEventListener("change", e => { if (e.target.matches('[data-k="email"]')) { const r = e.target.closest(".ed-row"); if (r) { const em = e.target.value.trim().toLowerCase(); if (em && !(em in map)) db.rpc("aslp_member_alts", { p_emails: [em] }).then(({ data }) => { Object.assign(map, data || {}); put(r); }); else put(r); } } }); }
+}
 const CON_COLS = [["rank", "Rank (officers)", "e.g. Major"], ["name", "Name"], ["role", "Appointment / role"], ["email", "Email"]];
 const readRows = box => [...box.querySelectorAll(".ed-row")].map(r => Object.fromEntries([...r.querySelectorAll("[data-k]")].flatMap(i => {
     const v = i.value.trim(); if (i.dataset.k !== "territory") return [[i.dataset.k, v]];
@@ -3179,6 +3193,7 @@ function memEditor(c) {
     <div class="ed-actions"><button type="button" class="btn sm ed-add">Add a member</button><button type="button" class="btn fill sm" id="mem-save">Save ${esc(c)} members</button><span class="ed-msg" id="mem-msg" role="status"></span></div>`;
   wireRows(box, MEM_COLS, opts);
   makeDraftable(box, `mem:${c}`, () => memEditor(c));
+  fillAlts(box);
   $("mem-save").addEventListener("click", () => saveWith("mem-save", "mem-msg", () => db.rpc("aslp_set_cwg_members", { p_cwg: c, p_items: readRows(box) }), `${c} members saved.`));
 }
 function terrEditor(id) {
@@ -3234,7 +3249,7 @@ async function getDraft(k) {
 }
 const draftWhen = at => new Date(at).toLocaleString([], { day: "numeric", month: "short", hour: "numeric", minute: "2-digit" });
 const draftNote = (at, what) => `<div class="draft-note" role="status"><span>${what || "Your unsaved changes"} from ${esc(draftWhen(at))} ${what ? "is" : "were"} brought back. ${what ? "Publish it" : "Save"} to keep ${what ? "it" : "them"}.</span><button type="button" class="btn sm" data-draft-discard>Discard ${what ? "it" : "them"}</button></div>`;
-const FIELDS = "input:not([type=file]), textarea, select";
+const FIELDS = "input:not([type=file]):not([data-alt-of]), textarea, select";
 const snapBox = box => ({ rows: [...box.querySelectorAll(".ed-rows")].map(r => r.querySelectorAll(".ed-row").length),
   vals: [...box.querySelectorAll(FIELDS)].map(i => i.type === "checkbox" ? i.checked : i.value) });
 function applySnap(box, s) {

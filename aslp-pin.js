@@ -30,6 +30,7 @@
   var esc = function (s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); };
   var norm = function (e) { return String(e || '').trim().toLowerCase(); };
   var okEmail = function (e) { return /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(e); };
+  var okGmail = function (e) { return /^[^@\s]+@(gmail|googlemail)\.com$/.test(e); };
   var weak = function (a) { return /^(\d)\1+$/.test(a) || /^(012345|123456|234567|345678|456789|654321|password|qwerty)/i.test(a); };
   var REMEMBER = 'aslp-pin-email';
   var NOT_REG = 'This email doesn’t have sign-in access. Please contact your CWG lead or the ASLP team.';
@@ -151,11 +152,11 @@
       wire({ 'pin-back': function () { signInView(); }, 'pin-new': function () { setView(true); } });
       box.querySelector('form').onsubmit = async function (ev) {
         ev.preventDefault(); var g = norm(box.querySelector('#pin-g').value);
-        if (!okEmail(g)) return say('Please enter your Gmail address.', 'err');
+        if (!okGmail(g)) return say('Please enter your Gmail address (ending in @gmail.com).', 'err');
         var b = box.querySelector('#pin-gsend'); b.disabled = true; say('Sending…');
         var r = await fn(db, 'aslp-signin', { action: 'alt_request', email: email, alt: g }); b.disabled = false;
         var d = (r && r.data) || {};
-        if (!d.ok) return say(d.reason === 'not_registered' ? NOT_REG : d.reason === 'alt_taken' ? 'That email is already used on the site. Please use your own personal Gmail.' : d.reason === 'bad_alt' ? 'Please use a different email from your registered one.' : d.reason === 'too_many' ? 'You’ve asked several times today. Please contact your CWG lead or the ASLP team.' : 'That didn’t work. Please try again.', 'err');
+        if (!d.ok) return say(d.reason === 'not_registered' ? NOT_REG : d.reason === 'alt_taken' ? 'That email is already used on the site. Please use your own personal Gmail.' : d.reason === 'bad_alt' ? 'Please use your own Gmail address (ending in @gmail.com), different from your registered email.' : d.reason === 'too_many' ? 'You’ve asked several times today. Please contact your CWG lead or the ASLP team.' : 'That didn’t work. Please try again.', 'err');
         signInView('<b>Sent for approval.</b> ' + (d.notified ? 'We’ve emailed your CWG lead and the admins. ' : '') + 'Once one of them approves it, a link to choose a new PIN arrives in <b>' + esc(g) + '</b>.', 'ok');
       };
     }
@@ -198,7 +199,7 @@
     }
     box.querySelector('form').onsubmit = async function (ev) {
       ev.preventDefault(); var v = norm(box.querySelector('#' + P + '-in').value);
-      if (!okEmail(v)) { m.className = 'pin-msg err'; m.textContent = 'Please enter your Gmail address.'; return; }
+      if (!okGmail(v)) { m.className = 'pin-msg err'; m.textContent = 'Please enter a Gmail address (ending in @gmail.com).'; return; }
       if (await save(v, false)) { if (done) done('set', v); else { m.className = 'pin-msg ok'; m.textContent = 'Saved. Sign-in emails now go to ' + v + '.'; } }
     };
     var no = box.querySelector('#' + P + '-no'); if (no) no.onclick = async function () { if (await save('', true) && done) done('declined'); };
