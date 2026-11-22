@@ -106,6 +106,7 @@
   .dd-top::after { content: ""; display: inline-block; width: 7px; height: 7px; border-right: 2px solid currentColor; border-bottom: 2px solid currentColor; transform: rotate(45deg) translateY(-3px); margin-left: 8px; opacity: .55; }
   .dd-menu { position: absolute; left: 0; top: 100%; min-width: 300px; background: var(--paper); border: 1px solid var(--line); border-radius: 16px; box-shadow: 0 14px 36px rgba(0,0,0,.13); padding: var(--g2); display: none; z-index: 60; }
   #dd-cwgs { min-width: 380px; }
+  #dd-about { min-width: 300px; } #dd-about a { display: grid; gap: 2px; } #dd-about a b { min-width: 0; font-size: 16px; }
   .dd:hover .dd-menu, .dd:focus-within .dd-menu { display: block; }
   .dd-menu .dd-h { font-size: 13px; font-weight: 700; color: var(--ink-3); padding: var(--g1) 10px 2px; }
   .dd-menu a { display: flex; align-items: center; gap: var(--g2); padding: var(--g1) 10px; border-radius: 10px; text-decoration: none; font-weight: 600; font-size: 15px; line-height: 1.35; }
@@ -460,6 +461,12 @@
   .tb-auth { flex: none; display: inline-flex; align-items: center; margin-left: var(--g2); padding: 7px 16px; border-radius: 999px; background: #f5c400; color: #000; font-weight: 700; font-size: 14.5px; text-decoration: none; }
   .tb-auth:hover, .tb-auth:active { background: #005fc0; color: #fff; }
   @media (max-width: 1340px) { .tb-auth { margin-left: var(--g1); } .menu-btn { margin-left: auto; } }
+  @media (max-width: 520px) {   /* phones: logo, Menu and Sign in all fit on one line */
+    .topbar .wrap { padding: 0 14px; gap: var(--g1); }
+    .brand .b-inner img { height: 19px; }
+    .menu-btn { padding: 5px 12px; font-size: 14px; } .tb-auth { padding: 6px 12px; font-size: 13.5px; margin-left: 0; }
+    body.is-home .topbar .theme button { padding: 5px 7px; }
+  }
   .issue { aspect-ratio: 3 / 4; border-radius: 6px 16px 16px 6px; padding: var(--g3); display: flex; flex-direction: column; gap: 6px; text-decoration: none; color: #fff; box-shadow: inset 6px 0 0 rgba(0,0,0,.18); }
   .issue.c0 { background: #e14b1e; } .issue.c1 { background: #005fc0; } .issue.c2 { background: #f5c400; color: #000; } .issue.c3 { background: #24215f; }
   .issue .i-top { font-size: 12px; font-weight: 700; opacity: .85; } .issue b { font-size: 20px; font-weight: 850; line-height: 1.15; margin-top: auto; } .issue .i-date { font-size: 14px; opacity: .9; }
@@ -532,6 +539,58 @@
   .member-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: var(--g3); margin-top: var(--g3); }
   .member { background: var(--paper-2); border-radius: 16px; padding: var(--g3); }
   @media (max-width: 860px) { .ed-row, #con-box .ed-row, #gm-box .ed-row, #nw-box .ed-row { grid-template-columns: 1fr 1fr; } .ed-grid { grid-template-columns: 1fr; } .console-card { padding: var(--g4) 18px; } }
+  /* about */
+  .ab-intro { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(260px, 1fr); gap: var(--g6); align-items: start; }
+  .ab-goal { background: #24215f; color: #fff; border-radius: 24px; padding: var(--g5) var(--g4); }
+  .ab-k { font-size: 13.5px; font-weight: 750; opacity: .8; margin-bottom: var(--g1); }
+  .ab-goal p { font-size: clamp(19px, 1.7vw, 23px); line-height: 1.35; font-weight: 500; }
+  .ab-tag { font-weight: 900; font-stretch: 115%; margin-top: var(--g4); letter-spacing: -.01em; } .ab-tag .a { color: #0a84ff; } .ab-tag .b { color: #f5c400; } .ab-tag .c { color: #ff6a1a; }
+  .ab-sec { margin-top: var(--g7); } .ab-sec > .h2 { margin-bottom: var(--g4); }
+  .ab-aims { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--g4); }
+  .ab-aim { border-top: 6px solid var(--ac); padding-top: var(--g3); } .ab-aim p { margin-top: var(--g1); color: var(--ink-2); }
+  .ab-n { display: block; font-size: 48px; font-weight: 900; font-stretch: 112%; color: var(--ac); line-height: 1; margin-bottom: var(--g1); }
+  .ab-how { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: var(--g3); }
+  .ab-how > div { background: var(--paper-2); border-radius: 18px; padding: var(--g4); } .ab-how p, .ab-out p { margin-top: 6px; font-size: 15.5px; color: var(--ink-2); }
+  .ab-out { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--g4) var(--g5); }
+  .ab-out > div { border-left: 3px solid #005fc0; padding-left: var(--g3); }
+  .ab-hist { position: relative; overflow: hidden; display: grid; gap: var(--g1); margin-top: var(--g7); background: #e14b1e; color: #fff; border-radius: 28px; padding: var(--g6) clamp(22px, 4vw, 48px); text-decoration: none; }
+  .ab-hist > :not(.decor) { position: relative; z-index: 1; max-width: 46ch; }
+  .ab-hist b { font-size: clamp(26px, 3vw, 38px); font-weight: 850; letter-spacing: -.02em; line-height: 1.1; } .ab-hist .ab-go { font-weight: 750; text-decoration: underline; margin-top: var(--g2); }
+  @media (max-width: 900px) { .ab-intro, .ab-aims, .ab-out { grid-template-columns: 1fr; } }
+  /* history */
+  .hi-hero { position: relative; overflow: hidden; background: #24215f; color: #fff; padding: var(--g7) 0; margin-top: var(--g4); }
+  .hi-hero .lede { color: rgba(255,255,255,.88); margin-top: var(--g3); }
+  .hi-verse { margin: var(--g5) 0 0; max-width: 56ch; font-size: clamp(17px, 1.5vw, 20px); font-style: italic; line-height: 1.5; border-left: 4px solid #f5c400; padding-left: var(--g3); }
+  .hi-verse cite, .hi-card blockquote cite { display: block; font-style: normal; font-weight: 700; font-size: 14px; margin-top: 6px; opacity: .85; }
+  .hi-years { position: sticky; top: 68px; z-index: 5; display: flex; flex-wrap: wrap; gap: var(--g1); padding: var(--g3) 0; background: var(--paper); }
+  .hi-years a { text-decoration: none; font-weight: 800; font-size: 14.5px; padding: 6px 14px; border-radius: 999px; border: 2px solid var(--hc); color: var(--ink); }
+  .hi-years a:hover { background: var(--hc); color: #fff; }
+  .hi-line { position: relative; display: grid; grid-template-columns: 1fr 1fr; gap: 0 var(--g7); margin-top: var(--g4); }
+  .hi-line::before { content: ""; position: absolute; left: 50%; top: 0; bottom: 0; width: 4px; margin-left: -2px; background: linear-gradient(#0a84ff, #f5c400 50%, #e14b1e); border-radius: 4px; }
+  .hi-col { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--g5); align-content: start; }
+  .hi-col.r { padding-top: 190px; }   /* staggered, so each card sits beside the gap of the other column */
+  .hi-item { position: relative; scroll-margin-top: 130px; }
+  .hi-dot { position: absolute; top: 30px; width: 22px; height: 22px; border-radius: 50%; background: var(--hc); box-shadow: 0 0 0 5px var(--paper); }
+  .hi-col.l .hi-dot { right: calc(var(--g7) / -2 - 11px); } .hi-col.r .hi-dot { left: calc(var(--g7) / -2 - 11px); }
+  .hi-card { position: relative; background: var(--paper-2); border-radius: 24px; padding: var(--g5) var(--g4) var(--g4); border-top: 6px solid var(--hc); overflow: hidden; }
+  .hi-el { position: absolute; top: 14px; right: 16px; width: 62px; opacity: .9; }
+  .hi-y { font-size: clamp(40px, 4.4vw, 58px); font-weight: 900; font-stretch: 112%; letter-spacing: -.03em; line-height: 1; color: var(--hc); margin-bottom: var(--g2); }
+  .hi-where { font-size: 14.5px; font-weight: 650; color: var(--ink-3); margin-top: 2px; }
+  .hi-card p { margin-top: var(--g2); color: var(--ink-2); } .hi-card .h3 { max-width: 24ch; }
+  .hi-lh { font-weight: 750; font-size: 14.5px; margin-top: var(--g3); }
+  .hi-card ul { margin: 6px 0 0; padding-left: 1.2em; display: grid; gap: 4px; font-size: 15.5px; color: var(--ink-2); }
+  .hi-card blockquote { margin: var(--g3) 0 0; padding: var(--g3); border-radius: 14px; background: color-mix(in srgb, var(--hc) 12%, var(--paper)); font-weight: 550; line-height: 1.45; }
+  .hi-card .textlink { display: inline-block; margin-top: var(--g3); }
+  @media (max-width: 860px) {   /* phones: one column, in year order */
+    .hi-line { display: flex; flex-direction: column; padding-left: var(--g5); } .hi-line::before { left: 11px; }
+    .hi-col { display: contents; } .hi-item { display: block; margin-bottom: var(--g4); }
+    .hi-col.l .hi-dot, .hi-col.r .hi-dot { left: calc(var(--g5) * -1); right: auto; }
+    .hi-el { width: 44px; }
+  }
+  .hi-mission { margin-top: var(--g6); background: #005fc0; color: #fff; border-radius: 28px; padding: var(--g6) clamp(22px, 4vw, 48px); display: grid; gap: var(--g4); }
+  .hi-mission .statement { max-width: 24ch; } .hi-mission > p { max-width: 68ch; opacity: .92; }
+  .hi-four { display: flex; flex-wrap: wrap; gap: var(--g2); } .hi-four span { background: #fff; color: var(--wc); font-weight: 900; font-stretch: 112%; font-size: 22px; padding: 6px 18px; border-radius: 999px; }
+  .hi-next { display: flex; flex-wrap: wrap; gap: var(--g2); margin-top: var(--g6); }
   footer { background: #000; color: #fff; padding: var(--g7) 0 var(--g6); }
   footer .wrap { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: var(--g5); align-items: end; }
   footer .fname { font-size: clamp(26px, 3.4vw, 40px); line-height: 1.04; letter-spacing: -.02em; }
@@ -552,7 +611,7 @@
   <button class="menu-btn" id="menu-btn" aria-expanded="false" aria-controls="menu">Menu</button>
   <nav class="menu" id="menu" aria-label="Main">
     <a href="#/" data-nav="home">Home</a>
-    <a href="#/about" data-nav="about">About</a>
+    <div class="dd"><a href="#/about" data-nav="about" class="dd-top" aria-haspopup="true">About</a><div class="dd-menu" id="dd-about"><a href="#/about"><b>About ASLP</b><span>What the programme is, what it aims for and how it works</span></a><a href="#/history"><b>History of ASLP</b><span>The journey from 2016 to today</span></a></div></div>
     <div class="dd"><a href="#/cwgs" data-nav="cwgs" class="dd-top" aria-haspopup="true">Cluster Working Groups</a><div class="dd-menu" id="dd-cwgs"></div></div>
     <div class="dd"><a href="#/groups" data-nav="groups" class="dd-top" aria-haspopup="true">ASLP Groups</a><div class="dd-menu" id="dd-groups"></div></div>
     <a href="#/newsletter" data-nav="newsletter">Newsletter</a>
@@ -863,15 +922,112 @@ function pageHome() {
 }
 
 // ---- ABOUT ----
+// ---- ABOUT (from the ASLP overview and the 2024–2027 programme proposal; the opening text can be edited in the console) ----
+const ABOUT_DEFAULT = `The Asia-Pacific Sharing and Learning Programme (ASLP) is a regional programme of The Salvation Army covering the South Pacific and East Asia and South Asia zones. It strengthens community development across Asia and the Pacific by investing in the people, systems, strategies and shared learning that make this work more effective, sustainable and clearly connected to the mission of The Salvation Army.
+
+ASLP grew out of years of conversation and consultation across the zones. It builds on the experience and wisdom already found in territories, corps, communities, officers and staff, and gives territories a structure to learn from one another, strengthen their own practice and contribute to regional learning.
+
+At its heart, ASLP strengthens the way The Salvation Army lives out Integrated Mission. Community development is understood not as a project activity or donor requirement, but as a way of working and an expression of corps and community life.`;
+const ABOUT_AIMS = [
+  ["Strategy", "#e14b1e", "An Asia-Pacific Community Development Strategy and territorial community development strategies, so territories focus their work, align it with mission priorities and community realities, and keep building on agreed priorities when appointments change."],
+  ["Capacity", "#005fc0", "Opportunities for officers and staff to grow in community development, leadership, project management and learning: training, peer learning, Communities of Practice, Cluster Working Groups, forums and exchange visits."],
+  ["Resources and sustainability", "#f5c400", "Stronger, more sustainable development offices, with better handover systems, policies, governance and financial sustainability."],
+];
+const ABOUT_OUTPUTS = [
+  ["Asia-Pacific Community Development Strategy", "A shared regional strategy that reflects territorial priorities, community realities and the place of community development in the Army's mission."],
+  ["Territorial Community Development Strategies", "Strategies built from each territory's own context, corps connections, community experience and practice."],
+  ["Communities of Practice", "Learning spaces where officers, staff and development teams regularly share experience, challenges, tools and approaches."],
+  ["Cluster Working Groups", "Four groups (SPEA 1, SPEA 2, SASIA 1, SASIA 2) where territories collaborate, share learning and drive their strategies."],
+  ["Strategic indicators and learning data", "A clearer way to collect, use and reflect on data, so progress, learning and impact shape future work."],
+  ["Stronger development office systems", "Better planning, reporting, handover, policies, governance and accountability."],
+];
+const ABOUT_WAYS = ["Community development as part of Integrated Mission", "Corps connected to community realities", "Territorial learning shaping regional direction", "Shared learning across territories",
+  "Stronger ownership and relevance", "More coordinated and accountable work", "Practice that lasts beyond individual appointments"];
+const ABOUT_HOW = [["Asia-Pacific Sharing and Learning Forum", "Every two years, development secretaries and leaders gather to reflect, learn together and shape the Asia-Pacific strategy."],
+  ["Cluster Working Groups", "Monthly online meetings and in-person regional meetings, driving each territory's community development strategy."],
+  ["Communities of Practice", "Online, theme-based groups that share knowledge and develop resources, linked with existing Salvation Army CoPs."],
+  ["Programme-to-programme visits", "Exchange visits between projects so staff learn from each other's experience."],
+  ["ASLP Coordinators", "Based in Asia, coordinating the programme with territories, the zones, support offices and International Headquarters."]];
 function pageAbout() {
-  const a = (data.content && data.content.about) || {};
+  const a = (data.content && data.content.about) || {}, body = (a.body || "").trim() || ABOUT_DEFAULT, ps = body.split(/\n\s*\n/);
   return `${crumbs([["Home", "#/"], ["About ASLP"]])}
     <div class="wrap page-hero"><div class="stack"><h1 class="h1"><span class="lt">About</span> ASLP</h1>
       <p class="statement"><b>Asia-Pacific</b> Sharing &amp; Learning <b>Programme</b></p></div>
       ${cluster([cl("g7-01", 0, 4, 30, -8), cl("g11-02", 40, 0, 30), cl("g6-08", 74, 30, 18), cl("g2-01", 24, 54, 26, 8), cl("g8-08", 58, 66, 30)])}</div>
-    <div class="wrap page-body">${a.body ? `<div class="stack" style="max-width:68ch">${a.body.split(/\n\s*\n/).map(p => `<p>${esc(p)}</p>`).join("")}</div>`
-      : `<div class="soon" style="max-width:720px"><h2 class="h3">The story of ASLP is being written</h2><p>This page will explain what ASLP is, why it exists and how territories, Cluster Working Groups and the ASLP Groups work together.</p></div>`}</div>`;
+    <div class="wrap page-body">
+      <div class="ab-intro"><div class="stack stack-lg">${ps.map((p, n) => `<p class="${n ? "" : "lede"}" style="${n ? "" : "color:var(--ink)"}">${esc(p)}</p>`).join("")}</div>
+        <aside class="ab-goal"><div class="ab-k">Overall goal</div><p>To embed community development as an integral part of The Salvation Army's mission in Asia and the Pacific, properly resourced and supported.</p>
+          <div class="ab-tag"><span class="a">LISTEN.</span> <span class="b">LEARN.</span> <span class="c">LEAD.</span></div></aside></div>
+
+      <section class="ab-sec"><h2 class="h2">Three focus areas</h2>
+        <div class="ab-aims">${ABOUT_AIMS.map(([h, c, t], n) => `<div class="ab-aim" style="--ac:${c}"><span class="ab-n">${n + 1}</span><h3 class="h3">${esc(h)}</h3><p>${esc(t)}</p></div>`).join("")}</div></section>
+
+      <section class="ab-sec"><h2 class="h2">How ASLP works</h2>
+        <div class="ab-how">${ABOUT_HOW.map(([h, t]) => `<div><h3 class="h3">${esc(h)}</h3><p>${esc(t)}</p></div>`).join("")}</div>
+        <p style="margin-top:var(--g4)"><a class="textlink" href="#/cwgs">Meet the Cluster Working Groups</a> &nbsp;·&nbsp; <a class="textlink" href="#/groups">See the ASLP Groups</a></p></section>
+
+      <section class="ab-sec"><h2 class="h2">What ASLP will deliver</h2>
+        <div class="ab-out">${ABOUT_OUTPUTS.map(([h, t]) => `<div><h3 class="h3">${esc(h)}</h3><p>${esc(t)}</p></div>`).join("")}</div></section>
+
+      <section class="ab-sec"><h2 class="h2">Ways of working we're building</h2>
+        <div class="chips ab-ways">${ABOUT_WAYS.map(w => `<span class="chip">${esc(w)}</span>`).join("")}</div></section>
+
+      <a class="ab-hist" href="#/history">${decor([el("g11-02", "top:-26px;right:4%", 120, 0, "white"), el("g7-05", "bottom:14px;right:24%", 46, 12, "white hm")])}
+        <span class="ab-k">Our story</span><b>The ASLP journey, 2016 to today</b><span>From the first conversations in 2016 and the first forum in the Philippines to a programme led by Asia-Pacific voices.</span><span class="ab-go">Read the history</span></a>
+    </div>`;
 }
+
+// ---- HISTORY: the journey (from "Journey of Hope 2018 to 2024" and the programme proposal) ----
+const HISTORY = [
+  { y: "2016", t: "The early beginnings", c: "#24215f", shapes: ["spe1-02"],
+    p: ["The first conversations began between The Salvation Army in Myanmar and the support offices in Norway, Switzerland and Australia: how could territories in Asia learn from each other, rather than development flowing only from North to South?"] },
+  { y: "2018", t: "The first Asia Sharing and Learning Forum", where: "5–9 November, Philippines", c: "#e14b1e", shapes: ["g11-02"],
+    p: ["Development officers and leaders from across Asia met in person for the first time. Together they mapped how each country's projects and strategies could fit into an Asia strategy and The Salvation Army's theory of change, laying out challenges, strengths and where territories could help each other."],
+    li: ["Share examples of community development strategies across territories", "Take the road map and issues such as succession planning to zonal leaders", "Draft a proposal for a continued sharing and learning process in Asia", "Pilot programme-to-programme exchange visits between Asian partners"], lh: "Next steps agreed" },
+  { y: "2020", t: "ASLF 2020: Our Call to Mission in Asia", where: "24–26 November, online", c: "#005fc0", shapes: ["spe2-17"],
+    p: ["During the COVID-19 pandemic the forum moved online. Over three days, delegates looked at the role of the project office, how partners work together, how to help each other build capacity, and how to connect to communities of learning.",
+       "A survey found that 7 of 21 territories had a territorial strategy and 7 more wanted to develop a separate community development strategy. The message was clear: community development is an integral part of our mission, not something separate."],
+    quote: "An Asian strategy that is cohesive, clear and understood by all territories, that helps the region move forward and increases the capacity of territories to deliver effective and impactful community development projects." },
+  { y: "2021", t: "ASLF 2021 and the first clusters", where: "21 November, online", c: "#188afd", shapes: ["sas1-02"],
+    p: ["Territories met in four clusters for the first time, each with its own facilitators: South Asia 1 (India), South Asia 2 (Bangladesh, Sri Lanka, Pakistan and the Middle East), SPEA 1 (South East Asia and the Pacific) and SPEA 2 (East Asia).",
+       "Each cluster named its main thematic areas, its priorities for an Asia strategy and the risks it faces. Common themes included livelihoods, education, health, water and sanitation, anti-trafficking, disaster preparedness and capacity building. The clusters asked for regular meetings of appointed members to keep learning together between forums."] },
+  { y: "2022", t: "ASLF 2022: the programme takes shape", where: "October, Bali, Indonesia", c: "#fe6809", shapes: ["sas2-02"],
+    p: ["Development officers from both Asia zones, the support offices and zonal representatives spent five days designing the Asia-Pacific Sharing and Learning Programme together, including its logframe, in a truly collaborative and participatory way.",
+       "The entire forum was led, prepared and supported by and for Asia-Pacific voices through the ASLF Taskforce, a milestone for Salvation Army international conferences. Delegates also met their future Cluster Working Group colleagues, ready for the groups' launch."] },
+  { y: "2023", t: "The programme is proposed", c: "#2e6be0", shapes: ["spe1-06"],
+    p: ["The ASLP 2024–2027 proposal brought together seven years of work and consultation with all stakeholders across the two Asia zones, the support offices and International Headquarters, and was shared at the Support Office Forum. A taskforce of project office staff from Pakistan, India, Myanmar, Indonesia, the Philippines and Hong Kong helped make sure it was designed by Asian voices and practitioners.",
+       "The Cluster Working Groups were launched, and a decentralised, locally led design was chosen over a top-down one, with the programme coordination based in Asia."] },
+  { y: "2024", t: "ASLP begins", c: "#c0391e", shapes: ["g7-01"],
+    p: ["The four-year programme started, with its governance in place: the ASLP Steering Committee, the Support Office Group and the finance coordination group. Cluster Working Groups began meeting regularly, Communities of Practice and programme-to-programme visits were set up, and territories began work on their community development strategies."],
+    quote: "Commitment of Hope towards Community Development: life in its fullness." , cite: "Journey of Hope, 2018 to 2024" },
+  { y: "2025–2027", t: "Towards an Asia-Pacific strategy", c: "#24215f", shapes: ["spe2-03"],
+    p: ["Territorial community development strategies come together into the Asia-Pacific Community Development Strategy, to be presented for endorsement at ASLF 2027. Forums every two years and regional cluster meetings keep zooming in on local priorities and zooming out to connect them across the region."],
+    link: ["/cd-strategy/", "Follow each territory's strategy"] },
+];
+function pageHistory() {
+  return `${crumbs([["Home", "#/"], ["About ASLP", "#/about"], ["History"]])}
+    <section class="hi-hero">${decor([el("g11-02", "top:-40px;right:6%", 170, 0, "white float hm"), el("spe1-07", "bottom:26px;right:30%", 70, 0, "white hm"), el("g2-01", "top:40px;left:52%", 34, 0, "white hm")])}
+      <div class="wrap"><div class="ab-k">History of ASLP</div><h1 class="h1">A journey of hope</h1>
+        <p class="lede">From a few conversations in 2016 to a programme shaped by territories across Asia and the Pacific.</p>
+        <blockquote class="hi-verse">"See, I am doing a new thing! Now it springs up; do you not perceive it? I am making a way in the wilderness and streams in the wasteland."<cite>Isaiah 43:19</cite></blockquote></div></section>
+    <div class="wrap page-body">
+      <nav class="hi-years" aria-label="Years">${HISTORY.map(h => `<a href="#/history" data-jump-year="${esc(h.y)}" style="--hc:${h.c}">${esc(h.y)}</a>`).join("")}</nav>
+      <div class="hi-line">${[0, 1].map(col => `<ol class="hi-col ${col ? "r" : "l"}">${HISTORY.map((h, n) => n % 2 !== col ? "" : `<li class="hi-item" id="y-${esc(h.y)}" style="--hc:${h.c};order:${n}">
+        <div class="hi-dot" aria-hidden="true"></div>
+        <div class="hi-card">${h.shapes.map(sh => `<img class="hi-el" src="brand/el/${sh}.webp" alt="" aria-hidden="true" loading="lazy">`).join("")}
+          <div class="hi-y">${esc(h.y)}</div><h2 class="h3">${esc(h.t)}</h2>${h.where ? `<div class="hi-where">${esc(h.where)}</div>` : ""}
+          ${h.p.map(x => `<p>${esc(x)}</p>`).join("")}
+          ${h.li ? `<div class="hi-lh">${esc(h.lh)}</div><ul>${h.li.map(x => `<li>${esc(x)}</li>`).join("")}</ul>` : ""}
+          ${h.quote ? `<blockquote>${esc(h.quote)}${h.cite ? `<cite>${esc(h.cite)}</cite>` : ""}</blockquote>` : ""}
+          ${h.link ? `<a class="textlink" href="${h.link[0]}">${esc(h.link[1])}</a>` : ""}</div></li>`).join("")}</ol>`).join("")}</div>
+      <section class="hi-mission"><div><div class="ab-k">Integrated mission</div>
+        <p class="statement">"I came that they may have life, and have it <b>to the full</b>."</p><p class="small" style="color:inherit;opacity:.8">Jesus, John 10:10</p></div>
+        <div class="hi-four">${[["Care", "#0a84ff"], ["Change", "#e14b1e"], ["Community", "#f5c400"], ["Hope", "#24215f"]].map(([w, c]) => `<span style="--wc:${c}">${w}</span>`).join("")}</div>
+        <p>Through the journey, the forums kept returning to the same calling: the mission of The Salvation Army is to preach the gospel of Jesus Christ and to meet human needs in his name without discrimination. Community development is one way that mission comes alive, with communities' own resources, shared responsibility and hope.</p></section>
+      <div class="hi-next"><a class="btn fill" href="#/about">About ASLP today</a><a class="btn" href="#/cwgs">Meet the Cluster Working Groups</a></div>
+    </div>`;
+}
+document.addEventListener("click", e => { const b = e.target.closest("[data-jump-year]"); if (!b) return; e.preventDefault(); const t = document.getElementById("y-" + b.dataset.jumpYear); if (t) t.scrollIntoView({ behavior: "smooth", block: "start" }); });
 
 // ---- CWGs ----
 function cwgExplainer() {
@@ -1516,7 +1672,7 @@ function pagesEditor() {
   const c = data.content || {}, about = c.about || {}, home = c.home || {}; let issues = []; try { issues = JSON.parse((c.newsletter || {}).body || "[]"); } catch (e) {}
   box.innerHTML = `<div class="ed-grid">
       <label class="full"><span>Home page introduction <span class="ed-hint">The sentence under "Sharing what works. Learning from each other." Leave empty to use the first paragraph of About.</span></span><textarea id="pg-home" rows="3">${esc(home.body || "")}</textarea></label>
-      <label class="full"><span>About ASLP <span class="ed-hint">Leave a blank line between paragraphs.</span></span><textarea id="pg-about" rows="12">${esc(about.body || "")}</textarea></label>
+      <label class="full"><span>About ASLP: opening text <span class="ed-hint">Leave a blank line between paragraphs. The focus areas, outputs and History page follow it.</span></span><textarea id="pg-about" rows="12">${esc(about.body || ABOUT_DEFAULT)}</textarea></label>
     </div>
     <div class="ed-actions"><button type="button" class="btn fill sm" id="pg-save">Save the home page and About</button><span class="ed-msg" id="pg-msg" role="status"></span></div>
     <h3 class="h3" style="margin-top:var(--g6)">Newsletter issues</h3>
@@ -1702,13 +1858,13 @@ function route() {
   if (!data) return;
   maps.forEach(m => m.remove()); maps = []; pendingMaps = [];
   const [p, a] = (location.hash.replace(/^#\/?/, "") || "").split("/").filter(Boolean);
-  const html = !p ? pageHome() : p === "about" ? pageAbout() : p === "cwgs" ? pageCwgs() : p === "zone" ? pageZone(a) : p === "cwg" ? pageCwg(a)
+  const html = !p ? pageHome() : p === "about" ? pageAbout() : p === "history" ? pageHistory() : p === "cwgs" ? pageCwgs() : p === "zone" ? pageZone(a) : p === "cwg" ? pageCwg(a)
     : p === "territory" ? pageTerritory(a) : p === "groups" ? pageGroups() : p === "group" ? pageGroup(a) : p === "newsletter" ? pageNewsletter() : p === "console" ? pageConsole(a, (location.hash.replace(/^#\/?/, "").split("/")[2] || "")) : notFound();
   $("view").innerHTML = html;
   document.body.classList.toggle("is-home", !p);
   pendingMaps.forEach(f => f()); pendingMaps = [];
   if (p === "console") mountSignin();
-  const nav = p === "zone" || p === "cwg" || p === "territory" ? "cwgs" : p === "group" ? "groups" : p;
+  const nav = p === "zone" || p === "cwg" || p === "territory" ? "cwgs" : p === "group" ? "groups" : p === "history" ? "about" : p;
   document.querySelectorAll("[data-nav]").forEach(x => x.classList.toggle("on", x.dataset.nav === nav));
   $("menu").classList.remove("open"); $("menu-btn").setAttribute("aria-expanded", "false");
   const h1 = $("view").querySelector("h1"); const t1 = h1 ? (h1.textContent.trim() || (h1.querySelector("img") || {}).alt || "") : "";
