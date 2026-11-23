@@ -2722,6 +2722,8 @@ function welcomeHtml(v, tabs, roSteps, roRoles) {
     ? ["lock", "How you sign in", `With your email and your CWG's PIN. If your CWG lead changes the PIN, they'll give you the new one. Can't sign in? Ask your CWG lead to check your email is registered for your territory.`, ""]
     : pinApprover(v) ? ["lock", "PIN requests and resets", `When an admin, CWG lead or view-only account sets up a PIN, approve it in <b>PINs</b>. If one of them forgets theirs, reset it there and they set up a new one. You can change your own PIN there too.`, go("cc-pin")]
     : ["lock", "Your own PIN", `You sign in with your email and your own PIN${kind === "lead" ? ", not the CWG's" : ""}. Change it under <b>${kind === "lead" || kind === "viewer" ? "PINs" : "My PIN"}</b> any time. Forgot it? Ask an ASLP admin to reset it, then set up a new one.`, go("cc-pin")]);
+  // CWG members and contact persons: only their own territory (profile and CD Strategy), nothing else
+  if (kind === "member") steps = steps.filter(x => x[0] === "pin" || x[0] === "chart");
   const fn = firstName(v);
   return `<section class="console-card wel" id="cc-welcome">
     <div class="wel-hero"><div class="wel-lll" aria-hidden="true"><span>Listen.</span><span>Learn.</span><span>Lead.</span></div>
@@ -2734,7 +2736,7 @@ function welcomeHtml(v, tabs, roSteps, roRoles) {
     <div class="wel-try"><div><b>New here? Take a test run.</b><span>${v.ro ? "Each guide below walks you through the real screens as if you could make changes, so you can experience the site the way editors use it. Nothing you do during a test run is saved or published." : "Each guide below walks you through the real screens, one step at a time. Nothing you do during a test run is saved or published, so you can practise freely."}</span></div>
       <button type="button" class="btn fill" data-tour="all">Start the full test run</button></div>
     <ol class="wel-steps">${steps.map(([ic, t, d, a], i) => `<li style="--i:${i}"><div class="wel-ic">${WICON[ic]}</div><div class="wel-tx"><b>${esc(t)}</b><p>${d}</p></div><div class="wel-acts">${TOURS[ic] ? `<button type="button" class="btn fill sm" data-tour="${ic}">Try it</button>` : ""}${a}</div></li>`).join("")}</ol>
-    ${steps.length === 1 ? `<p class="small" style="margin-top:var(--g3)">Your account doesn't edit anything on this website yet. If you think it should, ask your CWG lead or the ASLP team.</p>` : ""}</section>`;
+    ${steps.length === 1 && kind !== "member" ? `<p class="small" style="margin-top:var(--g3)">Your account doesn't edit anything on this website yet. If you think it should, ask your CWG lead or the ASLP team.</p>` : ""}</section>`;
 }
 // ---- guided test runs: walk people through the real console, in practice mode where nothing is saved ----
 const PRACTICE = { on: false };
@@ -2857,7 +2859,7 @@ function pageConsole(a, b) {
   const terrIds = v.can_edit || [], cwgs = v.can_cwgs || [];
   const groups = v.can_groups || [];
   const who = v.ro ? "View only" : v.is_full_admin ? "Admin" : [(v.lead_cwgs || []).length && `${v.lead_cwgs.join(" and ")} CWG lead`, v.can_approve && "ASC member", (v.post_groups || []).includes("apsg") && !v.can_approve && "APSG member",
-    (v.submit_cwgs || []).length && `${v.submit_cwgs.join(" and ")} CWG member`, acctKind(v) === "member" && "CWG member or contact person"].filter(Boolean).join(" · ") || "Signed in";
+    acctKind(v) !== "member" && (v.submit_cwgs || []).length && `${v.submit_cwgs.join(" and ")} CWG member`, acctKind(v) === "member" && "CWG member or contact person"].filter(Boolean).join(" · ") || "Signed in";
   const tab = a === "strategies" ? "strategies" : "website";
   const head = `${crumbs([["Home", "#/"], ["Console"]])}<div class="wrap" style="padding-top:var(--g4)">
     <div class="console-head"><div><h1 class="h1">Console</h1><p class="small" style="margin-top:6px">${esc(who)} · ${esc(v.email)}</p></div><button type="button" class="btn sm" id="si-out">Sign out</button></div>
@@ -2867,7 +2869,7 @@ function pageConsole(a, b) {
   if (tab === "strategies") return head + `<div class="wrap page-body"><div class="console-card"><h2 class="h2">CD Strategies console</h2>
     <p>Update each territory's CD Strategy status and details, focal persons and approvals on the CD Strategies website. You're already signed in there with this account.</p>
     <p class="small">The territory's name, CWG, headquarters, countries, offices, status, strategy period and focal person are kept there and shown on this website automatically.</p>
-    <a class="btn fill" href="${CDS_URL}#admin">Open the CD Strategies console</a></div></div>`;
+    <a class="btn fill" href="${CDS_URL}${acctKind(v) === "member" ? "" : "#admin"}">Open the CD Strategies console</a></div></div>`;
   if (!terrIds.length && !cwgs.length && !groups.length && !v.is_full_admin && !(v.post_cwgs || []).length && !(v.submit_cwgs || []).length && !(v.post_groups || []).length)
     return head + `<div class="wrap page-body">${welcomeHtml(v, [])}</div>`;
   const unitIds = (v.can_units || []).filter(id => { const u = anyUnitById(id); return u && (u.enabled || canToggleUnit(id)); });
@@ -2875,8 +2877,10 @@ function pageConsole(a, b) {
   const selT = a === "territory" && terrIds.includes(b) ? b : a === "territory" && unitIds.includes(b) ? "u:" + b : terrIds[0] || (unitIds[0] ? "u:" + unitIds[0] : "");
   const selC = a === "cwg" ? cwgs.find(c => cwgSlug(c) === b) : null;
   pendingMaps.push(() => mountConsole());
-  const canUpd = (v.post_cwgs || []).length || (v.submit_cwgs || []).length || Object.keys(PGROUPS).some(canGroupPost);
-  const secs = [["cc-welcome", "Welcome"], canUpd && ["cc-updates", "Updates"], toggleIds.length && ["cc-units", "Regions and countries"], cwgs.length && ["cc-members", "CWG members"], (terrIds.length || unitIds.length) && ["cc-terr", "Territory profiles"], groups.length && ["cc-groups", "ASLP Groups"], v.is_full_admin && ["cc-pages", "Pages and newsletter"], v.is_full_admin && ["cc-access", "Access"], ["cc-pin", pinApprover(v) || v.ro || acctKind(v) === "lead" ? "PINs" : acctKind(v) === "member" ? "How you sign in" : "My PIN"]].filter(Boolean);
+  // CWG members and contact persons (signed in with the CWG's PIN) get only their own territory: no updates, PINs, access or other settings
+  const memberOnly = acctKind(v) === "member";
+  const canUpd = !memberOnly && ((v.post_cwgs || []).length || (v.submit_cwgs || []).length || Object.keys(PGROUPS).some(canGroupPost));
+  const secs = [["cc-welcome", "Welcome"], canUpd && ["cc-updates", "Updates"], toggleIds.length && ["cc-units", "Regions and countries"], cwgs.length && ["cc-members", "CWG members"], (terrIds.length || unitIds.length) && ["cc-terr", "Territory profiles"], groups.length && ["cc-groups", "ASLP Groups"], v.is_full_admin && ["cc-pages", "Pages and newsletter"], v.is_full_admin && ["cc-access", "Access"], !memberOnly && ["cc-pin", pinApprover(v) || v.ro || acctKind(v) === "lead" ? "PINs" : acctKind(v) === "member" ? "How you sign in" : "My PIN"]].filter(Boolean);
   return head + `<div class="wrap page-body">
     ${secs.length > 1 ? `<nav class="con-sub" role="tablist" aria-label="Console sections">${secs.map(([id, l]) => `<button type="button" role="tab" data-jump="${id}">${l}</button>`).join("")}</nav>` : ""}
     ${welcomeHtml(v, secs)}
@@ -2899,7 +2903,7 @@ function pageConsole(a, b) {
       <div id="grp-editor"></div></section>` : ""}
     ${v.is_full_admin ? `<section class="console-card" id="cc-pages"><h2 class="h2">Pages and newsletter</h2><div id="pages-editor"></div></section>
     <section class="console-card" id="cc-access"><h2 class="h2">Access</h2><div id="access-editor">${loader("Loading access settings…")}</div></section>` : ""}
-    <section class="console-card" id="cc-pin">
+    ${acctKind(v) === "member" ? "" : `<section class="console-card" id="cc-pin">
       ${v.is_full_admin || v.ro || (v.lead_cwgs || []).length ? `<h2 class="h2">CWG PINs</h2>
       <p class="small">Each CWG has one PIN. CWG members and territory contact persons sign in with their registered email and their CWG's PIN, and can then edit only their own territory: its profile and its CD Strategy. ${v.is_full_admin ? "Admins can set any CWG's PIN; CWG leads set their own CWG's." : "Set your CWG's PIN here and share it with your CWG members and contact persons, for example in your group chat."} Changing it stops the old PIN from working straight away.</p>
       <div id="cwg-pins">${loader("Loading…")}</div>` : ""}
@@ -2916,7 +2920,7 @@ function pageConsole(a, b) {
         <label><span>New PIN</span><input type="password" id="mp-a" autocomplete="new-password" data-ro-ok placeholder="At least 6 characters"></label>
         <label><span>Type it again</span><input type="password" id="mp-b" autocomplete="new-password" data-ro-ok></label>
         <div class="ed-actions full"><button type="submit" class="btn fill" id="mp-save" data-ro-ok>Change my PIN</button><span class="ed-msg" id="mp-msg" role="status"></span></div>
-      </form>` : `<h2 class="h2">How you sign in</h2><div class="pin-how"><div class="wel-ic">${WICON.pinset}</div><p class="small">You sign in with your registered email${myTerrs(v).length ? ` (registered for ${esc(myTerrs(v).join(" and "))})` : ""} and your CWG's PIN. There's no PIN of your own to set up or change. If your CWG lead changes the PIN, they'll give you the new one; if it stops working, ask them for the current one.</p></div>`}</section>
+      </form>` : `<h2 class="h2">How you sign in</h2><div class="pin-how"><div class="wel-ic">${WICON.pinset}</div><p class="small">You sign in with your registered email${myTerrs(v).length ? ` (registered for ${esc(myTerrs(v).join(" and "))})` : ""} and your CWG's PIN. There's no PIN of your own to set up or change. If your CWG lead changes the PIN, they'll give you the new one; if it stops working, ask them for the current one.</p></div>`}</section>`}
   </div>`;
 }
 // ---- console: ASLP group details and members ----
