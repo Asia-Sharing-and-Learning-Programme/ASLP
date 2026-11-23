@@ -68,10 +68,9 @@
     function signInView(msg, cls) {
       box.innerHTML = '<form class="pin" novalidate>' + emailField() +
         '<label for="pin-pin">Your PIN</label><input type="password" id="pin-pin" autocomplete="current-password" placeholder="Your PIN">' +
-        '<div class="pin-go"><button type="submit" class="pin-btn" id="pin-in">Sign in</button><button type="button" class="pin-link" id="pin-first">First time? Set up your PIN</button><button type="button" class="pin-link" id="pin-forgot">Forgot your PIN?</button><button type="button" class="pin-link" id="pin-wa" hidden>Get a sign-in code on WhatsApp</button></div>' +
+        '<div class="pin-go"><button type="submit" class="pin-btn" id="pin-in">Sign in</button><button type="button" class="pin-link" id="pin-first">First time? Set up your PIN</button><button type="button" class="pin-link" id="pin-forgot">Forgot your PIN?</button><button type="button" class="pin-link" id="pin-wa">Get a sign-in code on WhatsApp</button></div>' +
         '<div class="pin-msg ' + (cls || '') + '" role="status" id="pin-msg">' + (msg || '') + '</div></form>';
       wire({ 'pin-first': function () { setView(); }, 'pin-forgot': function () { forgotView(); }, 'pin-wa': function () { waView(); } });
-      waOn(db).then(function (on) { var w = box.querySelector('#pin-wa'); if (w) w.hidden = !on; });
       box.querySelector('form').onsubmit = async function (ev) {
         ev.preventDefault(); grab();
         var pin = box.querySelector('#pin-pin').value;
@@ -202,7 +201,13 @@
       };
     }
     // WhatsApp: a sign-in code and link to the number the person saved in their console
-    function waView() {
+    async function waView() {
+      if (!(await waOn(db))) {
+        box.innerHTML = '<div class="pin"><p class="pin-k">Sign in with WhatsApp</p><h3>Coming soon</h3>' +
+          '<p class="pin-note">The ASLP team is still connecting WhatsApp. Until then, sign in with your email and PIN, or with an email code. You can already save your WhatsApp number in your console under <b>My PIN</b>, so it\u2019s ready when WhatsApp is switched on.</p>' +
+          '<div class="pin-go"><button type="button" class="pin-btn" id="pin-back">Back to sign in</button></div></div>';
+        wire({ 'pin-back': function () { signInView(); } }); return;
+      }
       box.innerHTML = '<form class="pin" novalidate><p class="pin-k">Sign in with WhatsApp</p>' + emailField() +
         '<p class="pin-note">We\u2019ll send a sign-in code and link to the WhatsApp number you saved in your console. No number saved yet? Sign in another way once, then add it under <b>My PIN</b>.</p>' +
         '<div class="pin-go"><button type="submit" class="pin-btn" id="pin-wsend">Send it to my WhatsApp</button><button type="button" class="pin-link" id="pin-back">Back to sign in</button></div>' +
