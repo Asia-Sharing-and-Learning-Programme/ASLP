@@ -1113,6 +1113,8 @@
   .tp-chip button { border: 0; background: rgba(255,255,255,.2); color: inherit; width: 22px; height: 22px; border-radius: 50%; cursor: pointer; font-size: 14px; line-height: 1; }
   .tp-chip.old button { background: rgba(0,0,0,.1); }
   .tp-add { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+  /* profile fields sit in pairs: the two text boxes side by side, then the two pickers */
+  .pf-text textarea { min-height: 128px; } .pf-pick { align-self: start; } .pf-pick .tp-sel { max-width: none; }
   .tp-sel { flex: 1 1 320px; max-width: 560px; font: inherit; font-size: 15px; padding: 10px 12px; border: 1.5px solid var(--line); border-radius: 10px; background: var(--paper); color: var(--ink); cursor: pointer; }
   .tp-sel:disabled { cursor: default; opacity: .7; }
   .tp-count { font-size: 13.5px; font-weight: 700; color: var(--ink-3); } .tp-count.full { color: #b3261e; }
@@ -2168,10 +2170,10 @@ function unitEditor(id) {
   const p = u.profile || {}, t = terrs().find(x => x.id === u.parent) || {};
   box.innerHTML = `<div class="synced"><div class="synced-h"><b>${esc(u.name)}</b><span class="small">${esc(u.kind === "Country" ? "Part of the" : `A ${u.kind.toLowerCase()} of the`)} ${esc(OFFICIAL_NAME[t.id] || t.name || "")} · ${esc(u.cwg)} CWG. It shares the territory's CD Strategy.</span></div></div>
     <div class="ed-grid">
-      <label class="full"><span>Where they work</span><textarea id="p-work" rows="3">${esc(p.workAreas || "")}</textarea></label>
-      <div class="full ed-field"><span>Thematic areas <span class="ed-hint">pick as many as apply, from the standard list</span></span><div id="p-them" class="tp"></div></div>
-      <div class="full ed-field"><span>Strengths <span class="ed-hint">pick from the strengths territories named at the ASLFs, 2018 to 2025</span></span><div id="p-str" class="tp"></div></div>
-      <label><span>Technical support they can offer others</span><textarea id="p-tech" rows="4">${esc(p.techSupport || "")}</textarea></label>
+      <label class="pf-text"><span>Where they work</span><textarea id="p-work" rows="5">${esc(p.workAreas || "")}</textarea></label>
+      <label class="pf-text"><span>Technical support they can offer others <span class="ed-hint">2 to 5, one per line</span></span><textarea id="p-tech" rows="5">${esc(p.techSupport || "")}</textarea></label>
+      <div class="ed-field pf-pick"><span>Thematic areas <span class="ed-hint">pick as many as apply, up to 8</span></span><div id="p-them" class="tp"></div></div>
+      <div class="ed-field pf-pick"><span>Strengths <span class="ed-hint">up to 8, from the standard list</span></span><div id="p-str" class="tp"></div></div>
     </div>
     <h3 class="h3" style="margin-top:var(--g5)">Contact persons</h3>
     ${canConU ? `<p class="small">Names and roles only: the website doesn't show contact persons' emails or phone numbers. CWG members linked to ${esc(u.name)} also show as contacts.</p>
@@ -3685,10 +3687,10 @@ function terrEditor(id) {
       <dt>CD Strategy</dt><dd>${statusChip(t)}${t.strategyPeriod ? ` · ${esc(t.strategyPeriod)}` : ""}</dd><dt>CD focal person</dt><dd>${t.focal ? esc([t.focal.name, t.focal.role].filter(Boolean).join(", ")) : "—"}</dd></dl>
       <a class="textlink" href="${CDS_URL}#territory-${esc(t.id)}">${shared ? "Change the offices, status and focal person in the CD Strategies console" : "See it on the CD Strategies website"}</a></div>
     <div class="ed-grid">
-      <label class="full"><span>Where they work</span><textarea id="p-work" rows="3" placeholder="Areas, communities and programmes the territory works in">${esc(p.workAreas || "")}</textarea></label>
-      <div class="full ed-field"><span>Thematic areas <span class="ed-hint">pick as many as apply, from the standard list</span></span><div id="p-them" class="tp"></div></div>
-      <div class="full ed-field"><span>Strengths <span class="ed-hint">pick from the strengths territories named at the ASLFs, 2018 to 2025</span></span><div id="p-str" class="tp"></div></div>
-      <label><span>Technical support they can offer other territories <span class="ed-hint">2 to 5, one per line</span></span><textarea id="p-tech" rows="5">${esc(p.techSupport || "")}</textarea></label>
+      <label class="pf-text"><span>Where they work</span><textarea id="p-work" rows="5" placeholder="Areas, communities and programmes the territory works in">${esc(p.workAreas || "")}</textarea></label>
+      <label class="pf-text"><span>Technical support they can offer other territories <span class="ed-hint">2 to 5, one per line</span></span><textarea id="p-tech" rows="5">${esc(p.techSupport || "")}</textarea></label>
+      <div class="ed-field pf-pick"><span>Thematic areas <span class="ed-hint">pick as many as apply, up to 8</span></span><div id="p-them" class="tp"></div></div>
+      <div class="ed-field pf-pick"><span>Strengths <span class="ed-hint">up to 8, from the standard list</span></span><div id="p-str" class="tp"></div></div>
     </div>
     <h3 class="h3" style="margin-top:var(--g5)">Contact persons</h3>
     ${canCon ? `<p class="small">1 or 2 people. Their email lets them sign in with the CWG's PIN and edit this territory. Tick <b>CWG member</b> for the one who is on the CWG (a contact person can also be from another department). The website doesn't show emails publicly.</p>
