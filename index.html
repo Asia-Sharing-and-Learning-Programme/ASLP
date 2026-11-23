@@ -960,6 +960,7 @@
   .xl-box { margin: 0 0 var(--g4); border: 1px solid var(--line); border-radius: 12px; padding: 12px 16px; background: var(--paper); }
   .xl-box summary { cursor: pointer; font-weight: 700; }
   .xl-box[open] summary { margin-bottom: 10px; }
+  .xl-dl { display: flex; flex-wrap: wrap; gap: 8px; margin: 4px 0 10px; }
   .xl-steps { margin: 0 0 8px 18px; font-size: 14.5px; line-height: 1.6; }
   .xl-file { display: grid; gap: 4px; font-weight: 700; font-size: 14px; margin: 10px 0; max-width: 480px; }
   .xl-table { width: 100%; border-collapse: collapse; font-size: 14px; margin: 10px 0; }
@@ -3307,7 +3308,8 @@ function wireTidy(id) {
   let t; ta.addEventListener("input", () => { clearTimeout(t); t = setTimeout(show, 600); }); show();
 }
 // ---- console: update several territory profiles at once from the Excel template (admins and CWG leads) ----
-const XL_TPL = "templates/ASLP-Territory-Profiles-Template.xlsx";
+// the CWGs this person can download a template for: every CWG for admins, their own for CWG leads
+const xlCwgs = () => V().is_full_admin ? [...new Set(terrs().map(t => (t.cwg || "").trim()).filter(Boolean))].sort() : (V().lead_cwgs || []);
 const xlText = c => { let v = c && c.value; if (v == null) return ""; if (v instanceof Date) return v.toISOString().slice(0, 10);
   if (typeof v === "object") { if (v.richText) v = v.richText.map(x => x.text).join(""); else if (v.text != null) v = v.text; else if (v.result != null) v = v.result; else if (v.hyperlink) v = v.hyperlink; else v = ""; }
   return String(v).trim(); };
@@ -3316,47 +3318,70 @@ async function xlRead(file) {
   await loadScript("vendor/exceljs.min.js");
   const wb = new ExcelJS.Workbook(); await wb.xlsx.load(await file.arrayBuffer()); return wb;
 }
-// read the territory profiles template into one entry per territory that has something filled in
+// read a CWG's territory profiles template: one entry per territory, with what the file says (the server only saves real changes)
 function xlProfiles(wb) {
   const rows = {}, warn = [], row = id => (rows[id] = rows[id] || { territory: id });
   const ids = new Set(terrs().map(t => t.id)), byName = Object.fromEntries(terrs().map(t => [String(t.name).toLowerCase(), t.id]));
-  const pr = wb.getWorksheet("Profiles"); if (!pr) throw new Error("This isn't the territory profiles template: there's no Profiles tab. Download the template and try again.");
-  pr.eachRow((r, n) => { if (n < 2) return; const id = xlText(r.getCell(1)); if (!id || id === "EXAMPLE") return;
-    const w = xlText(r.getCell(4)), s = xlText(r.getCell(5)); if (!w && !s) return;
-    if (!ids.has(id)) return warn.push(`Profiles, row ${n}: unknown territory ID "${id}". Don't change the grey columns.`);
-    if (w) row(id).workAreas = xlEmpty(w); if (s) row(id).techSupport = xlEmpty(s); });
-  [["Thematic areas", "thematic"], ["Strengths", "strengths"]].forEach(([tab, key]) => {
-    const ws = wb.getWorksheet(tab); if (!ws) return; const hdr = ws.getRow(2), names = [];
-    for (let c = 4; c <= ws.columnCount; c++) names[c] = xlText(hdr.getCell(c));
-    ws.eachRow((r, n) => { if (n < 3) return; const id = xlText(r.getCell(1)); if (!id || id === "EXAMPLE" || !ids.has(id)) return;
-      const picked = []; for (let c = 4; c <= ws.columnCount; c++) if (/^(yes|y|x|✓)$/i.test(xlText(r.getCell(c))) && names[c]) picked.push(names[c]);
-      if (picked.length) row(id)[key] = picked; });
-  });
+  const pr = wb.getWorksheet("Profiles"); if (!pr || !wb.getWorksheet("Thematic areas")) throw new Error("This isn't the territory profiles template. Download your CWG's template here and try again.");
+  pr.eachRow((r, n) => { if (n < 2) return; const id = xlText(r.getCell(1)); if (!id) return;
+    if (!ids.has(id)) return warn.push(`Profiles, row ${n}: unknown territory ID "${id}".`);
+    const w = xlText(r.getCell(4)); if (w) row(id).workAreas = xlEmpty(w); });
+  const themes = new Set(THEMES.flatMap(g => g[1])), strengths = new Set(STRENGTHS.flatMap(g => g[1].map(x => x[0])));
+  const listTab = (tab, key, known, label) => { const ws = wb.getWorksheet(tab); if (!ws) return;
+    ws.eachRow((r, n) => { if (n < 2) return; const tn = xlText(r.getCell(1)), v = xlText(r.getCell(2)); if (!tn && !v) return;
+      const id = byName[tn.toLowerCase()]; if (!id) return warn.push(`${tab}, row ${n}: ${tn ? `unknown territory "${tn}"` : "no territory picked"}, so it was left out.`);
+      if (!v) return; if (known && !known.has(v)) return warn.push(`${tab}, row ${n}: "${v}" isn't in the list of ${label}, so it was left out.`);
+      const a = (row(id)[key] = row(id)[key] || []); if (!a.includes(v)) a.push(v); }); };
+  listTab("Thematic areas", "thematic", themes, "thematic areas"); listTab("Strengths", "strengths", strengths, "strengths"); listTab("Technical support", "support", null);
+  Object.values(rows).forEach(r => { if (r.support) { r.techSupport = r.support.join("\n"); delete r.support; } });
   const con = wb.getWorksheet("Contact persons");
-  if (con) con.eachRow((r, n) => { if (n < 2) return; const tn = xlText(r.getCell(1)); if (!tn || /^example territory$/i.test(tn)) return;
-    const id = byName[tn.toLowerCase()]; if (!id) return warn.push(`Contact persons, row ${n}: unknown territory "${tn}". Pick it from the dropdown.`);
-    const c = { rank: xlText(r.getCell(2)), name: xlText(r.getCell(3)), role: xlText(r.getCell(4)) };
+  if (con) con.eachRow((r, n) => { if (n < 2) return; const tn = xlText(r.getCell(1)), c = { rank: xlText(r.getCell(2)), name: xlText(r.getCell(3)), role: xlText(r.getCell(4)) };
+    if (!tn && !c.name && !c.role) return; const id = byName[tn.toLowerCase()];
+    if (!id) return warn.push(`Contact persons, row ${n}: ${tn ? `unknown territory "${tn}"` : "no territory picked"}, so it was left out.`);
     if (!c.name) return warn.push(`Contact persons, row ${n}: the contact for ${tn} has no name, so it was left out.`);
     (row(id).contacts = row(id).contacts || []).push(c); });
-  return { rows: Object.values(rows), warn };
+  // keep only what differs from the website now, so the check before saving lists real changes
+  const srt = a => [...(a || [])].map(x => String(x).trim()).filter(Boolean).sort().join("|");
+  Object.values(rows).forEach(r => { const t = terrs().find(x => x.id === r.territory) || {}, p = t.profile || {};
+    if ("workAreas" in r && r.workAreas.trim() === String(p.workAreas || "").trim()) delete r.workAreas;
+    if (r.thematic && srt(r.thematic) === srt(p.thematic)) delete r.thematic;
+    if (r.strengths && srt(r.strengths) === srt(strengthsOf(p))) delete r.strengths;
+    if ("techSupport" in r && r.techSupport === tidyItems(p.techSupport || "").join("\n")) delete r.techSupport;
+    if (r.contacts && r.contacts.map(c => [c.rank, c.name, c.role].join("|")).join(";") === (t.contacts || []).map(c => [c.rank || "", c.name || "", c.role || ""].join("|")).join(";")) delete r.contacts; });
+  return { rows: Object.values(rows).filter(r => Object.keys(r).length > 1), warn };
+}
+// the CWG's template, filled in with the profiles as they are now
+async function xlTemplate(cwg, btn) {
+  const lbl = btn.textContent; btn.disabled = true; btn.textContent = "Preparing…";
+  try {
+    await loadScript("vendor/exceljs.min.js"); await loadScript("aslp-xl.js");
+    const ts = terrs().filter(t => (t.cwg || "").trim() === cwg).sort((a, b) => a.name.localeCompare(b.name));
+    const support = [...new Set([...THEMES.flatMap(g => g[1]), ...((STRENGTHS.find(g => g[0] === "Expertise to share") || [, []])[1].map(x => x[0]))])];
+    const blob = await ASLPXL.profiles({ cwg, terrs: ts.map(t => ({ id: t.id, name: t.name, profile: t.profile || {}, contacts: t.contacts || [] })),
+      themes: THEMES.flatMap(g => g[1]), strengths: STRENGTHS.flatMap(g => g[1].map(x => x[0])), support, tidy: tidyItems });
+    ASLPXL.save(blob, `ASLP-${cwg.replace(/\s+/g, "")}-Territory-Profiles.xlsx`);
+  } catch (e) { console.error(e); alert("The template couldn't be made. Please try again."); }
+  btn.disabled = false; btn.textContent = lbl;
 }
 const XL_FIELDS = [["workAreas", "Where they work"], ["techSupport", "Technical support"], ["thematic", "Thematic areas"], ["strengths", "Strengths"], ["contacts", "Contact persons"]];
 function xlUpload(box) {
   if (!box) return;
   box.innerHTML = `<details class="xl-box"><summary>Update several territories from Excel</summary>
-    <ol class="xl-steps"><li><a class="textlink" href="${XL_TPL}" download>Download the template</a> (one row per territory).</li><li>Fill in what changes. Blank cells mean no change.</li><li>Upload it here, check what will change, then confirm.</li></ol>
+    <ol class="xl-steps"><li>Download your CWG's template. It's filled in with the profiles as they are now, with dropdowns for almost everything.</li><li>Change what needs changing and save it.</li><li>Upload it here, check what will change, then confirm.</li></ol>
+    <div class="xl-dl">${xlCwgs().map(c => `<button type="button" class="btn sm" data-xl-cwg="${esc(c)}">Download the ${esc(c)} template</button>`).join("")}</div>
     <p class="small">${V().is_full_admin ? "You can update every territory." : "You can update your own CWG's territories. Rows for others are skipped."} Each upload is recorded in each territory's update history.</p>
     <label class="xl-file"><span>Your filled-in template (.xlsx)</span><input type="file" id="xl-in" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"></label>
     <div id="xl-out" role="status"></div></details>`;
   const out = box.querySelector("#xl-out");
+  box.querySelectorAll("[data-xl-cwg]").forEach(b => b.onclick = () => xlTemplate(b.dataset.xlCwg, b));
   box.querySelector("#xl-in").addEventListener("change", async e => {
     const file = e.target.files[0]; if (!file) return;
     out.innerHTML = `<p class="small">Reading ${esc(file.name)}…</p>`;
     let parsed; try { parsed = xlProfiles(await xlRead(file)); } catch (err) { out.innerHTML = `<p class="ed-msg err">${esc(err.message === "load" ? "Couldn't load the Excel reader. Check your connection and try again." : /zip|central directory|end of data/i.test(err.message) ? "That file couldn't be read. Please upload the template saved as .xlsx." : err.message)}</p>`; return; }
     const { rows, warn } = parsed;
     const warnHtml = warn.length ? `<ul class="xl-warn">${warn.map(w => `<li>${esc(w)}</li>`).join("")}</ul>` : "";
-    if (!rows.length) { out.innerHTML = warnHtml + `<p class="small">Nothing to update: no yellow cells are filled in.</p>`; return; }
-    out.innerHTML = warnHtml + `<table class="xl-table"><thead><tr><th>Territory</th><th>Filled in</th></tr></thead><tbody>${rows.map(r => `<tr><td>${esc(terrName(r.territory))}</td><td>${XL_FIELDS.filter(([k]) => k in r).map(([k, l]) => esc(l + (Array.isArray(r[k]) ? ` (${r[k].length})` : r[k] === "" ? " (emptied)" : ""))).join(", ")}</td></tr>`).join("")}</tbody></table>
+    if (!rows.length) { out.innerHTML = warnHtml + `<p class="small">Nothing to update: the file matches what's on the website.</p>`; return; }
+    out.innerHTML = warnHtml + `<table class="xl-table"><thead><tr><th>Territory</th><th>Will change</th></tr></thead><tbody>${rows.map(r => `<tr><td>${esc(terrName(r.territory))}</td><td>${XL_FIELDS.filter(([k]) => k in r).map(([k, l]) => esc(l + (Array.isArray(r[k]) ? ` (${r[k].length})` : r[k] === "" ? " (emptied)" : ""))).join(", ")}</td></tr>`).join("")}</tbody></table>
       <div class="ed-actions"><button type="button" class="btn fill" id="xl-go">Update ${rows.length} ${rows.length === 1 ? "territory" : "territories"}</button><button type="button" class="btn" id="xl-cancel">Cancel</button></div>`;
     out.querySelector("#xl-cancel").onclick = () => { out.innerHTML = ""; e.target.value = ""; };
     out.querySelector("#xl-go").onclick = async () => {
