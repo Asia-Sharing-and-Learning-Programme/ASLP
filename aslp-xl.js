@@ -78,7 +78,7 @@
   function profiles(wb, o, R) {
     var N = 8, TH = 8, ST = 8, SU = 5, CO = 2;
     var ws = sheet(wb, "Territory profiles", [["ID", 4], ["Territory", 26], ["Where they work (areas, communities, programmes)", 42], ["Thematic areas (1 to " + TH + ")", 30], ["Strengths (at least 1)", 30],
-      ["Technical support they can offer (2 to " + SU + ", typed)", 40], ["Contact: rank", 14], ["Contact: name", 22], ["Contact: appointment / role", 30]], 2);
+      ["Technical support they can offer (2 to " + SU + ", typed)", 40], ["Contact: rank", 14], ["Contact: name", 22], ["Contact: appointment / role", 30], ["Contact: email (signs in with it)", 30], ["Contact: CWG member?", 12]], 2);
     ws.getColumn(1).hidden = true;
     var thDv = list(R.Themes, true, "Pick a thematic area."), stDv = list(R.Strengths, true, "Pick a strength."), rkDv = list(R.Ranks, true);
     blocks(ws, o.terrs, N, function (t, r1, r2) {
@@ -89,8 +89,9 @@
         if (k < TH) input(ws.getCell(r, 4), th[k], thDv); else grey(ws.getCell(r, 4));
         if (k < ST) input(ws.getCell(r, 5), st[k], stDv); else grey(ws.getCell(r, 5));
         if (k < SU) input(ws.getCell(r, 6), su[k]); else grey(ws.getCell(r, 6));
-        if (k < CO) { var c = co[k] || {}; input(ws.getCell(r, 7), c.rank, rkDv); input(ws.getCell(r, 8), c.name); input(ws.getCell(r, 9), c.role); }
-        else { grey(ws.getCell(r, 7)); grey(ws.getCell(r, 8)); grey(ws.getCell(r, 9)); }
+        if (k < CO) { var c = co[k] || {}; input(ws.getCell(r, 7), c.rank, rkDv); input(ws.getCell(r, 8), c.name); input(ws.getCell(r, 9), c.role);
+          input(ws.getCell(r, 10), c.email || ""); input(ws.getCell(r, 11), c.name ? ((c.isMember || c.is_member) ? "Yes" : "No") : "", list(R.YesNo, true)); }
+        else { for (var g = 7; g <= 11; g++) grey(ws.getCell(r, g)); }
       }
     });
   }
@@ -134,7 +135,7 @@
   async function cwgFile(o) {
     var wb = new ExcelJS.Workbook(); wb.creator = "ASLP website";
     howTo(wb, o.cwg + ": territory profiles and CD Strategies", "Filled in with what's on the websites now (" + new Date().toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" }) + "). Each sheet has a block of rows per territory. Change what needs changing, save the file, and upload it in the ASLP website console: it updates the profiles and the CD Strategies together.", [
-      "Territory profiles sheet: \"Where they work\" is typed in each territory's box (to empty it, type a single hyphen: -). Thematic areas: pick 1 to 8 from the dropdowns. Strengths: pick at least 1. Technical support: type 2 to 5, one per row. Contact persons: 1 or 2, with the rank from the dropdown and the name and appointment typed. No emails or phone numbers.",
+      "Territory profiles sheet: \"Where they work\" is typed in each territory's box (to empty it, type a single hyphen: -). Thematic areas: pick 1 to 8 from the dropdowns. Strengths: pick at least 1. Technical support: type 2 to 5, one per row. Contact persons: 1 or 2, with the rank from the dropdown, the name, appointment and email typed (work email is fine), and Yes under CWG member for the one who is on the CWG. With that email and the CWG's PIN they can sign in and edit their territory.",
       "CD Strategies sheet: pick the status (if you change it, give the date it changed, or leave it blank for today), the strategy start and end years, and the target quarter. Only the document link and the focal person's name and appointment are typed. Consultation / workshop: Yes or No; if Yes, the dates and whether it was before or during drafting.",
       "Approvals sheet: each territory has its own rows. Type each approving body and its date, one approval per row.",
       "Clear a cell to remove that item. For each territory, what you upload replaces what's on the websites.",
