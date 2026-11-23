@@ -209,7 +209,7 @@
         wire({ 'pin-back': function () { signInView(); } }); return;
       }
       box.innerHTML = '<form class="pin" novalidate><p class="pin-k">Sign in with WhatsApp</p>' + emailField() +
-        '<p class="pin-note">We\u2019ll send a sign-in code and link to the WhatsApp number you saved in your console. No number saved yet? Sign in another way once, then add it under <b>My PIN</b>.</p>' +
+        '<p class="pin-note">We\u2019ll send a sign-in code to the WhatsApp number you saved in your console. No number saved yet? Sign in another way once, then add it under <b>My PIN</b>.</p>' +
         '<div class="pin-go"><button type="submit" class="pin-btn" id="pin-wsend">Send it to my WhatsApp</button><button type="button" class="pin-link" id="pin-back">Back to sign in</button></div>' +
         '<div class="pin-msg" role="status" id="pin-msg"></div></form>';
       wire({ 'pin-back': function () { signInView(); } });
@@ -224,7 +224,7 @@
     }
     function waCodeView(to) {
       box.innerHTML = '<form class="pin" novalidate><p class="pin-k">Check WhatsApp</p><h3>We\u2019ve sent a code to ' + esc(to) + '</h3>' +
-        '<p class="pin-note">Type the code here, or open the link in the message on this device.</p>' +
+        '<p class="pin-note">Type the code from the WhatsApp message here.</p>' +
         '<label for="pin-code">Code from WhatsApp</label><input type="text" id="pin-code" inputmode="numeric" autocomplete="one-time-code" placeholder="123456">' +
         '<div class="pin-go"><button type="submit" class="pin-btn" id="pin-cgo">Sign in</button><button type="button" class="pin-link" id="pin-back">Back to sign in</button></div>' +
         '<div class="pin-msg" role="status" id="pin-msg"></div></form>';
