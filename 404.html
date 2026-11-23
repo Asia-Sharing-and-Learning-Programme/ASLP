@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Page not found | ASLP</title><meta name="robots" content="noindex">
+<script>
+(function () {
+  var p = location.pathname, q = location.search + location.hash;
+  if (/^\/aslp(\/|$)/i.test(p)) {   // old address of the main website
+    var rest = p.replace(/^\/aslp\/?/i, "/");
+    if (/^\/cd-strategy(\/|$)/i.test(rest)) return location.replace("/cd-strategy/" + q);
+    if (/^\/calendar-2027-2028(\/|$)/i.test(rest)) return location.replace("/Calendar-2027-2028/" + q);
+    return location.replace("/" + q);
+  }
+  if (/^\/calendar-2027-2028(\/|$)/i.test(p) && !/^\/Calendar-2027-2028/.test(p)) return location.replace("/Calendar-2027-2028/" + q);
+  if (/^\/cd-strategy(\/|$)/i.test(p) && !/^\/cd-strategy/.test(p)) return location.replace("/cd-strategy/" + q);
+})();
+</script>
+<style>body{font-family:system-ui,sans-serif;max-width:520px;margin:15vh auto;padding:0 20px;text-align:center;color:#222}h1{font-size:28px}a{color:#005fc0}</style>
+</head><body><h1>Page not found</h1><p>This page isn't on the ASLP website.</p><p><a href="/">Go to the ASLP home page</a></p></body></html>
