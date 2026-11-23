@@ -3714,7 +3714,13 @@ function terrEditor(id) {
     const r1 = await db.rpc("aslp_save_profile", { p_territory: id, p_profile: { workAreas: $("p-work").value.trim(), thematic: pT.value(), strengths: pS.value().join("\n"), techSupport: $("p-tech").value.trim() } });
     if (r1.error || !canCon) return r1;
     return db.rpc("aslp_set_contacts", { p_territory: id, p_items: readRows($("con-box")) });
-  }, `${shortName(t.name)} saved.`));
+  }, `${shortName(t.name)} saved.`).then(() => {
+    // show the contact persons as saved: the territory's CWG members are added automatically while a slot is free
+    if (!canCon || !$("terr-msg").classList.contains("ok")) return;
+    const t2 = (data.territories || []).find(x => x.id === id); if (!t2) return;
+    $("con-box").querySelector(".ed-rows").innerHTML = ((t2.contacts || []).length ? t2.contacts : [{}]).map(c => fieldRow(CON_COLS, c, [])).join("");
+    $("con-box").click();
+  }));
 }
 // ---- console drafts: unsaved edits are kept (in this browser and on the server) until they're saved or discarded ----
 const draftLocal = k => `aslp-draft:${V().email}:${k}`;
