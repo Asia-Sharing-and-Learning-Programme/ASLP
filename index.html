@@ -3478,7 +3478,7 @@ const memberPlace = m => m.unit || (m.territory && shortName(OFFICIAL_NAME[m.ter
 const zoneTerrSelect = (vals, terrOpts) => { const groups = {}; terrOpts.forEach(t => (groups[t.cwg] = groups[t.cwg] || []).push(t));
   const cur = (vals.territory || "") + "|" + (vals.unit || "");
   return `<select data-k="territory"><option value="">Not linked to a territory</option>${Object.keys(groups).sort().map(g => `<optgroup label="${esc(g)}">${groups[g].map(t =>
-    `<option value="${esc(t.id)}|"${cur === t.id + "|" ? " selected" : ""}>${esc(terrLabel(t))}</option>${(TERR_UNITS[t.id] || []).map(u => `<option value="${esc(t.id)}|${esc(u)}"${cur === t.id + "|" + u ? " selected" : ""}>\u00a0\u00a0\u00a0↳ ${esc(u)}</option>`).join("")}`).join("")}${units().filter(u => u.cwg === g && !groups[g].some(t => t.id === u.parent) && terrOpts.some(t => t.id === u.parent)).map(u =>
+    `<option value="${esc(t.id)}|"${cur === t.id + "|" ? " selected" : ""}>${esc(terrLabel(t))}${allUnits().some(u => u.parent === t.id) ? " (headquarters)" : ""}</option>${allUnits().filter(u => u.parent === t.id).map(u => u.name).map(u => `<option value="${esc(t.id)}|${esc(u)}"${cur === t.id + "|" + u ? " selected" : ""}>\u00a0\u00a0\u00a0↳ ${esc(u)}</option>`).join("")}`).join("")}${units().filter(u => u.cwg === g && !groups[g].some(t => t.id === u.parent) && terrOpts.some(t => t.id === u.parent)).map(u =>
     `<option value="${esc(u.parent)}|${esc(u.name)}">${esc(u.name)} (${esc(shortName(terrName(u.parent)))} Territory)</option>`).join("")}</optgroup>`).join("")}</select>`; };
 const fieldRow = (cols, vals, terrOpts) => `<div class="ed-row">${cols.map(([k, l, ph]) => k === "territory"
   ? `<label><span>${l}</span>${zoneTerrSelect(vals, terrOpts)}</label>`
