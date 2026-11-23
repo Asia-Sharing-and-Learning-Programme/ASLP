@@ -37,11 +37,13 @@
   }
   var list = function (ref, strict, prompt) { return { type: "list", allowBlank: true, formulae: [ref], showErrorMessage: !!strict, errorStyle: "stop", errorTitle: "Choose from the list", error: "Please pick a value from the dropdown.", showInputMessage: !!prompt, prompt: prompt || "" }; };
   var dateDv = { type: "date", operator: "greaterThan", allowBlank: true, formulae: [new Date(2000, 0, 1)], showErrorMessage: true, errorTitle: "Date", error: "Please enter a date (dd/mm/yyyy)." };
-  function lists(wb, cols) {   // hidden tab with the dropdown lists; returns the range for each
-    var ws = wb.addWorksheet("Lists"), refs = {};
-    Object.keys(cols).forEach(function (k, i) { var col = String.fromCharCode(65 + i); ws.getCell(1, i + 1).value = k;
-      cols[k].forEach(function (v, n) { ws.getCell(n + 2, i + 1).value = v; }); refs[k] = "Lists!$" + col + "$2:$" + col + "$" + (cols[k].length + 1); });
-    ws.state = "veryHidden"; return refs;
+  // dropdown lists live in hidden, locked columns at the far right of "How to use", so no extra sheet shows in any app
+  function lists(wb, cols) {
+    var ws = wb.getWorksheet("How to use"), refs = {}, c0 = 40;
+    Object.keys(cols).forEach(function (k, i) { var c = c0 + i, col = ws.getColumn(c); ws.getCell(1, c).value = k;
+      cols[k].forEach(function (v, n) { ws.getCell(n + 2, c).value = v; }); col.hidden = true;
+      var L = col.letter; refs[k] = "'How to use'!$" + L + "$2:$" + L + "$" + (cols[k].length + 1); });
+    return refs;
   }
   // a tab with one row per item: territory, then the item (as many rows as needed), filled in with what's there now
   function rowsTab(wb, name, cols, rows, dvs, extra) {
@@ -50,7 +52,7 @@
       cols.forEach(function (c, k) { input(ws.getCell(r + 2, k + 1), vals[k], dvs[k], c[2]); }); }
     return ws;
   }
-  async function protect(wb) { for (var i = 0; i < wb.worksheets.length; i++) { var ws = wb.worksheets[i]; if (ws.name !== "Lists") await ws.protect(PW, { selectLockedCells: true, selectUnlockedCells: true, formatColumns: true, formatRows: true }); } }
+  async function protect(wb) { for (var i = 0; i < wb.worksheets.length; i++) { var ws = wb.worksheets[i]; await ws.protect(PW, { selectLockedCells: true, selectUnlockedCells: true, formatColumns: true, formatRows: true }); } }
   var dateOf = function (s) { if (!s) return null; var d = new Date(String(s).slice(0, 10) + "T00:00:00Z"); return isNaN(d) ? null : d; };
   var years = function () { var a = []; for (var y = 2015; y <= 2040; y++) a.push(String(y)); return a; };
   var quarters = function () { var a = [], y0 = new Date().getFullYear() - 1; for (var y = y0; y <= y0 + 6; y++) for (var q = 1; q <= 4; q++) a.push("Q" + q + " " + y); return a; };
@@ -73,19 +75,9 @@
 
   // ---------- territory profiles ----------
   // o: { cwg, terrs: [{id, name, profile:{workAreas, thematic[], strengths[], support[]}, contacts:[{rank,name,role}]}], themes[], strengths[] }
-  async function profiles(o) {
-    var wb = new ExcelJS.Workbook(); wb.creator = "ASLP website";
+  function profiles(wb, o, R) {
     var N = 8, TH = 8, ST = 8, SU = 5, CO = 2;
-    howTo(wb, o.cwg + " territory profiles: update template", "Filled in with each territory's profile as it is now (" + new Date().toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" }) + "). Each territory has its own block of rows: fill in everything for it beside its name, then upload the file again.", [
-      "Where they work: type it in the territory's box. Leave it as it is if nothing changed. To empty it, type a single hyphen: -",
-      "Thematic areas: pick 1 to " + TH + " from the dropdowns, one per row.",
-      "Strengths: pick at least 1 from the dropdowns, one per row.",
-      "Technical support they can offer other territories: type 2 to " + SU + ", one per row.",
-      "Contact persons: 1 or 2 people. Pick the rank (officers only) and type the name and appointment. No emails or phone numbers.",
-      "Clear a cell to remove that item. For each territory, what you upload replaces what's on the website.",
-      "This file is for " + o.cwg + " only. Grey cells and the tab names can't be changed."]);
-    var R = lists(wb, { Themes: o.themes, Strengths: o.strengths, Ranks: RANKS });
-    var ws = sheet(wb, "Profiles", [["ID", 4], ["Territory", 26], ["Where they work (areas, communities, programmes)", 42], ["Thematic areas (1 to " + TH + ")", 30], ["Strengths (at least 1)", 30],
+    var ws = sheet(wb, "Territory profiles", [["ID", 4], ["Territory", 26], ["Where they work (areas, communities, programmes)", 42], ["Thematic areas (1 to " + TH + ")", 30], ["Strengths (at least 1)", 30],
       ["Technical support they can offer (2 to " + SU + ", typed)", 40], ["Contact: rank", 14], ["Contact: name", 22], ["Contact: appointment / role", 30]], 2);
     ws.getColumn(1).hidden = true;
     var thDv = list(R.Themes, true, "Pick a thematic area."), stDv = list(R.Strengths, true, "Pick a strength."), rkDv = list(R.Ranks, true);
@@ -101,25 +93,11 @@
         else { grey(ws.getCell(r, 7)); grey(ws.getCell(r, 8)); grey(ws.getCell(r, 9)); }
       }
     });
-    await protect(wb);
-    return new Blob([await wb.xlsx.writeBuffer()], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
   }
 
   // ---------- CD Strategies ----------
   // o: { cwg, terrs: [{id, name, status, strategyPeriod, target, docLink, focal, focalRole, consultation, approvals[]}], statuses: [{key,label}] }
-  async function cds(o) {
-    var wb = new ExcelJS.Workbook(); wb.creator = "ASLP CD Strategies";
-    howTo(wb, o.cwg + " CD Strategies: update template", "Filled in with each territory's CD Strategy as it is now (" + new Date().toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" }) + "). Change what needs changing and upload it again.", [
-      "Status: pick from the dropdown. If you change it, put the date it changed in Status changed on (or leave it blank for today).",
-      "Strategy period: pick the start year and the end year.",
-      "Target: pick the quarter the strategy is due.",
-      "Only the document link, the focal person's name and appointment are typed. To empty one, type a single hyphen: -",
-      "Consultation / workshop: pick Yes or No. If Yes, give the start date, the end date (blank for one day) and whether it was before or during drafting.",
-      "Approvals tab: each territory has its own rows. Type each approving body and give its date, one approval per row. For each territory, the approvals you upload replace what's on the website.",
-      "No emails or phone numbers: the websites don't keep them.",
-      "This file is for " + o.cwg + " only. Grey cells and the tab names can't be changed."]);
-    var names = o.terrs.map(function (t) { return t.name; });
-    var R = lists(wb, { Territories: names, Status: o.statuses.map(function (s) { return s.label; }), Years: years(), Quarters: quarters(), YesNo: ["Yes", "No"], Timing: ["Before drafting", "During drafting"] });
+  function cds(wb, o, R) {
     var ws = sheet(wb, "CD Strategies", [["Territory ID", 16], ["Territory", 34], ["CWG", 9], ["Status", 22], ["Status changed on", 13], ["Strategy start year", 11], ["Strategy end year", 11], ["Target", 11],
       ["Document link", 30], ["Focal person (name)", 24], ["Focal person appointment / role", 30], ["Consultation / workshop held?", 13], ["Consultation from", 13], ["Consultation to", 13], ["Consultation timing", 17]], 3);
     var lbl = {}; o.statuses.forEach(function (s) { lbl[s.key] = s.label; });
@@ -148,9 +126,66 @@
       for (var c = 1; c <= 4; c++) { var cell = aw.getCell(r2, c); cell.border = Object.assign({}, cell.border || BOX, { bottom: MED }); }
       rr = r2 + 1;
     });
+  }
+  function save(blob, name) { var a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click(); setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 2000); }
+
+  // ---------- one file per CWG: territory profiles, CD Strategies and approvals on separate sheets ----------
+  // o: { cwg, profiles: {terrs, themes, strengths}, cds: {terrs, statuses} }
+  async function cwgFile(o) {
+    var wb = new ExcelJS.Workbook(); wb.creator = "ASLP website";
+    howTo(wb, o.cwg + ": territory profiles and CD Strategies", "Filled in with what's on the websites now (" + new Date().toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" }) + "). Each sheet has a block of rows per territory. Change what needs changing, save the file, and upload it in the ASLP website console: it updates the profiles and the CD Strategies together.", [
+      "Territory profiles sheet: \"Where they work\" is typed in each territory's box (to empty it, type a single hyphen: -). Thematic areas: pick 1 to 8 from the dropdowns. Strengths: pick at least 1. Technical support: type 2 to 5, one per row. Contact persons: 1 or 2, with the rank from the dropdown and the name and appointment typed. No emails or phone numbers.",
+      "CD Strategies sheet: pick the status (if you change it, give the date it changed, or leave it blank for today), the strategy start and end years, and the target quarter. Only the document link and the focal person's name and appointment are typed. Consultation / workshop: Yes or No; if Yes, the dates and whether it was before or during drafting.",
+      "Approvals sheet: each territory has its own rows. Type each approving body and its date, one approval per row.",
+      "Clear a cell to remove that item. For each territory, what you upload replaces what's on the websites.",
+      "This file is for " + o.cwg + " only. Grey cells and the sheet names can't be changed."]);
+    var R = lists(wb, { Themes: o.profiles.themes, Strengths: o.profiles.strengths, Ranks: RANKS, Status: o.cds.statuses.map(function (s) { return s.label; }), Years: years(), Quarters: quarters(), YesNo: ["Yes", "No"], Timing: ["Before drafting", "During drafting"] });
+    profiles(wb, Object.assign({ cwg: o.cwg }, o.profiles), R);
+    cds(wb, Object.assign({ cwg: o.cwg }, o.cds), R);
     await protect(wb);
     return new Blob([await wb.xlsx.writeBuffer()], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
   }
-  function save(blob, name) { var a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click(); setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 2000); }
-  window.ASLPXL = { profiles: profiles, cds: cds, save: save };
+  var xlText = function (c) { var v = c && c.value; if (v == null) return ""; if (v instanceof Date) return v.toISOString().slice(0, 10);
+    if (typeof v === "object") { if (v.richText) v = v.richText.map(function (x) { return x.text; }).join(""); else if (v.text != null) v = v.text; else if (v.result != null) v = v.result; else if (v.hyperlink) v = v.hyperlink; else v = ""; }
+    return String(v).trim(); };
+  // dates come as real dates, or as text like 20/11/2026 or 2026-11-20
+  var xlDate = function (s) { if (!s) return ""; if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return s; var m = s.match(/^(\d{1,2})[\/.\-](\d{1,2})[\/.\-](\d{4})$/); return m ? m[3] + "-" + m[2].padStart(2, "0") + "-" + m[1].padStart(2, "0") : null; };
+  // the CD Strategies and Approvals sheets: what differs from the website now, per territory
+function readCds(wb, territories, STATUSES) {
+  const rows = {}, warn = [], row = id => (rows[id] = rows[id] || { territory: id, details: {} });
+  const byId = Object.fromEntries(territories.map(t => [t.id, t])), byName = Object.fromEntries(territories.map(t => [String(t.name).toLowerCase(), t.id]));
+  const stKey = Object.fromEntries(STATUSES.map(s => [s.label.toLowerCase(), s.key]));
+  const ws = wb.getWorksheet("CD Strategies"); if (!ws || !wb.getWorksheet("Approvals")) throw new Error("This isn't an ASLP update file. Download your CWG's file and try again.");
+  const same = (a, b) => String(a || "").trim() === String(b || "").trim(), inFile = new Set();
+  ws.eachRow((r, n) => { if (n < 2) return; const id = xlText(r.getCell(1)); if (!id) return;
+    const v = k => xlText(r.getCell(k)), t = byId[id]; if (!t) return warn.push(`CD Strategies, row ${n}: unknown territory ID "${id}".`); inFile.add(id);
+    const e = row(id), d = e.details, txt = (k, f) => { const x = v(k); if (x && !same(x === "-" ? "" : x, t[f])) d[f] = x === "-" ? "" : x; };
+    if (v(4)) { const k = stKey[v(4).toLowerCase()]; if (!k) warn.push(`${t.name}: "${v(4)}" isn't a status.`); else if (k !== t.status) { e.status = k;
+      if (v(5)) { const dt = xlDate(v(5)); if (dt) e.statusDate = dt; else warn.push(`${t.name}: the status date "${v(5)}" isn't a date.`); } } }
+    const y1 = v(6), y2 = v(7);
+    if (y1 || y2) { if (!(y1 && y2)) warn.push(`${t.name}: pick both the start and the end year of the strategy period.`);
+      else if (+y2 < +y1) warn.push(`${t.name}: the strategy period ends before it starts.`);
+      else if (!same(`${y1}–${y2}`, String(t.strategyPeriod || "").replace(/(\d{4})\s*[-–—]\s*(\d{4})/, "$1–$2"))) d.strategyPeriod = `${y1}–${y2}`; }
+    if (v(8) && !same(v(8), t.target)) d.target = v(8);
+    txt(9, "docLink"); txt(10, "focal"); txt(11, "focalRole");
+    if (v(12)) { const held = /^y/i.test(v(12)), c0 = t.consultation || {};
+      if (!held) { if (c0.held !== false) d.consultation = { held: false }; }
+      else { const f = xlDate(v(13)), to = xlDate(v(14)) || f, tm = /during/i.test(v(15)) ? "during" : /before/i.test(v(15)) ? "before" : "";
+        if (!f || !tm) warn.push(`${t.name}: for a consultation / workshop, give the start date and whether it was before or during drafting.`);
+        else if (!(c0.held && c0.from === f && (c0.to || c0.from) === to && c0.timing === tm)) d.consultation = { held: true, from: f, to, timing: tm }; } }
+  });
+  const ap = wb.getWorksheet("Approvals"), apps = {}; let aid = "";
+  ap.eachRow({ includeEmpty: true }, (r, n) => { if (n < 2) return; const rid = xlText(r.getCell(1)); if (rid) aid = rid; if (!aid || !byId[aid]) return;
+    const body = xlText(r.getCell(3)), raw = xlText(r.getCell(4)); apps[aid] = apps[aid] || []; if (!body && !raw) return;
+    if (!body) return warn.push(`Approvals, ${byId[aid].name}: an approval dated ${raw} has no approving body, so it was left out.`);
+    const dt = xlDate(raw); if (dt === null) return warn.push(`Approvals, ${byId[aid].name}: "${raw}" isn't a date.`);
+    apps[aid].push({ body, date: dt || "" }); });
+  // approvals: for each territory in the file, its rows replace what's there, sent only when they differ
+  const key = a => (a || []).map(x => `${String(x.body).trim()}|${String(x.date || "").slice(0, 10)}`).sort().join(";");
+  inFile.forEach(id => { if (key(apps[id]) !== key(byId[id].approvals)) row(id).details.approvals = apps[id] || []; });
+  Object.keys(apps).filter(id => !inFile.has(id)).forEach(id => warn.push(`Approvals: ${byId[id] ? byId[id].name : id} isn't in this CWG's file, so its approvals were left out.`));
+  return { rows: Object.values(rows).filter(e => e.status || Object.keys(e.details).length), warn };
+}
+
+  window.ASLPXL = { cwgFile: cwgFile, readCds: readCds, xlText: xlText, xlDate: xlDate, save: save };
 })();

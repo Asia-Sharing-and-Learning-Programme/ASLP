@@ -3337,7 +3337,7 @@ async function xlRead(file) {
 // read a CWG's territory profiles template: one entry per territory, with what the file says (the server only saves real changes)
 function xlProfiles(wb) {
   const rows = {}, warn = [], ids = new Set(terrs().map(t => t.id)), nm = id => terrName(id);
-  const ws = wb.getWorksheet("Profiles"); if (!ws || !ws.getRow(1).getCell(4).value || !/thematic/i.test(xlText(ws.getRow(1).getCell(4)))) throw new Error("This isn't the territory profiles template. Download your CWG's template here and try again.");
+  const ws = wb.getWorksheet("Territory profiles"); if (!ws || !/thematic/i.test(xlText(ws.getRow(1).getCell(4)))) throw new Error("This isn't an ASLP update file. Download your CWG's file here and try again.");
   const themes = new Set(THEME_LIST), strengths = new Set(STRENGTH_LIST);
   let id = "";
   ws.eachRow({ includeEmpty: true }, (r, n) => { if (n < 2) return; const rid = xlText(r.getCell(1)); if (rid) id = rid; if (!id) return;
@@ -3367,48 +3367,64 @@ function xlProfiles(wb) {
     if (r.contacts && r.contacts.map(c => [c.rank, c.name, c.role].join("|")).join(";") === (t.contacts || []).map(c => [c.rank || "", c.name || "", c.role || ""].join("|")).join(";")) delete r.contacts; });
   return { rows: Object.values(rows).filter(r => Object.keys(r).length > 1), warn };
 }
-// the CWG's template, filled in with the profiles as they are now
+const XL_FIELDS = [["workAreas", "Where they work"], ["techSupport", "Technical support"], ["thematic", "Thematic areas"], ["strengths", "Strengths"], ["contacts", "Contact persons"]];
+// the CD Strategies data (status, period, approvals…) as the CD Strategies website has it
+const CDS_STATUSES = Object.entries(STATUS).map(([key, [label]]) => ({ key, label }));
+async function xlCdsData() { const { data, error } = await db.rpc("get_dashboard"); if (error) throw error; return (data && data.territories) || []; }
+// one file per CWG: territory profiles, CD Strategies and approvals, filled in with what's on the websites now
 async function xlTemplate(cwg, btn) {
   const lbl = btn.textContent; btn.disabled = true; btn.textContent = "Preparing…";
   try {
     await loadScript("vendor/exceljs.min.js"); await loadScript("aslp-xl.js");
     const ts = terrs().filter(t => (t.cwg || "").trim() === cwg).sort((a, b) => a.name.localeCompare(b.name));
-    const blob = await ASLPXL.profiles({ cwg, themes: THEME_LIST, strengths: STRENGTH_LIST,
-      terrs: ts.map(t => { const p = t.profile || {}; return { id: t.id, name: t.name, contacts: t.contacts || [],
-        profile: { workAreas: p.workAreas || "", thematic: themesOf(p), strengths: strengthsOf(p), support: tidyItems(p.techSupport || "") } }; }) });
-    ASLPXL.save(blob, `ASLP-${cwg.replace(/\s+/g, "")}-Territory-Profiles.xlsx`);
-  } catch (e) { console.error(e); alert("The template couldn't be made. Please try again."); }
+    const cd = (await xlCdsData()).filter(t => ts.some(x => x.id === t.id)).sort((a, b) => a.name.localeCompare(b.name));
+    const blob = await ASLPXL.cwgFile({ cwg,
+      profiles: { themes: THEME_LIST, strengths: STRENGTH_LIST, terrs: ts.map(t => { const p = t.profile || {}; return { id: t.id, name: t.name, contacts: t.contacts || [],
+        profile: { workAreas: p.workAreas || "", thematic: themesOf(p), strengths: strengthsOf(p), support: tidyItems(p.techSupport || "") } }; }) },
+      cds: { terrs: cd, statuses: CDS_STATUSES } });
+    ASLPXL.save(blob, `ASLP-${cwg.replace(/\s+/g, "")}-Update.xlsx`);
+  } catch (e) { console.error(e); alert("The file couldn't be made. Please try again."); }
   btn.disabled = false; btn.textContent = lbl;
 }
-const XL_FIELDS = [["workAreas", "Where they work"], ["techSupport", "Technical support"], ["thematic", "Thematic areas"], ["strengths", "Strengths"], ["contacts", "Contact persons"]];
+const XL_CDS_LABELS = { strategyPeriod: "Strategy period", target: "Target", docLink: "Document link", focal: "Focal person", focalRole: "Focal person role", consultation: "Consultation", approvals: "Approvals" };
 function xlUpload(box) {
   if (!box) return;
-  box.innerHTML = `<details class="xl-box"><summary>Update several territories from Excel</summary>
-    <ol class="xl-steps"><li>Download your CWG's template. It's filled in with the profiles as they are now, with dropdowns for almost everything.</li><li>Change what needs changing and save it.</li><li>Upload it here, check what will change, then confirm.</li></ol>
-    <div class="xl-dl">${xlCwgs().map(c => `<button type="button" class="btn sm" data-xl-cwg="${esc(c)}">Download the ${esc(c)} template</button>`).join("")}</div>
-    <p class="small">${V().is_full_admin ? "You can update every territory." : "You can update your own CWG's territories. Rows for others are skipped."} Each upload is recorded in each territory's update history.</p>
-    <label class="xl-file"><span>Your filled-in template (.xlsx)</span><input type="file" id="xl-in" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"></label>
+  box.innerHTML = `<details class="xl-box"><summary>Update profiles and CD Strategies from Excel</summary>
+    <ol class="xl-steps"><li>Download your CWG's file. It has the territory profiles, the CD Strategies and the approvals on separate sheets, filled in with what's on the websites now, with dropdowns for almost everything.</li><li>Change what needs changing and save it.</li><li>Upload it here, check what will change, then confirm.</li></ol>
+    <div class="xl-dl">${xlCwgs().map(c => `<button type="button" class="btn sm" data-xl-cwg="${esc(c)}">Download the ${esc(c)} file</button>`).join("")}</div>
+    <p class="small">${V().is_full_admin ? "You can update every territory." : "You can update your own CWG's territories. Rows for others are skipped."} Each change is recorded in the territory's update history.</p>
+    <label class="xl-file"><span>Your filled-in file (.xlsx)</span><input type="file" id="xl-in" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"></label>
     <div id="xl-out" role="status"></div></details>`;
   const out = box.querySelector("#xl-out");
   box.querySelectorAll("[data-xl-cwg]").forEach(b => b.onclick = () => xlTemplate(b.dataset.xlCwg, b));
   box.querySelector("#xl-in").addEventListener("change", async e => {
     const file = e.target.files[0]; if (!file) return;
     out.innerHTML = `<p class="small">Reading ${esc(file.name)}…</p>`;
-    let parsed; try { parsed = xlProfiles(await xlRead(file)); } catch (err) { out.innerHTML = `<p class="ed-msg err">${esc(err.message === "load" ? "Couldn't load the Excel reader. Check your connection and try again." : /zip|central directory|end of data/i.test(err.message) ? "That file couldn't be read. Please upload the template saved as .xlsx." : err.message)}</p>`; return; }
-    const { rows, warn } = parsed;
+    let pr, cr;
+    try { const wb = await xlRead(file); await loadScript("aslp-xl.js"); pr = xlProfiles(wb); cr = ASLPXL.readCds(wb, await xlCdsData(), CDS_STATUSES); }
+    catch (err) { out.innerHTML = `<p class="ed-msg err">${esc(err.message === "load" ? "Couldn't load the Excel reader. Check your connection and try again." : /zip|central directory|end of data/i.test(err.message || "") ? "That file couldn't be read. Please upload your CWG's file saved as .xlsx." : err.message || "That file couldn't be read.")}</p>`; return; }
+    const warn = [...pr.warn, ...cr.warn], P = pr.rows, C = cr.rows;
     const warnHtml = warn.length ? `<ul class="xl-warn">${warn.map(w => `<li>${esc(w)}</li>`).join("")}</ul>` : "";
-    if (!rows.length) { out.innerHTML = warnHtml + `<p class="small">Nothing to update: the file matches what's on the website.</p>`; return; }
-    out.innerHTML = warnHtml + `<table class="xl-table"><thead><tr><th>Territory</th><th>Will change</th></tr></thead><tbody>${rows.map(r => `<tr><td>${esc(terrName(r.territory))}</td><td>${XL_FIELDS.filter(([k]) => k in r).map(([k, l]) => esc(l + (Array.isArray(r[k]) ? ` (${r[k].length})` : r[k] === "" ? " (emptied)" : ""))).join(", ")}</td></tr>`).join("")}</tbody></table>
-      <div class="ed-actions"><button type="button" class="btn fill" id="xl-go">Update ${rows.length} ${rows.length === 1 ? "territory" : "territories"}</button><button type="button" class="btn" id="xl-cancel">Cancel</button></div>`;
+    if (!P.length && !C.length) { out.innerHTML = warnHtml + `<p class="small">Nothing to update: the file matches what's on the websites.</p>`; return; }
+    const stl = Object.fromEntries(CDS_STATUSES.map(x => [x.key, x.label]));
+    const ids = [...new Set([...P.map(r => r.territory), ...C.map(r => r.territory)])];
+    out.innerHTML = warnHtml + `<table class="xl-table"><thead><tr><th>Territory</th><th>Will change</th></tr></thead><tbody>${ids.map(id => { const p = P.find(r => r.territory === id), c = C.find(r => r.territory === id);
+        const parts = [...(p ? XL_FIELDS.filter(([k]) => k in p).map(([k, l]) => l + (Array.isArray(p[k]) ? ` (${p[k].length})` : p[k] === "" ? " (emptied)" : "")) : []),
+          ...(c ? [c.status && `Status: ${stl[c.status]}`, ...Object.keys(c.details).map(k => XL_CDS_LABELS[k] || k)].filter(Boolean) : [])];
+        return `<tr><td>${esc(terrName(id))}</td><td>${esc(parts.join(", "))}</td></tr>`; }).join("")}</tbody></table>
+      <div class="ed-actions"><button type="button" class="btn fill" id="xl-go">Update ${ids.length} ${ids.length === 1 ? "territory" : "territories"}</button><button type="button" class="btn" id="xl-cancel">Cancel</button></div>`;
     out.querySelector("#xl-cancel").onclick = () => { out.innerHTML = ""; e.target.value = ""; };
     out.querySelector("#xl-go").onclick = async () => {
       const b = out.querySelector("#xl-go"); b.disabled = true; b.textContent = "Updating…";
-      const { data: res, error } = await db.rpc("aslp_upload_profiles", { p_file: file.name, p_rows: rows });
-      if (error) { b.disabled = false; b.textContent = "Try again"; out.insertAdjacentHTML("beforeend", `<p class="ed-msg err">${esc(error.message)}</p>`); return; }
-      const rs = (res && res.results) || [], n = rs.filter(x => x.status === "updated").length;
+      const r1 = P.length ? await db.rpc("aslp_upload_profiles", { p_file: file.name, p_rows: P }) : { data: { results: [] } };
+      const r2 = C.length ? await db.rpc("cds_upload", { p_file: file.name, p_rows: C }) : { data: { results: [] } };
+      const err = r1.error || r2.error;
+      if (err && !(r1.data || r2.data)) { b.disabled = false; b.textContent = "Try again"; out.insertAdjacentHTML("beforeend", `<p class="ed-msg err">${esc(err.message)}</p>`); return; }
       const lbl = { updated: "Updated", nochange: "No change", skipped: "Skipped", error: "Not updated" };
-      out.innerHTML = `<p class="ed-msg ${n ? "ok" : ""}"><b>${n} ${n === 1 ? "territory" : "territories"} updated</b> from ${esc(file.name)}.</p>
-        <table class="xl-table"><thead><tr><th>Territory</th><th>Result</th></tr></thead><tbody>${rs.map(x => `<tr class="xl-${x.status}"><td>${esc(x.name || x.territory)}</td><td><b>${lbl[x.status] || x.status}</b>${x.changes && x.changes.length ? `: ${esc(x.changes.join(", "))}` : ""}${x.message ? `. ${esc(x.message)}` : ""}</td></tr>`).join("")}</tbody></table>`;
+      const rows = [...((r1.data && r1.data.results) || []).map(x => ({ ...x, part: "Profile" })), ...((r2.data && r2.data.results) || []).map(x => ({ ...x, part: "CD Strategy" }))];
+      const n = new Set(rows.filter(x => x.status === "updated").map(x => x.territory)).size;
+      out.innerHTML = `<p class="ed-msg ${n ? "ok" : ""}"><b>${n} ${n === 1 ? "territory" : "territories"} updated</b> from ${esc(file.name)}.</p>${err ? `<p class="ed-msg err">${esc(err.message)}</p>` : ""}
+        <table class="xl-table"><thead><tr><th>Territory</th><th>Part</th><th>Result</th></tr></thead><tbody>${rows.map(x => `<tr class="xl-${x.status}"><td>${esc(x.name || x.territory)}</td><td>${x.part}</td><td><b>${lbl[x.status] || x.status}</b>${x.changes && x.changes.length ? `: ${esc(x.changes.join(", "))}` : ""}${x.message ? `. ${esc(x.message)}` : ""}</td></tr>`).join("")}</tbody></table>`;
       e.target.value = "";
       if (n) { await refresh(); const p = $("t-pick"); if (p && !p.value.startsWith("u:")) terrEditor(p.value); }
     };
