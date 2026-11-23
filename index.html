@@ -362,6 +362,9 @@
   .office-list { list-style: none; padding: 0; margin: var(--g3) 0 0; display: grid; gap: 6px; font-size: 15px; }
   .office-list li { display: flex; gap: 10px; align-items: baseline; line-height: 1.45; }
   .office-list svg { flex: none; transform: translateY(2px); }
+  .con-grp + .con-grp { margin-top: var(--g3); padding-top: var(--g3); border-top: 1.5px solid var(--line); }
+  .con-k { font-size: 13px; font-weight: 800; color: var(--ink-2); margin: 0 0 4px; display: flex; gap: 8px; align-items: baseline; flex-wrap: wrap; }
+  .con-k a { color: inherit; } .con-k span { font-weight: 600; color: var(--ink-3); font-size: 12px; }
   .aside-box { border-radius: 20px; padding: var(--g4); background: var(--paper-2); }
   .aside-box + .aside-box { margin-top: var(--g3); }
   .aside-box .h3 + * { margin-top: var(--g2); }
@@ -2054,7 +2057,7 @@ function pageTerritory(id) {
       </div>
       <aside>
         ${canTerr(t.id) ? `<a class="btn fill" style="margin-bottom:var(--g3)" href="#/console/territory/${esc(t.id)}">Edit this territory's profile</a>` : ""}
-        <div class="aside-box"><h2 class="h3">Contact persons</h2>${terrContacts(t).length ? `<div>${terrContacts(t).map(c => contactHtml({ ...c, email: "" })).join("")}</div>` : `<p class="empty">Contacts will be listed here. Until then, reach the territory through its CWG lead.</p>`}</div>
+        <div class="aside-box"><h2 class="h3">Contact persons</h2>${terrContactsBox(t)}</div>
         <div class="aside-box"><h2 class="h3">CD Strategy</h2><div class="stack" style="--gap:var(--g1)"><div>${statusChip(t)}</div>${t.strategyPeriod ? `<div class="small">Strategy period ${esc(t.strategyPeriod)}</div>` : ""}
           ${t.focal ? `<div class="small">CD focal person: <b style="color:var(--ink)">${esc(t.focal.name)}</b>${t.focal.role ? `, ${esc(t.focal.role)}` : ""}</div>` : ""}
           <div style="margin-top:var(--g2)"><a class="textlink" href="${CDS_URL}#territory-${esc(t.id)}">See CD Strategy details</a></div></div></div>
@@ -2076,6 +2079,14 @@ const unitContacts = u => { const seen = new Set(), out = [];
   (u.contacts || []).forEach(c => { const k = (c.email || c.name || "").toLowerCase(); if (k && !seen.has(k)) { seen.add(k); out.push(c); } });
   (data.cwgMembers || []).filter(m => m.territory === u.parent && m.unit === u.name).forEach(m => { const k = (m.email || m.name || "").toLowerCase(); if (!seen.has(k)) { seen.add(k); out.push({ ...m, role: [m.role, `${m.cwg} CWG member`].filter(Boolean).join(", ") }); } });
   return out; };
+// a territory's contact persons: its headquarters first, then each of its regions, divisions, districts and countries under their own name
+function terrContactsBox(t) {
+  const hq = terrContacts(t), subs = allUnits().filter(u => u.parent === t.id).map(u => [u, unitContacts(u)]).filter(([, cs]) => cs.length);
+  const list = cs => `<div>${cs.map(c => contactHtml({ ...c, email: "" })).join("")}</div>`;
+  if (!subs.length) return hq.length ? list(hq) : `<p class="empty">Contacts will be listed here. Until then, reach the territory through its CWG lead.</p>`;
+  return `<div class="con-grp"><h3 class="con-k">Territorial headquarters</h3>${hq.length ? list(hq) : `<p class="empty">No contact persons yet.</p>`}</div>`
+    + subs.map(([u, cs]) => `<div class="con-grp"><h3 class="con-k">${u.enabled ? `<a href="#/territory/${esc(u.id)}">${esc(u.name)}</a>` : esc(u.name)}<span>${esc(u.kind || "")}</span></h3>${list(cs)}</div>`).join("");
+}
 function pageUnit(u) {
   const t = terrs().find(x => x.id === u.parent) || { name: "", id: u.parent }, c = u.cwg, z = ZONES.find(x => x.key === zoneOf(c)), p = u.profile || {}, a = ART(c), l = c && leadOf(c);
   const sec = (title, body, empty) => `<div class="t-sec"><h2 class="h3">${title}</h2>${body || `<p class="empty">${empty}</p>`}</div>`;
