@@ -951,6 +951,20 @@
   .si-alt { margin-top: var(--g4); border-top: 1px solid var(--line); padding-top: var(--g3); }
   .si-alt summary { cursor: pointer; font-weight: 700; font-size: 15px; color: var(--ink-2); }
   .si-alt[open] summary { margin-bottom: var(--g2); }
+  /* Excel upload and update history */
+  .xl-box { margin: 0 0 var(--g4); border: 1px solid var(--line); border-radius: 12px; padding: 12px 16px; background: var(--paper); }
+  .xl-box summary { cursor: pointer; font-weight: 700; }
+  .xl-box[open] summary { margin-bottom: 10px; }
+  .xl-steps { margin: 0 0 8px 18px; font-size: 14.5px; line-height: 1.6; }
+  .xl-file { display: grid; gap: 4px; font-weight: 700; font-size: 14px; margin: 10px 0; max-width: 480px; }
+  .xl-table { width: 100%; border-collapse: collapse; font-size: 14px; margin: 10px 0; }
+  .xl-table th, .xl-table td { text-align: left; padding: 7px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  .xl-table th { font-size: 12.5px; color: var(--ink-3); }
+  .xl-updated td:last-child b { color: #1b6e3a; } .xl-error td:last-child b { color: #b3261e; } .xl-skipped td:last-child b { color: var(--ink-3); }
+  .xl-warn { margin: 8px 0 0 18px; font-size: 13.5px; color: #8a4b00; }
+  .th-list { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; max-width: 760px; }
+  .th-list li { display: grid; grid-template-columns: 110px 1fr; gap: 2px 12px; padding: 8px 0; border-bottom: 1px solid var(--line); font-size: 14px; }
+  .th-list li .small { grid-column: 2; }
   /* sign-in walkthrough animation (first time / forgot PIN) */
   .sd { margin-top: var(--g4); }
   .sd-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 10px; }
@@ -2701,7 +2715,7 @@ function pageConsole(a, b) {
     ${terrIds.length || unitIds.length ? `<section class="console-card" id="cc-terr"><div class="row-head"><h2 class="h2">Territory profiles</h2>
       <select id="t-pick" aria-label="Territory">${terrIds.length ? `<optgroup label="Territories">${terrIds.map(id => `<option value="${esc(id)}"${id === selT ? " selected" : ""}>${esc(terrName(id))}</option>`).join("")}</optgroup>` : ""}
         ${unitIds.length ? `<optgroup label="Regions, divisions and countries">${unitIds.map(id => `<option value="u:${esc(id)}"${"u:" + id === selT ? " selected" : ""}>${esc(anyUnitById(id).name)}${anyUnitById(id).enabled ? "" : " (hidden)"}</option>`).join("")}</optgroup>` : ""}</select></div>
-      <div id="terr-editor"></div></section>` : ""}
+      ${terrIds.length && !V().ro ? `<div id="xl-up"></div>` : ""}<div id="terr-editor"></div></section>` : ""}
     ${groups.length ? `<section class="console-card" id="cc-groups"><div class="row-head"><h2 class="h2">ASLP Groups</h2>
       <select id="g-pick" aria-label="Group">${groups.map(k => { const g = (data.groups || []).find(x => x.key === k) || { short: k }; return `<option value="${esc(k)}"${a === "group" && b === k ? " selected" : ""}>${esc(g.short)}${g.name ? ` (${esc(g.name)})` : ""}</option>`; }).join("")}</select></div>
       <div id="grp-editor"></div></section>` : ""}
@@ -3239,6 +3253,81 @@ function memEditor(c) {
   makeDraftable(box, `mem:${c}`, () => memEditor(c));
   $("mem-save").addEventListener("click", () => saveWith("mem-save", "mem-msg", () => db.rpc("aslp_set_cwg_members", { p_cwg: c, p_items: readRows(box) }), `${c} members saved.`));
 }
+// ---- console: update several territory profiles at once from the Excel template (admins and CWG leads) ----
+const XL_TPL = "templates/ASLP-Territory-Profiles-Template.xlsx";
+const xlText = c => { let v = c && c.value; if (v == null) return ""; if (v instanceof Date) return v.toISOString().slice(0, 10);
+  if (typeof v === "object") { if (v.richText) v = v.richText.map(x => x.text).join(""); else if (v.text != null) v = v.text; else if (v.result != null) v = v.result; else if (v.hyperlink) v = v.hyperlink; else v = ""; }
+  return String(v).trim(); };
+const xlEmpty = v => v === "-" ? "" : v;   // a hyphen empties the field
+async function xlRead(file) {
+  await loadScript("vendor/exceljs.min.js");
+  const wb = new ExcelJS.Workbook(); await wb.xlsx.load(await file.arrayBuffer()); return wb;
+}
+// read the territory profiles template into one entry per territory that has something filled in
+function xlProfiles(wb) {
+  const rows = {}, warn = [], row = id => (rows[id] = rows[id] || { territory: id });
+  const ids = new Set(terrs().map(t => t.id)), byName = Object.fromEntries(terrs().map(t => [String(t.name).toLowerCase(), t.id]));
+  const pr = wb.getWorksheet("Profiles"); if (!pr) throw new Error("This isn't the territory profiles template: there's no Profiles tab. Download the template and try again.");
+  pr.eachRow((r, n) => { if (n < 2) return; const id = xlText(r.getCell(1)); if (!id || id === "EXAMPLE") return;
+    const w = xlText(r.getCell(4)), s = xlText(r.getCell(5)); if (!w && !s) return;
+    if (!ids.has(id)) return warn.push(`Profiles, row ${n}: unknown territory ID "${id}". Don't change the grey columns.`);
+    if (w) row(id).workAreas = xlEmpty(w); if (s) row(id).techSupport = xlEmpty(s); });
+  [["Thematic areas", "thematic"], ["Strengths", "strengths"]].forEach(([tab, key]) => {
+    const ws = wb.getWorksheet(tab); if (!ws) return; const hdr = ws.getRow(2), names = [];
+    for (let c = 4; c <= ws.columnCount; c++) names[c] = xlText(hdr.getCell(c));
+    ws.eachRow((r, n) => { if (n < 3) return; const id = xlText(r.getCell(1)); if (!id || id === "EXAMPLE" || !ids.has(id)) return;
+      const picked = []; for (let c = 4; c <= ws.columnCount; c++) if (/^(yes|y|x|✓)$/i.test(xlText(r.getCell(c))) && names[c]) picked.push(names[c]);
+      if (picked.length) row(id)[key] = picked; });
+  });
+  const con = wb.getWorksheet("Contact persons");
+  if (con) con.eachRow((r, n) => { if (n < 2) return; const tn = xlText(r.getCell(1)); if (!tn || /^example territory$/i.test(tn)) return;
+    const id = byName[tn.toLowerCase()]; if (!id) return warn.push(`Contact persons, row ${n}: unknown territory "${tn}". Pick it from the dropdown.`);
+    const c = { rank: xlText(r.getCell(2)), name: xlText(r.getCell(3)), role: xlText(r.getCell(4)) };
+    if (!c.name) return warn.push(`Contact persons, row ${n}: the contact for ${tn} has no name, so it was left out.`);
+    (row(id).contacts = row(id).contacts || []).push(c); });
+  return { rows: Object.values(rows), warn };
+}
+const XL_FIELDS = [["workAreas", "Where they work"], ["techSupport", "Technical support"], ["thematic", "Thematic areas"], ["strengths", "Strengths"], ["contacts", "Contact persons"]];
+function xlUpload(box) {
+  if (!box) return;
+  box.innerHTML = `<details class="xl-box"><summary>Update several territories from Excel</summary>
+    <ol class="xl-steps"><li><a class="textlink" href="${XL_TPL}" download>Download the template</a> (one row per territory).</li><li>Fill in what changes. Blank cells mean no change.</li><li>Upload it here, check what will change, then confirm.</li></ol>
+    <p class="small">${V().is_full_admin ? "You can update every territory." : "You can update your own CWG's territories. Rows for others are skipped."} Each upload is recorded in each territory's update history.</p>
+    <label class="xl-file"><span>Your filled-in template (.xlsx)</span><input type="file" id="xl-in" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"></label>
+    <div id="xl-out" role="status"></div></details>`;
+  const out = box.querySelector("#xl-out");
+  box.querySelector("#xl-in").addEventListener("change", async e => {
+    const file = e.target.files[0]; if (!file) return;
+    out.innerHTML = `<p class="small">Reading ${esc(file.name)}…</p>`;
+    let parsed; try { parsed = xlProfiles(await xlRead(file)); } catch (err) { out.innerHTML = `<p class="ed-msg err">${esc(err.message === "load" ? "Couldn't load the Excel reader. Check your connection and try again." : /zip|central directory|end of data/i.test(err.message) ? "That file couldn't be read. Please upload the template saved as .xlsx." : err.message)}</p>`; return; }
+    const { rows, warn } = parsed;
+    const warnHtml = warn.length ? `<ul class="xl-warn">${warn.map(w => `<li>${esc(w)}</li>`).join("")}</ul>` : "";
+    if (!rows.length) { out.innerHTML = warnHtml + `<p class="small">Nothing to update: no yellow cells are filled in.</p>`; return; }
+    out.innerHTML = warnHtml + `<table class="xl-table"><thead><tr><th>Territory</th><th>Filled in</th></tr></thead><tbody>${rows.map(r => `<tr><td>${esc(terrName(r.territory))}</td><td>${XL_FIELDS.filter(([k]) => k in r).map(([k, l]) => esc(l + (Array.isArray(r[k]) ? ` (${r[k].length})` : r[k] === "" ? " (emptied)" : ""))).join(", ")}</td></tr>`).join("")}</tbody></table>
+      <div class="ed-actions"><button type="button" class="btn fill" id="xl-go">Update ${rows.length} ${rows.length === 1 ? "territory" : "territories"}</button><button type="button" class="btn" id="xl-cancel">Cancel</button></div>`;
+    out.querySelector("#xl-cancel").onclick = () => { out.innerHTML = ""; e.target.value = ""; };
+    out.querySelector("#xl-go").onclick = async () => {
+      const b = out.querySelector("#xl-go"); b.disabled = true; b.textContent = "Updating…";
+      const { data: res, error } = await db.rpc("aslp_upload_profiles", { p_file: file.name, p_rows: rows });
+      if (error) { b.disabled = false; b.textContent = "Try again"; out.insertAdjacentHTML("beforeend", `<p class="ed-msg err">${esc(error.message)}</p>`); return; }
+      const rs = (res && res.results) || [], n = rs.filter(x => x.status === "updated").length;
+      const lbl = { updated: "Updated", nochange: "No change", skipped: "Skipped", error: "Not updated" };
+      out.innerHTML = `<p class="ed-msg ${n ? "ok" : ""}"><b>${n} ${n === 1 ? "territory" : "territories"} updated</b> from ${esc(file.name)}.</p>
+        <table class="xl-table"><thead><tr><th>Territory</th><th>Result</th></tr></thead><tbody>${rs.map(x => `<tr class="xl-${x.status}"><td>${esc(x.name || x.territory)}</td><td><b>${lbl[x.status] || x.status}</b>${x.changes && x.changes.length ? `: ${esc(x.changes.join(", "))}` : ""}${x.message ? `. ${esc(x.message)}` : ""}</td></tr>`).join("")}</tbody></table>`;
+      e.target.value = "";
+      if (n) { await refresh(); const p = $("t-pick"); if (p && !p.value.startsWith("u:")) terrEditor(p.value); }
+    };
+  });
+}
+// a territory profile's update history, in the console
+async function terrHistory(box, id) {
+  if (!box) return;
+  const { data } = await db.rpc("aslp_terr_history", { p_territory: id });
+  const xs = data || [];
+  box.innerHTML = xs.length ? `<ol class="th-list">${xs.slice(0, 15).map(x => `<li><b>${esc(new Date(x.at).toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" }))}</b>
+      <span>${esc((x.fields || []).join(", "))}</span><span class="small">${esc(x.who)} · ${esc(x.source)}${x.file ? ` (${esc(x.file)})` : ""}</span></li>`).join("")}</ol>`
+    : `<p class="small">No updates recorded yet.</p>`;
+}
 function terrEditor(id) {
   const box = $("terr-editor"), t = terrs().find(x => x.id === id); if (!box || !t) return;
   const canCon = (V().can_contacts || []).includes(id);
@@ -3261,9 +3350,11 @@ function terrEditor(id) {
     ${canCon ? `<p class="small">Names and roles only: the website doesn't show contact persons' emails or phone numbers. CWG members linked to this territory also show as contacts.</p>
     <div id="con-box"><div class="ed-rows">${((t.contacts || []).length ? t.contacts : [{}]).map(c => fieldRow(CON_COLS, c, [])).join("")}</div>
       <div class="ed-actions"><button type="button" class="btn sm ed-add">Add a contact</button></div></div>` : roContacts(t.contacts)}
+    <h3 class="h3" style="margin-top:var(--g5)">Update history</h3><div id="t-hist" class="small">Loading…</div>
     <div class="ed-actions sticky"><button type="button" class="btn fill" id="terr-save">Save ${esc(shortName(t.name))}</button><a class="textlink" href="#/territory/${esc(t.id)}">View the page</a><span class="ed-msg" id="terr-msg" role="status"></span></div>`;
   const pT = tagPicker($("p-them"), THEMES, p.thematic || [], "a thematic area"), pS = tagPicker($("p-str"), STRENGTHS.map(([g, xs]) => [g, xs.map(x => x[0])]), strengthsOf(p), "a strength");
   if (canCon) wireRows($("con-box"), CON_COLS, []);
+  terrHistory($("t-hist"), id);
   makeDraftable(box, `terr:${id}`, () => terrEditor(id));
   $("terr-save").addEventListener("click", () => saveWith("terr-save", "terr-msg", async () => {
     const tpBad = tpCheck(pT.value(), pS.value()); if (tpBad) return { error: { message: tpBad } };
@@ -3404,6 +3495,7 @@ function mountConsole() {
   if ($("access-editor")) accessEditor();
   if ($("terr-editor")) {
     const pickEd = v => v.startsWith("u:") ? unitEditor(v.slice(2)) : terrEditor(v);
+    xlUpload($("xl-up"));
     pickEd($("t-pick").value); $("t-pick").addEventListener("change", e => pickEd(e.target.value));
     if (a === "territory") setTimeout(() => $("cc-terr").scrollIntoView({ block: "start" }), 50);
   }
