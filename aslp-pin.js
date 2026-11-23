@@ -20,6 +20,15 @@
     '.pin .pin-msg{margin-top:10px;font-size:14.5px;line-height:1.45;min-height:1em}.pin .pin-msg.err{color:#b3261e}.pin .pin-msg.ok{color:#1b6e3a}' +
     '.pin .pin-note{font-size:14px;opacity:.85;line-height:1.5;margin:6px 0 0}.pin .pin-k{font-size:12.5px;font-weight:800;color:#e14b1e;margin:0 0 4px}' +
     '.pin ul.pin-list{margin:8px 0 0 18px;padding:0;font-size:14.5px;line-height:1.5}.pin ul.pin-list li{margin-bottom:6px}' +
+    '.pin-who{margin-top:16px;border-top:1px solid rgba(127,127,127,.3);padding-top:12px;display:grid;gap:8px}.pin-who p{margin:0;font-size:12.5px;font-weight:800;color:#e14b1e}' +
+    '.pin-who div{display:grid;grid-template-columns:36px minmax(0,1fr);gap:10px;align-items:center;font-size:13.5px;line-height:1.4}.pin-who b{display:block;font-size:14px}' +
+    '.pin-who svg{width:36px;height:36px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round;overflow:visible}' +
+    '.pin-who .pd circle{fill:currentColor;stroke:none;opacity:.15;animation:pinDot 2.6s ease-in-out infinite}.pin-who .pd circle:nth-of-type(2){animation-delay:.25s}.pin-who .pd circle:nth-of-type(3){animation-delay:.5s}' +
+    '.pin-who .pw{stroke:#e14b1e;opacity:0;animation:pinDot 2.6s .8s ease-in-out infinite}' +
+    '.pin-who .pp{animation:pinNod 2.2s ease-in-out infinite}.pin-who .pp2{stroke:#0a84ff;animation-delay:.4s}' +
+    '.pin-who .pk{transform-origin:14px 24px;animation:pinTurn 3s ease-in-out infinite}.pin-who .pk circle{fill:#f5c400}' +
+    '@keyframes pinDot{0%,100%{opacity:.15}40%,70%{opacity:1}}@keyframes pinNod{0%,100%{transform:none}50%{transform:translateY(-2px)}}@keyframes pinTurn{0%,100%{transform:none}40%,60%{transform:rotate(-30deg)}}' +
+    '@media (prefers-reduced-motion:reduce){.pin-who *{animation:none!important;opacity:1!important}}' +
     'html.dark .pin button.pin-btn,[data-theme=dark] .pin button.pin-btn{background:#f5c400;color:#000;border-color:#f5c400}html.dark .pin button.pin-link,[data-theme=dark] .pin button.pin-link{color:#7db7ff}' +
     '@media (prefers-color-scheme:dark){:root:not([data-theme=light]) .pin button.pin-btn{background:#f5c400;color:#000;border-color:#f5c400}:root:not([data-theme=light]) .pin button.pin-link{color:#7db7ff}}';
   var st = document.createElement('style'); st.textContent = css; (document.head || document.documentElement).appendChild(st);
@@ -38,6 +47,11 @@
   }
   function pinCheck(a, b) { return a.length < 6 ? 'Your PIN needs at least 6 characters.' : weak(a) ? 'That PIN is too easy to guess. Please choose another.' : a !== b ? 'The two PINs don’t match.' : ''; }
 
+  // who signs in with which PIN (CD Strategies and the Calendar; the main site shows its own fuller guide)
+  var WHO = '<div class="pin-who"><p>Which PIN do I use?</p>' +
+    '<div><svg viewBox="0 0 48 48" aria-hidden="true"><rect x="4" y="14" width="28" height="20" rx="5"/><g class="pd"><circle cx="11" cy="24" r="2.4"/><circle cx="18" cy="24" r="2.4"/><circle cx="25" cy="24" r="2.4"/></g><path class="pw" d="M37 18.5c2 3.3 2 7.7 0 11M41.5 14.5c3.6 5.8 3.6 13.2 0 19"/></svg><span><b>CWG members and contact persons</b>Your CWG’s PIN, from your CWG lead. It opens your own territory.</span></div>' +
+    '<div><svg viewBox="0 0 48 48" aria-hidden="true"><g class="pp"><circle cx="17" cy="17" r="6"/><path d="M6 38c0-7 5-11 11-11s11 4 11 11"/></g><g class="pp pp2"><circle cx="33" cy="19" r="5"/><path d="M26 38c1-6 4-9 8-9s8 3 8 9"/></g></svg><span><b>CWG leads</b>Your own PIN. Then set your CWG’s PIN in the console and share it.</span></div>' +
+    '<div><svg viewBox="0 0 48 48" aria-hidden="true"><g class="pk"><circle cx="14" cy="24" r="8"/><path d="M22 24h20M36 24v6M41 24v5"/></g></svg><span><b>Admins and view-only accounts</b>Your own PIN, approved by an ASLP admin.</span></div></div>';
   function mount(box, db, opts) {
     opts = opts || {}; if (!box) return;
     var email = opts.email || ''; try { email = email || localStorage.getItem(REMEMBER) || ''; } catch (e) {}
@@ -51,7 +65,7 @@
       box.innerHTML = '<form class="pin" novalidate>' + emailField() +
         '<label for="pin-pin">Your PIN or your CWG’s PIN</label><input type="password" id="pin-pin" autocomplete="current-password" placeholder="PIN">' +
         '<div class="pin-go"><button type="submit" class="pin-btn" id="pin-in">Sign in</button><button type="button" class="pin-link" id="pin-first">First time? Set up your PIN</button><button type="button" class="pin-link" id="pin-forgot">Forgot your PIN?</button></div>' +
-        '<div class="pin-msg ' + (cls || '') + '" role="status" id="pin-msg">' + (msg || '') + '</div></form>';
+        '<div class="pin-msg ' + (cls || '') + '" role="status" id="pin-msg">' + (msg || '') + '</div>' + (opts.guide ? WHO : '') + '</form>';
       wire({ 'pin-first': function () { setView(); }, 'pin-forgot': function () { forgotView(); } });
       box.querySelector('form').onsubmit = async function (ev) {
         ev.preventDefault(); grab();

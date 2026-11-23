@@ -947,6 +947,12 @@
   .si-guide li::before { content: counter(sg); position: absolute; left: 0; top: -1px; width: 28px; height: 28px; border-radius: 50%; background: #24215f; color: #fff; font-weight: 800; font-size: 14px; display: grid; place-items: center; }
   .si-guide li > b, .si-forgot > b { display: block; font-size: 15.5px; } .si-guide li > span, .si-forgot > span { display: block; font-size: 14.5px; line-height: 1.5; color: var(--ink-2); margin-top: 3px; }
   .si-guide li em { font-style: normal; font-weight: 700; color: var(--ink); }
+  .si-roles { display: grid; gap: 6px; margin-bottom: 18px; }
+  .si-roles button { display: flex; align-items: center; gap: 12px; text-align: left; font: inherit; font-weight: 700; font-size: 15px; color: var(--ink-2); background: none; border: 1.5px solid var(--line); border-radius: 12px; padding: 6px 12px 6px 6px; cursor: pointer; transition: border-color .3s, background-color .3s, color .3s; }
+  .si-roles button[aria-selected="true"] { border-color: var(--ink); background: var(--paper-2); color: var(--ink); }
+  .si-ric { width: 40px; height: 40px; border-radius: 10px; background: var(--paper-2); display: grid; place-items: center; flex: none; } .si-ric .wi { width: 28px; height: 28px; }
+  .si-roles button[aria-selected="true"] .si-ric { background: var(--paper); }
+  .si-roles button:not([aria-selected="true"]) .wi * { animation-play-state: paused; }
   .si-forgot { margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--line); }
   @media (prefers-reduced-motion: no-preference) { .si-guide li { opacity: 0; animation: welIn .8s cubic-bezier(.16,1,.3,1) forwards; } .si-guide li:nth-child(2) { animation-delay: .08s; } .si-guide li:nth-child(3) { animation-delay: .16s; } .si-guide li:nth-child(4) { animation-delay: .24s; } }
   @media (max-width: 900px) { .si-card { grid-template-columns: minmax(0, 1fr); } }
@@ -1020,6 +1026,9 @@
   .sd-mrow { display: grid; grid-template-columns: 110px 1fr; gap: 10px; padding: 8px 12px; border-top: 1px solid var(--line); font-size: 12px; color: var(--ink-2); }
   .sd-mrow:first-child { border-top: 0; }
   .sd-mrow.new { font-weight: 700; color: var(--ink); background: color-mix(in srgb, var(--yellow) 16%, var(--paper)); }
+  .sd-pinrow { display: flex; justify-content: space-between; align-items: baseline; padding: 8px 10px; border-radius: 8px; background: var(--paper-2); margin: 4px 0 6px; font-size: 13px; } .sd-pinrow span { font-size: 11.5px; color: var(--ink-3); }
+  .sd-reg { display: grid; gap: 5px; margin: 4px 0 8px; } .sd-reg span { font-size: 11.5px; padding: 7px 10px; border-radius: 8px; background: var(--paper-2); display: flex; justify-content: space-between; gap: 8px; opacity: 0; transform: translateY(6px); transition: opacity .5s, transform .5s cubic-bezier(.16,1,.3,1); }
+  .sd-reg span.on { opacity: 1; transform: none; } .sd-reg i { font-style: normal; font-weight: 800; color: #1b8a4a; }
   .sd-done { display: grid; place-items: center; gap: 8px; height: 200px; text-align: center; font-size: 14px; font-weight: 700; }
   .sd-done i { width: 48px; height: 48px; border-radius: 50%; background: #1b8a4a; color: #fff; font-style: normal; font-size: 24px; display: grid; place-items: center; }
   .sd-chip { display: inline-block; font-size: 11px; font-weight: 800; padding: 2px 9px; border-radius: 999px; background: color-mix(in srgb, var(--yellow) 40%, var(--paper)); margin-bottom: 6px; }
@@ -1073,6 +1082,12 @@
   .wi-chart rect { stroke: none; transform-box: fill-box; transform-origin: bottom; animation: wiGrow 2.8s ease-in-out infinite; } .wi-chart .c1 { fill: #f5c400; } .wi-chart .c2 { fill: #0a84ff; animation-delay: .2s; } .wi-chart .c3 { fill: #e14b1e; animation-delay: .4s; }
   .wi-page .ln { stroke-dasharray: 16; stroke-dashoffset: 16; animation: wiDraw 3s ease-in-out infinite; } .wi-page .l2 { animation-delay: .3s; } .wi-page .l3 { animation-delay: .6s; }
   .wi-key .ky { transform-origin: 16px 24px; animation: wiTurn 3s ease-in-out infinite; } .wi-key circle { fill: #f5c400; }
+  .pin-how { display: flex; gap: 16px; align-items: center; max-width: 720px; } .pin-how .small { margin: 0; }
+  .wi-pinset rect { fill: var(--paper); } .wi-pinset circle { fill: var(--ink); stroke: none; opacity: .12; animation: wiDot 2.8s ease-in-out infinite; } .wi-pinset .d2 { animation-delay: .25s; } .wi-pinset .d3 { animation-delay: .5s; }
+  .wi-pinset .w1, .wi-pinset .w2 { stroke: #e14b1e; opacity: 0; animation: wiDot 2.8s .8s ease-in-out infinite; } .wi-pinset .w2 { animation-delay: 1s; }
+  .wi-reg .ln { stroke-dasharray: 10; stroke-dashoffset: 10; --o: 10; animation: wiDraw 3s ease-in-out infinite; } .wi-reg .l2 { animation-delay: .3s; }
+  .wi-reg .bd { transform-box: fill-box; transform-origin: center; animation: wiBadge 3s ease-in-out infinite; } .wi-reg .bd circle { fill: #1a7f37; stroke: var(--paper-2); stroke-width: 2; } .wi-reg .bd path { stroke: #fff; stroke-width: 2.2; }
+  @keyframes wiBadge { 0%, 30% { transform: scale(0); } 45% { transform: scale(1.15); } 55%, 90% { transform: scale(1); } 100% { transform: scale(0); } }
   @keyframes wiSpin { 0%, 100% { transform: rotate(-25deg); } 50% { transform: rotate(25deg); } }
   @keyframes wiDraw { 0% { stroke-dashoffset: var(--o, 26); } 45%, 80% { stroke-dashoffset: 0; } 100% { stroke-dashoffset: 0; opacity: 0; } }
   @keyframes wiPen { 0%, 100% { transform: translate(0, 0); } 50% { transform: translate(-6px, 4px); } }
@@ -1107,10 +1122,63 @@
   .view-sw button { border: 0; background: none; font: inherit; font-weight: 700; font-size: 14.5px; padding: 8px 16px; border-radius: 999px; cursor: pointer; color: var(--ink-2); transition: background-color .35s, color .35s; }
   .view-sw button.on { background: var(--ink); color: var(--paper); }
   .gv-lede { margin-bottom: var(--g4); }
-  .gv-flow { columns: 3 320px; column-gap: 16px; margin-top: var(--g4); }
-  .gv-grp { break-inside: avoid; padding-bottom: var(--g4); } .gv-grp > .h3 { margin-bottom: var(--g2); font-size: 17px; }
-  .gv-grid { display: grid; gap: 10px; }
-  .gv-card { background: var(--paper-2); border-radius: 16px; padding: 14px 16px; display: grid; gap: 10px; align-content: start; scroll-margin-top: 90px; }
+  .gv-flow { display: grid; gap: var(--g4); margin-top: var(--g4); } .gv-grp > .h3 { margin-bottom: var(--g2); font-size: 17px; }
+  .gv-grid { display: grid; gap: 12px; grid-template-columns: repeat(auto-fill, minmax(min(100%, 270px), 1fr)); }
+  .gv-flow.pair .gv-grid { grid-template-columns: repeat(auto-fill, minmax(min(100%, 380px), 1fr)); }
+  .gv-card { background: var(--paper-2); border-radius: 16px; padding: 14px 16px 16px; display: grid; gap: 12px; align-content: start; scroll-margin-top: 90px; }
+  .gv-top { display: flex; gap: 12px; align-items: center; }
+  .gv-ic { width: 64px; height: 64px; border-radius: 16px; flex: none; display: grid; place-items: center; overflow: hidden; background: color-mix(in srgb, var(--tc) 16%, var(--paper)); }
+  .gv-ic .wi { width: 44px; height: 44px; }
+  /* thematic area and strength pictures: one accent each (--tc); they move only while their card is on screen */
+  .ti .hb, .ti .lf, .ti .dr, .ti .fl, .ti .bulb, .ti .hub, .ti .ctr, .ti .c, .ti .fg { fill: var(--tc); stroke: var(--ink); }
+  .gv-card:not(.live) .ti *, .gv-card:not(.live) .ti { animation-play-state: paused !important; }
+  .ti-health .hb { fill: color-mix(in srgb, var(--tc) 30%, var(--paper)); transform-box: fill-box; transform-origin: center; animation: tiBeat 1.6s ease-in-out infinite; }
+  .ti-health .ecg { stroke: var(--tc); stroke-width: 2.6; stroke-dasharray: 60; stroke-dashoffset: 60; --o: 60; animation: wiDraw 2.4s linear infinite; }
+  .ti-wash .dr { stroke: none; animation: tiDrip 2s cubic-bezier(.5,0,.8,.5) infinite; } .ti-wash .rp { stroke: var(--tc); transform-box: fill-box; transform-origin: center; animation: tiRipple 2s ease-out infinite; }
+  .ti-edu .pg { fill: var(--paper); transform-origin: 24px 24px; animation: tiFlip 3s ease-in-out infinite; }
+  .ti-liv .c { animation: tiCoin 3s cubic-bezier(.3,1.4,.6,1) infinite; } .ti-liv .c2 { animation-delay: .25s; } .ti-liv .c3 { animation-delay: .5s; }
+  .ti-liv .ar { stroke: #1a7f37; stroke-dasharray: 30; stroke-dashoffset: 30; --o: 30; animation: wiDraw 3s .6s ease-in-out infinite; }
+  .ti-food .st { stroke-dasharray: 22; stroke-dashoffset: 22; --o: 22; animation: tiStem 3.2s ease-out infinite; }
+  .ti-food .lf { transform-box: fill-box; animation: tiLeaf 3.2s ease-out infinite; } .ti-food .l1 { transform-origin: right bottom; animation-delay: .5s; } .ti-food .l2 { transform-origin: left bottom; animation-delay: .8s; }
+  .ti-clim .sun { stroke: #e8a400; transform-origin: 18px 18px; animation: tiSpin 9s linear infinite; } .ti-clim .sun circle { fill: #f5c400; }
+  .ti-clim .cl { fill: var(--paper); animation: tiDrift 4s ease-in-out infinite; }
+  .ti-dis .hs { fill: var(--paper); } .ti-dis .wv { stroke: #0a84ff; animation: tiWave 1.6s linear infinite; }
+  .ti-aht .k1 { animation: tiApartL 2.6s ease-in-out infinite; } .ti-aht .k2 { stroke: var(--tc); animation: tiApartR 2.6s ease-in-out infinite; }
+  .ti-aht .sp { stroke: #f5c400; stroke-width: 2.6; opacity: 0; animation: tiSpark 2.6s ease-in-out infinite; }
+  .ti-prot .sh { fill: color-mix(in srgb, var(--tc) 18%, var(--paper)); } .ti-prot .ck { stroke: var(--tc); stroke-width: 3.2; stroke-dasharray: 26; stroke-dashoffset: 26; animation: wiDraw 2.8s ease-in-out infinite; }
+  .ti-gen .bm { transform-origin: 24px 15px; animation: tiBalance 3.4s ease-in-out infinite; } .ti-gen .bm path:last-child { fill: color-mix(in srgb, var(--tc) 22%, var(--paper)); }
+  .ti-fam g { animation: wiNod 1.8s ease-in-out infinite; } .ti-fam .f2 { animation-delay: .3s; } .ti-fam .f3 { animation-delay: .6s; } .ti-fam .f3 circle, .ti-fam .f3 path { stroke: var(--tc); }
+  .ti-inc .ring { stroke: var(--line); stroke-dasharray: 4 4; } .ti-inc .d { fill: var(--tc); stroke: none; } .ti-inc .nw { fill: #f5c400; stroke: var(--ink); animation: tiJoin 3.2s cubic-bezier(.16,1,.3,1) infinite; }
+  .ti-comm .h { fill: var(--paper); transform-box: fill-box; transform-origin: bottom; animation: wiGrow 3.2s ease-in-out infinite; } .ti-comm .h2 { fill: color-mix(in srgb, var(--tc) 45%, var(--paper)); animation-delay: .2s; } .ti-comm .h3 { animation-delay: .4s; }
+  .ti-cap .r1 { animation: tiLinkL 3s ease-in-out infinite; } .ti-cap .r2 { stroke: #e14b1e; animation: tiLinkR 3s ease-in-out infinite; }
+  .ti-faith .fl { transform-box: fill-box; transform-origin: bottom; animation: tiFlicker 1.4s ease-in-out infinite alternate; } .ti-faith .fi { fill: #f5c400; stroke: none; transform-box: fill-box; transform-origin: bottom; animation: tiFlicker 1s .2s ease-in-out infinite alternate; }
+  .ti-lead .fg { transform-origin: 33px 15px; animation: tiFlag 1.6s ease-in-out infinite alternate; }
+  .ti-cled .orb { transform-origin: 24px 24px; animation: tiSpin 10s linear infinite; } .ti-cled .orb circle { fill: var(--paper); } .ti-cled .ctr { transform-box: fill-box; transform-origin: center; animation: tiBeat 2.4s ease-in-out infinite; }
+  .ti-net circle { fill: var(--paper); } .ti-net .ln { stroke: var(--tc); stroke-dasharray: 30; stroke-dashoffset: 30; --o: 30; animation: wiDraw 3.6s ease-in-out infinite; }
+  .ti-net .l2 { animation-delay: .2s; } .ti-net .l3 { animation-delay: .4s; } .ti-net .l4 { animation-delay: .6s; } .ti-net .l5 { animation-delay: .8s; }
+  .ti-sys .g1 { transform-origin: 18px 20px; animation: tiSpin 6s linear infinite; } .ti-sys .g2 { stroke: var(--tc); transform-origin: 34px 34px; animation: tiSpin 4.2s linear infinite reverse; } .ti-sys circle { fill: var(--paper); }
+  .ti-tech .bulb { animation: tiGlow 2.4s ease-in-out infinite; } .ti-tech .ray { stroke: #e8a400; animation: wiDot 2.4s ease-in-out infinite; }
+  @keyframes tiBeat { 0%, 100% { transform: scale(1); } 15% { transform: scale(1.12); } 30% { transform: scale(.97); } 45% { transform: scale(1.06); } }
+  @keyframes tiDrip { 0% { transform: translateY(-6px); opacity: 0; } 15% { opacity: 1; } 70% { transform: translateY(8px); opacity: 1; } 85%, 100% { transform: translateY(10px); opacity: 0; } }
+  @keyframes tiRipple { 0%, 70% { transform: scale(.2); opacity: 0; } 78% { opacity: 1; } 100% { transform: scale(1.1); opacity: 0; } }
+  @keyframes tiFlip { 0%, 20% { transform: scaleX(1); } 50%, 70% { transform: scaleX(-1); } 100% { transform: scaleX(1); } }
+  @keyframes tiCoin { 0% { transform: translateY(-16px); opacity: 0; } 20%, 80% { transform: none; opacity: 1; } 100% { opacity: 0; } }
+  @keyframes tiStem { 0% { stroke-dashoffset: 22; } 30%, 85% { stroke-dashoffset: 0; opacity: 1; } 100% { stroke-dashoffset: 0; opacity: 0; } }
+  @keyframes tiLeaf { 0%, 15% { transform: scale(0); } 40%, 85% { transform: scale(1); opacity: 1; } 100% { transform: scale(1); opacity: 0; } }
+  @keyframes tiSpin { to { transform: rotate(360deg); } }
+  @keyframes tiDrift { 0%, 100% { transform: translateX(0); } 50% { transform: translateX(-5px); } }
+  @keyframes tiWave { to { transform: translateX(-8px); } }
+  @keyframes tiApartL { 0%, 35% { transform: none; } 55%, 85% { transform: translateX(-4px) rotate(-6deg); } 100% { transform: none; } }
+  @keyframes tiApartR { 0%, 35% { transform: none; } 55%, 85% { transform: translateX(4px) rotate(6deg); } 100% { transform: none; } }
+  @keyframes tiSpark { 0%, 40% { opacity: 0; } 50%, 70% { opacity: 1; } 85%, 100% { opacity: 0; } }
+  @keyframes tiBalance { 0%, 10% { transform: rotate(-14deg); } 45%, 80% { transform: rotate(0); } 100% { transform: rotate(-14deg); } }
+  @keyframes tiJoin { 0%, 10% { transform: translate(8px, -6px); opacity: 0; } 45%, 85% { transform: none; opacity: 1; } 100% { opacity: 0; } }
+  @keyframes tiLinkL { 0%, 100% { transform: translateX(-5px); } 45%, 70% { transform: none; } }
+  @keyframes tiLinkR { 0%, 100% { transform: translateX(5px); } 45%, 70% { transform: none; } }
+  @keyframes tiFlicker { from { transform: scale(1, 1) skewX(0); } to { transform: scale(.94, 1.06) skewX(-3deg); } }
+  @keyframes tiFlag { from { transform: skewY(0); } to { transform: skewY(-6deg) scaleX(.94); } }
+  @keyframes tiGlow { 0%, 100% { fill: color-mix(in srgb, var(--tc) 25%, var(--paper)); } 50% { fill: var(--tc); } }
+  @media (prefers-reduced-motion: reduce) { .ti * { animation: none !important; stroke-dashoffset: 0 !important; opacity: 1 !important; } }
   .gv-card.both { box-shadow: inset 0 0 0 2px var(--ink); }
   .gv-k b { display: block; font-size: 16px; } .gv-k span { font-size: 12.5px; color: var(--ink-3); }
   .gv-ps, .gv-cols > div { display: flex; flex-wrap: wrap; gap: 6px; align-content: start; }
@@ -1119,7 +1187,7 @@
   .gv-place { display: inline-flex; align-items: center; gap: 6px; background: var(--paper); border-radius: 12px; line-height: 1.3; padding: 4px 11px 4px 8px; font-size: 13.5px; font-weight: 600; text-decoration: none; color: var(--ink); transition: transform .4s cubic-bezier(.16,1,.3,1); }
   .gv-place:hover { transform: translateY(-2px); }
   .gv-place i { width: 9px; height: 9px; border-radius: 50%; background: var(--c); flex: none; }
-  .gv-place span { font-size: 11px; color: var(--ink-3); font-weight: 600; }
+  .gv-place span { font-size: 11px; color: var(--ink-3); font-weight: 600; white-space: nowrap; }
   .gv-cols .gv-place span { display: none; }
   .gv-links { background: var(--paper-2); border-radius: 16px; padding: 16px 18px; display: grid; gap: 10px; }
   .gv-shared { display: flex; flex-wrap: wrap; gap: 6px; } .gv-sh { text-decoration: none; }
@@ -1784,6 +1852,29 @@ const placesIn = cwgs => [...terrs().filter(t => cwgs.includes((t.cwg || "").tri
   ...units().filter(u => cwgs.includes(u.cwg)).map(u => ({ id: u.id, name: u.name, cwg: u.cwg, p: u.profile || {}, unit: true }))];
 const placeChip = x => `<a class="gv-place" href="#/territory/${esc(x.id)}" style="--c:${CWG_COL[x.cwg] || "var(--ink-3)"}"><i></i>${esc(x.name)}<span>${esc(x.cwg)}</span></a>`;
 // group places by a standard list; with two CWGs, show what links them
+// a small moving picture for each thematic area and strength (plays while on screen; still for reduced motion)
+const TI = (k, body) => `<svg viewBox="0 0 48 48" class="wi ti ti-${k}" aria-hidden="true">${body}</svg>`;
+const TICON = {
+  "Health": ["#e14b1e", TI("health", `<path class="hb" d="M24 40s-15-9-15-20a8 8 0 0 1 15-4 8 8 0 0 1 15 4c0 11-15 20-15 20z"/><path class="ecg" d="M3 26h11l3-6 4 12 3-9 2 3h19"/>`)],
+  "WASH": ["#0a84ff", TI("wash", `<path d="M6 12h15a7 7 0 0 1 7 7v3"/><path d="M6 8v8M24 22h8"/><path class="dr" d="M28 26c-2.2 3-3.3 4.6-3.3 6.2a3.3 3.3 0 0 0 6.6 0c0-1.6-1.1-3.2-3.3-6.2z"/><ellipse class="rp" cx="28" cy="43" rx="9" ry="2.2"/>`)],
+  "Education": ["#005fc0", TI("edu", `<path d="M24 15c-5-4-12-4-18-2v26c6-2 13-2 18 2 5-4 12-4 18-2V13c-6-2-13-2-18 2z"/><path d="M24 15v26"/><path class="pg" d="M24 15c4-3 9-3.5 14-2.5v24c-5-1-10-.5-14 2.5z"/>`)],
+  "Livelihoods": ["#f5c400", TI("liv", `<path d="M5 42h38"/><rect class="c c1" x="8" y="35" width="16" height="6" rx="3"/><rect class="c c2" x="8" y="28" width="16" height="6" rx="3"/><rect class="c c3" x="8" y="21" width="16" height="6" rx="3"/><path class="ar" d="M30 38l11-13M34 25h7v7"/>`)],
+  "Food security and agriculture": ["#1a7f37", TI("food", `<path d="M5 41h38"/><path class="st" d="M24 41V20"/><path class="lf l1" d="M24 31c-7 0-11-4-11-10 7 0 11 4 11 10z"/><path class="lf l2" d="M24 25c0-7 4-11 11-11 0 7-4 11-11 11z"/>`)],
+  "Climate and environment": ["#1a7f37", TI("clim", `<g class="sun"><circle cx="18" cy="18" r="6"/><path d="M18 5v4M18 27v4M5 18h4M27 18h4M8.8 8.8l2.8 2.8M24.4 24.4l2.8 2.8M8.8 27.2l2.8-2.8M24.4 11.6l2.8-2.8"/></g><path class="cl" d="M20 38h18a6 6 0 0 0 0-12 9 9 0 0 0-17 2 5 5 0 0 0-1 10z"/>`)],
+  "Disasters and emergencies": ["#24215f", TI("dis", `<path class="hs" d="M13 32V22l11-9 11 9v10"/><path d="M20 32v-6h8v6"/><path class="wv" d="M-8 38q4-4 8 0t8 0 8 0 8 0 8 0 8 0 8 0 8 0"/>`)],
+  "Anti-human trafficking": ["#e14b1e", TI("aht", `<rect class="k1" x="5" y="18" width="21" height="12" rx="6"/><rect class="k2" x="22" y="18" width="21" height="12" rx="6"/><path class="sp" d="M24 9v5M17 11l2.5 4M31 11l-2.5 4M24 39v-5"/>`)],
+  "Protection and safeguarding": ["#005fc0", TI("prot", `<path class="sh" d="M24 5l15 6v11c0 9.5-6.5 17-15 21-8.5-4-15-11.5-15-21V11z"/><path class="ck" d="M17 24l5 5 9-10"/>`)],
+  "Gender equality": ["#24215f", TI("gen", `<path d="M24 10v30M15 41h18"/><g class="bm"><path d="M7 15h34"/><path d="M7 15l-4 9h8zM41 15l-4 9h8z"/></g><circle cx="24" cy="10" r="2.5"/>`)],
+  "Children, youth and families": ["#e14b1e", TI("fam", `<g class="f1"><circle cx="11" cy="15" r="4.5"/><path d="M4 40c0-10 3-15 7-15s7 5 7 15"/></g><g class="f2"><circle cx="37" cy="15" r="4.5"/><path d="M30 40c0-10 3-15 7-15s7 5 7 15"/></g><g class="f3"><circle cx="24" cy="25" r="3.5"/><path d="M19 40c0-6 2-9 5-9s5 3 5 9"/></g>`)],
+  "Inclusion": ["#005fc0", TI("inc", `<circle class="ring" cx="24" cy="24" r="15"/><circle class="d" cx="24" cy="9" r="3.3"/><circle class="d" cx="37" cy="31.5" r="3.3"/><circle class="d" cx="11" cy="31.5" r="3.3"/><circle class="d nw" cx="37" cy="16.5" r="3.3"/>`)],
+  "Community development": ["#f5c400", TI("comm", `<path d="M3 42h42"/><path class="h h1" d="M5 42V31l6-5 6 5v11"/><path class="h h2" d="M17 42V25l7-6 7 6v17"/><path class="h h3" d="M31 42V31l6-5 6 5v11"/>`)],
+  "Capacity development and partnerships": ["#24215f", TI("cap", `<circle class="r1" cx="18" cy="24" r="10"/><circle class="r2" cx="30" cy="24" r="10"/>`)],
+  "Faith and integrated mission": ["#e14b1e", TI("faith", `<path class="fl" d="M24 43c-8 0-12-6-12-12 0-8 8-10 8-20 6 4 7 10 7 10s3-3 3-7c5 4 7 10 7 17 0 6-5 12-13 12z"/><path class="fi" d="M24 43c-3.5 0-5-2.5-5-5 0-3.5 3.5-5 5-9 2 3 5 5.5 5 9 0 2.5-1.5 5-5 5z"/>`)],
+  "Committed people and leadership": ["#005fc0", TI("lead", `<circle cx="18" cy="14" r="5"/><path d="M8 42c0-10 4.5-16 10-16s10 6 10 16"/><path d="M33 42V9"/><path class="fg" d="M33 10c4-2 7 2 11 0v10c-4 2-7-2-11 0z"/>`)],
+  "Community-led approaches": ["#1a7f37", TI("cled", `<g class="orb"><circle cx="24" cy="9" r="4"/><circle cx="37" cy="31" r="4"/><circle cx="11" cy="31" r="4"/></g><circle class="ctr" cx="24" cy="25" r="4.5"/>`)],
+  "Partnerships and networks": ["#0a84ff", TI("net", `<path class="ln l1" d="M10 12L24 24"/><path class="ln l2" d="M38 14L24 24"/><path class="ln l3" d="M24 24L12 37"/><path class="ln l4" d="M24 24L37 38"/><path class="ln l5" d="M10 12L38 14"/><circle cx="10" cy="12" r="3.5"/><circle cx="38" cy="14" r="3.5"/><circle cx="12" cy="37" r="3.5"/><circle cx="37" cy="38" r="3.5"/><circle class="hub" cx="24" cy="24" r="4.5"/>`)],
+  "Systems and governance": ["#24215f", TI("sys", `<g class="g1"><circle cx="18" cy="20" r="7"/><path d="M18 8v4M18 28v4M6 20h4M26 20h4M9.5 11.5l2.8 2.8M23.7 25.7l2.8 2.8M9.5 28.5l2.8-2.8M23.7 14.3l2.8-2.8"/></g><g class="g2"><circle cx="34" cy="34" r="5"/><path d="M34 25v3M34 40v3M25 34h3M40 34h3M27.6 27.6l2.1 2.1M38.3 38.3l2.1 2.1M27.6 40.4l2.1-2.1M38.3 29.7l2.1-2.1"/></g>`)],
+  "Technical expertise": ["#f5c400", TI("tech", `<path class="bulb" d="M17 30c-3-2.5-5-6-5-10a12 12 0 0 1 24 0c0 4-2 7.5-5 10v4H17z"/><path d="M18 39h12M20 43h8"/><path class="ray" d="M24 1v3M7 8l2.2 2.2M41 8l-2.2 2.2M2 20h3M43 20h3"/>`)] };
 function groupedView(places, groups, pick, cwgPair, emptyMsg) {
   const by = {}; places.forEach(x => pick(x).forEach(k => (by[k] = by[k] || []).push(x)));
   const used = groups.map(([g, xs]) => [g, xs.filter(k => by[k])]).filter(([, xs]) => xs.length);
@@ -1791,9 +1882,10 @@ function groupedView(places, groups, pick, cwgPair, emptyMsg) {
   const shared = cwgPair ? used.flatMap(([, xs]) => xs).filter(k => cwgPair.every(c => by[k].some(x => x.cwg === c))) : [];
   const head = cwgPair ? `<div class="gv-links"><b>${shared.length ? `${shared.length} ${shared.length === 1 ? "area links" : "areas link"} ${esc(cwgPair[0])} and ${esc(cwgPair[1])}` : `No shared areas between ${esc(cwgPair[0])} and ${esc(cwgPair[1])} yet`}</b>
       ${shared.length ? `<div class="gv-shared">${shared.map(k => `<a href="#gv-${esc(k.replace(/\W+/g, "-").toLowerCase())}" class="tag gv-sh">${esc(k)}</a>`).join("")}</div>` : ""}</div>` : "";
-  return head + `<div class="gv-flow">` + used.map(([g, xs]) => `<section class="gv-grp">${g ? `<h3 class="h3">${esc(g)}</h3>` : ""}<div class="gv-grid">${xs.map(k => {
+  return head + `<div class="gv-flow${cwgPair ? " pair" : ""}">` + used.map(([g, xs]) => `<section class="gv-grp">${g ? `<h3 class="h3">${esc(g)}</h3>` : ""}<div class="gv-grid">${xs.map(k => {
       const ps = by[k], both = cwgPair && cwgPair.every(c => ps.some(x => x.cwg === c));
-      return `<div class="gv-card${both ? " both" : ""}" id="gv-${esc(k.replace(/\W+/g, "-").toLowerCase())}"><div class="gv-k"><b>${esc(k)}</b><span>${ps.length} ${ps.length === 1 ? "place" : "places"}${both ? ` · links ${esc(cwgPair.join(" and "))}` : ""}</span></div>
+      const [tc, ti] = TICON[k] || ["#24215f", ""];
+      return `<div class="gv-card${both ? " both" : ""}" style="--tc:${tc}" id="gv-${esc(k.replace(/\W+/g, "-").toLowerCase())}"><div class="gv-top">${ti ? `<div class="gv-ic">${ti}</div>` : ""}<div class="gv-k"><b>${esc(k)}</b><span>${ps.length} ${ps.length === 1 ? "place" : "places"}${both ? ` · links ${esc(cwgPair.join(" and "))}` : ""}</span></div></div>
         ${cwgPair ? `<div class="gv-cols">${cwgPair.map(c => `<div><div class="gv-c" style="--c:${CWG_COL[c]}">${esc(c)}</div>${ps.filter(x => x.cwg === c).map(placeChip).join("") || `<span class="small">None yet</span>`}</div>`).join("")}</div>`
           : `<div class="gv-ps">${ps.map(placeChip).join("")}</div>`}</div>`; }).join("")}</div></section>`).join("") + `</div>`;
 }
@@ -2510,22 +2602,39 @@ function signinLimitBox(st) {
   return `<div class="si-limit${left ? left === 1 ? " low" : "" : " full"}"><div class="sl-top"><b>Sign-ins left this hour</b><span>${left} of ${lim} left</span></div>${segs(left, lim)}
     <p>${left ? `You can request ${left} more sign-in email${left === 1 ? "" : "s"} this hour.${left === 1 ? " Check your inbox and spam folder before asking for another." : ""}` : `You've used all ${lim} for this hour. You can ask for another at about <b>${esc(at)}</b>. The newest email in your inbox may still work.`}</p></div>`;
 }
+// who signs in how: one panel per kind of account, each with its own little moving picture
+const SI_ROLES = [
+  { k: "member", t: "CWG members and contact persons", ic: "pinset",
+    steps: [["Get registered", "Your CWG lead adds your email to your territory. A work email is fine."],
+      ["Get your CWG's PIN", "Your CWG lead gives it to you. Everyone in your CWG uses the same one."],
+      ["Sign in", "Type your email and the CWG's PIN. You can then edit your own territory: its profile, its contact persons and its CD Strategy."]],
+    forgot: "Ask your CWG lead for the PIN. If it still doesn't work, ask them to check your email is registered for your territory." },
+  { k: "lead", t: "CWG leads", ic: "people",
+    steps: [["Set up your own PIN", "An ASLP admin adds your email. Select <em>First time? Set up your PIN</em>, choose a PIN and send it for approval."],
+      ["Sign in once it's approved", "Use your email and your own PIN, not the CWG's."],
+      ["Open your CWG to your members", "In the console, set your CWG's PIN under <em>PINs</em>, then register your members' and contact persons' emails. Share the PIN with them."]],
+    forgot: "Ask an ASLP admin to reset your PIN, then set up a new one." },
+  { k: "admin", t: "Admins and view-only accounts", ic: "key",
+    steps: [["Set up your own PIN", "An ASLP admin adds your email. Select <em>First time? Set up your PIN</em>, choose a PIN and send it for approval."],
+      ["Sign in once it's approved", "Use your email and PIN. View-only accounts see everything but can't change anything."]],
+    forgot: "Ask another ASLP admin to reset your PIN, then set up a new one." }];
 function consoleSignin() {
   return `<div class="console-card si-card"><div class="si-main"><h2 class="h2">Sign in</h2>
-    <p class="small">Sign in with your email and PIN. It's the same sign-in for this website, the Calendar and CD Strategies: sign in once and you're signed in on all three.</p>
+    <p class="small">One sign-in for this website, the Calendar and CD Strategies. Sign in once and you're signed in on all three.</p>
     <div id="pin-box" class="si-pin"></div>
     <div id="si-demo"></div></div>
     <aside class="si-guide" aria-label="How to get set up">
-      <p class="si-gk">New here?</p><h3>How to get set up</h3>
-      <ol>
-        <li><b>Check you're registered.</b><span>Your CWG lead adds your email (work email is fine) to your territory, as a CWG member or a contact person. Admins, CWG leads and view-only accounts are added by an ASLP admin.</span></li>
-        <li><b>CWG members and contact persons.</b><span>Sign in with your registered email and your CWG's PIN. Your CWG lead gives it to you. It opens your own territory: its profile and its CD Strategy.</span></li>
-        <li><b>Admins, CWG leads and view-only accounts.</b><span>Select <b>First time? Set up your PIN</b> and choose your own PIN. Once an admin approves it, sign in with your email and that PIN.</span></li>
-        <li><b>Next time.</b><span>Just your email and PIN, on any of the three sites.</span></li>
-      </ol>
-      <div class="si-forgot"><b>Forgot your PIN?</b><span>CWG members and contact persons: ask your CWG lead for the CWG's PIN. Admins, CWG leads and view-only accounts: ask an ASLP admin to reset your PIN, then set up a new one.</span></div>
+      <p class="si-gk">New here?</p><h3>Which one are you?</h3>
+      <div class="si-roles" role="tablist">${SI_ROLES.map((r, i) => `<button type="button" role="tab" data-sirole="${r.k}" aria-selected="${!i}"><span class="si-ric">${WICON[r.ic]}</span>${esc(r.t)}</button>`).join("")}</div>
+      ${SI_ROLES.map((r, i) => `<div class="si-rp" data-sirp="${r.k}"${i ? " hidden" : ""}><ol>${r.steps.map(([b, t]) => `<li><b>${b}</b><span>${t}</span></li>`).join("")}</ol>
+        <div class="si-forgot"><b>Forgot your PIN?</b><span>${r.forgot}</span></div></div>`).join("")}
     </aside></div>`;
 }
+// picking a role shows its steps and plays the matching walkthrough
+document.addEventListener("click", e => { const b = e.target.closest("[data-sirole]"); if (!b) return; const k = b.dataset.sirole;
+  document.querySelectorAll("[data-sirole]").forEach(x => x.setAttribute("aria-selected", x === b));
+  document.querySelectorAll("[data-sirp]").forEach(x => { x.hidden = x.dataset.sirp !== k; });
+  const t = document.querySelector(`#si-demo [data-flow="${k}"]`); if (t && t.getAttribute("aria-selected") !== "true") t.click(); });
 // ---- console welcome: a greeting and, in plain steps, what this person's access lets them do ----
 const firstName = v => { const n = String(v.name || "").replace(/^(Major|Captain|Lieutenant|Colonel|Commissioner|Lt\.?|Lt-Colonel|Envoy|Mr\.?|Mrs\.?|Ms\.?|Dr\.?)\s+/i, "").trim(); return n ? n.split(/\s+/)[0] : ""; };
 const WICON = {
@@ -2541,7 +2650,12 @@ const WICON = {
   chart: `<svg viewBox="0 0 48 48" class="wi wi-chart"><path d="M7 41h34"/><rect class="c1" x="10" y="25" width="7" height="16" rx="2"/><rect class="c2" x="21" y="16" width="7" height="25" rx="2"/><rect class="c3" x="32" y="9" width="7" height="32" rx="2"/></svg>`,
   page: `<svg viewBox="0 0 48 48" class="wi wi-page"><path d="M12 6h17l9 9v27H12z"/><path class="ln l1" d="M17 22h16"/><path class="ln l2" d="M17 29h16"/><path class="ln l3" d="M17 36h10"/></svg>`,
   lock: `<svg viewBox="0 0 48 48" class="wi wi-key"><g class="ky"><rect x="11" y="21" width="26" height="20" rx="4"/><path d="M17 21v-5a7 7 0 0 1 14 0v5"/><circle cx="24" cy="31" r="2.5"/></g></svg>`,
+  pinset: `<svg viewBox="0 0 48 48" class="wi wi-pinset"><rect x="5" y="14" width="27" height="20" rx="5"/><circle class="d1" cx="12" cy="24" r="2.4"/><circle class="d2" cx="18.5" cy="24" r="2.4"/><circle class="d3" cx="25" cy="24" r="2.4"/><path class="w1" d="M37 18.5c2 3.3 2 7.7 0 11"/><path class="w2" d="M41.5 14.5c3.6 5.8 3.6 13.2 0 19"/></svg>`,
+  reg: `<svg viewBox="0 0 48 48" class="wi wi-reg"><rect x="5" y="9" width="34" height="27" rx="4"/><circle cx="15" cy="20" r="4"/><path d="M9 30c1-4 3.3-6 6-6s5 2 6 6"/><path class="ln l1" d="M25 18h9"/><path class="ln l2" d="M25 24h7"/><g class="bd"><circle cx="38" cy="36" r="7"/><path d="M34.5 36l2.4 2.4 4.4-4.6"/></g></svg>`,
   key: `<svg viewBox="0 0 48 48" class="wi wi-key"><g class="ky"><circle cx="16" cy="24" r="8"/><path d="M24 24h18M36 24v6M41 24v5"/></g></svg>` };
+// what kind of account this is: decides the welcome, the PIN tab and its wording
+const acctKind = v => v.ro ? "viewer" : v.is_full_admin ? "admin" : (v.lead_cwgs || []).length ? "lead" : (v.can_edit || []).length || v.cds_access ? "member" : "other";
+const myTerrs = v => (v.can_edit || []).map(terrName).filter(Boolean);
 function welcomeRo(v, tabs, roles, go) {
   const has = id => tabs.some(t => t[0] === id), steps = [["explore", "Look around", "Use the menu at the top to visit every page. Your console shows everything an admin sees, but nothing can be changed from this account.", `<a class="btn sm" href="#/">Home</a>`]];
   if (has("cc-updates")) steps.push(["write", "Read every update", "Open <b>Updates</b> to see every update, including those <b>Waiting for approval</b>, and who sent them in. Select <b>Edit</b> to see an update's details.", go("cc-updates")]);
@@ -2559,16 +2673,24 @@ function welcomeHtml(v, tabs, roSteps, roRoles) {
   const has = id => tabs.some(t => t[0] === id), go = id => has(id) ? `<button type="button" class="btn sm" data-goto="${id}">Open</button>` : "";
   const roles = v.ro ? ["View only"] : [v.is_full_admin && "Admin", ...(v.zone_coord || []).map(z => `${z} coordinator`), (v.lead_cwgs || []).length && `${v.lead_cwgs.join(" and ")} CWG lead`,
     v.can_approve && !v.is_full_admin && "ASC member", (v.post_groups || []).includes("apsg") && !v.can_approve && "APSG member",
-    (v.submit_cwgs || []).length && `${v.submit_cwgs.join(" and ")} CWG member`, (v.can_edit || []).length && !(v.lead_cwgs || []).length && !v.is_full_admin && "Contact person",
-    v.cds_access && !(v.lead_cwgs || []).length && !v.is_full_admin && "CD Strategies contact"].filter(Boolean);
+    acctKind(v) !== "member" && (v.submit_cwgs || []).length && `${v.submit_cwgs.join(" and ")} CWG member`,
+    acctKind(v) === "member" && `${[...new Set((v.can_edit || []).map(id => (terrs().find(t => t.id === id) || {}).cwg).filter(Boolean))].join(" and ")} CWG member or contact person`.trim(),
+    ...(acctKind(v) === "member" ? myTerrs(v) : [])].filter(Boolean);
+  const kind = acctKind(v), cwgsTxt = (v.lead_cwgs || []).join(" and ");
   if (v.ro && !roSteps) return welcomeRo(v, tabs, roles, go);
   let steps = [["explore", "Look around", "Use the menu at the top to visit every page. You see the website as everyone does, plus what your access lets you change.", `<a class="btn sm" href="#/">Home</a>`]];
+  if (kind === "lead" || kind === "admin") {
+    steps.push(["pinset", kind === "lead" ? "Set and share your CWG's PIN" : "Set CWG PINs", `Open <b>PINs</b> and choose a 6 to 12 digit PIN for ${kind === "lead" ? esc(cwgsTxt) : "each CWG"}. Share it with the CWG's members and its territories' contact persons. If you change it, the old one stops working, so share the new one.`, go("cc-pin")]);
+    if (has("cc-members") || has("cc-terr")) steps.push(["reg", "Register who can sign in", `Add each CWG member's email under <b>CWG members</b>, and each territory's contact persons (up to 2) in its profile, ticking <b>CWG member</b> for those who are. Only registered emails can use the CWG's PIN, and only for their own territory.`, go(has("cc-members") ? "cc-members" : "cc-terr")]);
+  }
   if ((v.post_cwgs || []).length || (v.post_groups || []).length) steps.push(["write", "Post an update",
     `Open <b>Updates</b>, choose <b>Post an update</b>, then write it or upload a PDF or PowerPoint. You can post for ${[...(v.post_cwgs || []).map(c => c), ...(v.post_groups || []).map(k => (grpOf(k) || {}).short || k.toUpperCase())].join(", ")}. It goes live when you publish.`, go("cc-updates")]);
   if ((v.submit_cwgs || []).length) steps.push(["send", "Send in an update",
     `Open <b>Updates</b> and post for ${v.submit_cwgs.join(" and ")}. An ASC member or admin checks it first, then it appears on the website.`, go("cc-updates")]);
   if (v.can_approve) steps.push(["approve", "Approve updates", `Updates sent in by CWG members show in <b>Updates</b> as <b>Waiting for approval</b>. Open one to check it, then select <b>Approve</b>.`, go("cc-updates")]);
-  if (has("cc-terr")) steps.push(["pin", "Update a profile", `Open <b>Territory profiles</b>, pick ${(v.can_edit || []).length + (v.can_units || []).length === 1 ? "your territory" : "a territory or region"}, and fill in where it works, its strengths and the support it offers. Select <b>Save</b>.`, go("cc-terr")]);
+  if (has("cc-terr")) steps.push(["pin", kind === "member" ? "Update your territory's profile" : "Update a profile", kind === "member"
+    ? `Open <b>Territory profiles</b> to update ${esc(myTerrs(v).join(" and ") || "your territory")}: where it works, its thematic areas, strengths, the support it offers and its contact persons (up to 2; tick <b>CWG member</b> for those who are). Select <b>Save</b>.`
+    : `Open <b>Territory profiles</b>, pick ${(v.can_edit || []).length + (v.can_units || []).length === 1 ? "your territory" : "a territory or region"}, and fill in where it works, its strengths and the support it offers. Select <b>Save</b>.`, go("cc-terr")]);
   if (has("cc-members")) steps.push(["people", "Keep your CWG's members up to date", `Open <b>CWG members</b> to add, change or remove members and say which territory each is from.`, go("cc-members")]);
   if (has("cc-units")) steps.push(["toggle", "Switch regions and countries on", `Open <b>Regions and countries</b>. Tick one to show its profile on the website, and choose its CWG.`, go("cc-units")]);
   if (has("cc-groups")) steps.push(["group", "Edit your group's page", `Open <b>ASLP Groups</b> to change ${(v.can_groups || []).map(k => (grpOf(k) || {}).short || k).join(", ")}: the description and who sits on it.`, go("cc-groups")]);
@@ -2580,11 +2702,17 @@ function welcomeHtml(v, tabs, roSteps, roRoles) {
   if (has("cc-pages")) steps.push(["page", "Edit pages and the newsletter", `Open <b>Pages and newsletter</b> to change the About text, the home page introduction and newsletter issues.`, go("cc-pages")]);
   if (has("cc-access")) steps.push(["key", "Decide who can do what", `Open <b>Access</b> to add admins and view-only accounts, switch editing on or off for each role, name the zone coordinators and choose who edits each group page.`, go("cc-access")]);
   if (roSteps) steps = roSteps;
-  steps.push(["lock", pinApprover(v) ? "Your PIN, and approving others'" : "Your PIN", `You sign in with your email and PIN, with no email to wait for.${pinApprover(v) ? " When someone in your CWG chooses a new PIN, approve it in <b>PINs</b>." : ""} Change your own PIN there any time.`, go("cc-pin")]);
+  steps.push(kind === "member"
+    ? ["lock", "How you sign in", `With your email and your CWG's PIN. If your CWG lead changes the PIN, they'll give you the new one. Can't sign in? Ask your CWG lead to check your email is registered for your territory.`, ""]
+    : pinApprover(v) ? ["lock", "PIN requests and resets", `When an admin, CWG lead or view-only account sets up a PIN, approve it in <b>PINs</b>. If one of them forgets theirs, reset it there and they set up a new one. You can change your own PIN there too.`, go("cc-pin")]
+    : ["lock", "Your own PIN", `You sign in with your email and your own PIN${kind === "lead" ? ", not the CWG's" : ""}. Change it under <b>${kind === "lead" ? "PINs" : "My PIN"}</b> any time. Forgot it? Ask an ASLP admin to reset it, then set up a new one.`, go("cc-pin")]);
   const fn = firstName(v);
   return `<section class="console-card wel" id="cc-welcome">
     <div class="wel-hero"><div class="wel-lll" aria-hidden="true"><span>Listen.</span><span>Learn.</span><span>Lead.</span></div>
-      <h2 class="wel-hi">Hi${fn ? `, ${esc(fn)}` : ""}.</h2><p class="wel-sub">Feel free to roam around the site. Here's how to get around with your access.</p>
+      <h2 class="wel-hi">Hi${fn ? `, ${esc(fn)}` : ""}.</h2><p class="wel-sub">${{ admin: "You look after the whole site. Here's what your access lets you do.",
+        lead: `You look after ${esc(cwgsTxt)}: its territories, its members and its PIN. Here's how.`,
+        viewer: "You can see everything an admin sees, but nothing can be changed from this account. Here's where to look.",
+        member: `You're signed in with your CWG's PIN${myTerrs(v).length ? ` for <b>${esc(myTerrs(v).join(" and "))}</b>` : ""}. Here's what you can update.` }[kind] || "Feel free to roam around the site. Here's how to get around with your access."}</p>
       ${roles.length ? `<div class="wel-roles">${roles.map(r => `<span>${esc(r)}</span>`).join("")}</div>` : ""}</div>
     <h3 class="h3 wel-h">How to navigate the site with your access</h3>
     <div class="wel-try"><div><b>New here? Take a test run.</b><span>${v.ro ? "A short guide to the console and the menu, on the real screens." : "Each guide below walks you through the real screens, one step at a time. Nothing you do during a test run is saved or published, so you can practise freely."}</span></div>
@@ -2629,7 +2757,7 @@ function runTour(keys) {
 let TOUR_CHAIN = [];
 const siteTour = (path, then) => `${path}?tour=1&then=${encodeURIComponent(then)}`;
 function handOff(path, then) { try { sessionStorage.setItem("aslp-con-tab", "cc-welcome"); } catch (e) {} location.href = siteTour(path, then); }
-const TOUR_NAMES = { explore: "Look around", write: "Post an update", send: "Send in an update", approve: "Approve updates", pin: "Update a profile", people: "CWG members",
+const TOUR_NAMES = { explore: "Look around", write: "Post an update", send: "Send in an update", approve: "Approve updates", pin: "Update a profile", people: "CWG members", pinset: "CWG PIN", reg: "Register who can sign in",
   toggle: "Regions and countries", group: "Your group's page", cal: "The Calendar", chart: "CD Strategies", page: "Pages and newsletter", key: "Access" };
 const SAMPLE_TITLE = "Test run: CWG learning visit";
 const TOURS = {
@@ -2637,7 +2765,7 @@ const TOURS = {
     { tab: "cc-welcome", el: ".con-sub", title: "Your console", text: "This is your console. Each tab is one thing your access lets you do. You only see the tabs that are yours." },
     { el: () => findEl("#menu") || findEl("#menu-btn"), title: "The main menu", text: "Use the menu to visit any page of the website, just as everyone else sees it. Your changes show up on these pages once they're saved. Try it: open the menu and look around. When you select Next, you'll come back here." },
     { tab: "cc-welcome", el: "#tb-auth", title: "Back to your console", text: "Wherever you are on the site, this button brings you back to your console." },
-    { tab: "cc-welcome", el: "#si-out", title: "Signing out", text: "When you're done, sign out here, especially on a shared computer. You can sign in again any time with the link sent to your email." } ],
+    { tab: "cc-welcome", el: "#si-out", title: "Signing out", text: "When you're done, sign out here, especially on a shared computer. Next time, sign in again with your email and PIN." } ],
   write: () => [
     { tab: "cc-updates", el: "#up-new", wait: "click", title: "Start an update", text: "Select <b>Post an update</b>." },
     { el: "#ue-cwg", title: "Choose where it goes", text: "Pick the CWG or group the update is for. CWG news goes to CWG Updates; ASC and APSG news goes to Programmatic Updates." },
@@ -2675,6 +2803,12 @@ const TOURS = {
     { el: () => findEl("#mem-editor .ed-add"), wait: "click", title: "Add a member", text: "Select <b>Add a member</b> to add a new row, then fill it in." },
     { el: "#mem-save", wait: "click", delay: 900, title: "Save", text: "Select <b>Save</b>. In this test run nothing is saved." },
     { title: "Done", text: "In a real run the CWG page shows the new members, grouped by territory." } ],
+  pinset: () => [
+    { tab: "cc-pin", el: "#cwg-pins", title: "Your CWG's PIN", text: "Each CWG has one PIN. Its members and its territories' contact persons sign in with their registered email and this PIN." },
+    { el: () => findEl("#cwg-pins .cwgpin-f input"), before: () => fillIn("#cwg-pins .cwgpin-f input", "987654"), title: "Choose it", text: "Type 6 to 12 numbers. We've typed a sample one for this test run." },
+    { el: () => findEl("#cwg-pins .cwgpin-f button"), wait: "click", delay: 900, title: "Set it", text: "Select <b>Set PIN</b> or <b>Change PIN</b>. In this test run nothing is saved." },
+    { title: "Share it", text: "Send the PIN to your CWG members and contact persons, for example in your group chat. If you change it later, the old one stops working straight away." } ],
+  reg: () => TOURS.people(),
   toggle: () => [
     { tab: "cc-units", el: "#units-editor", title: "Regions and countries", text: "Every region, division and country is listed here. Ticked ones have a profile on the website." },
     { el: () => findEl("#units-editor [data-unit]:not(:disabled)") && findEl("#units-editor [data-unit]:not(:disabled)").closest(".ut-row"), title: "Switch one on", text: "Tick a box to show its profile on the website, or untick to hide it. (During a test run, the switch springs back.)" },
@@ -2707,7 +2841,7 @@ function pageConsole(a, b) {
   const terrIds = v.can_edit || [], cwgs = v.can_cwgs || [];
   const groups = v.can_groups || [];
   const who = v.ro ? "View only" : v.is_full_admin ? "Admin" : [(v.lead_cwgs || []).length && `${v.lead_cwgs.join(" and ")} CWG lead`, v.can_approve && "ASC member", (v.post_groups || []).includes("apsg") && !v.can_approve && "APSG member",
-    (v.submit_cwgs || []).length && `${v.submit_cwgs.join(" and ")} CWG member`, (v.can_edit || []).length && !(v.lead_cwgs || []).length && "Contact person"].filter(Boolean).join(" · ") || "Signed in";
+    (v.submit_cwgs || []).length && `${v.submit_cwgs.join(" and ")} CWG member`, acctKind(v) === "member" && "CWG member or contact person"].filter(Boolean).join(" · ") || "Signed in";
   const tab = a === "strategies" ? "strategies" : "website";
   const head = `${crumbs([["Home", "#/"], ["Console"]])}<div class="wrap" style="padding-top:var(--g4)">
     <div class="console-head"><div><h1 class="h1">Console</h1><p class="small" style="margin-top:6px">${esc(who)} · ${esc(v.email)}</p></div><button type="button" class="btn sm" id="si-out">Sign out</button></div>
@@ -2726,7 +2860,7 @@ function pageConsole(a, b) {
   const selC = a === "cwg" ? cwgs.find(c => cwgSlug(c) === b) : null;
   pendingMaps.push(() => mountConsole());
   const canUpd = (v.post_cwgs || []).length || (v.submit_cwgs || []).length || Object.keys(PGROUPS).some(canGroupPost);
-  const secs = [["cc-welcome", "Welcome"], canUpd && ["cc-updates", "Updates"], toggleIds.length && ["cc-units", "Regions and countries"], cwgs.length && ["cc-members", "CWG members"], (terrIds.length || unitIds.length) && ["cc-terr", "Territory profiles"], groups.length && ["cc-groups", "ASLP Groups"], v.is_full_admin && ["cc-pages", "Pages and newsletter"], v.is_full_admin && ["cc-access", "Access"], ["cc-pin", pinApprover(v) ? "PINs" : "My PIN"]].filter(Boolean);
+  const secs = [["cc-welcome", "Welcome"], canUpd && ["cc-updates", "Updates"], toggleIds.length && ["cc-units", "Regions and countries"], cwgs.length && ["cc-members", "CWG members"], (terrIds.length || unitIds.length) && ["cc-terr", "Territory profiles"], groups.length && ["cc-groups", "ASLP Groups"], v.is_full_admin && ["cc-pages", "Pages and newsletter"], v.is_full_admin && ["cc-access", "Access"], ["cc-pin", pinApprover(v) || acctKind(v) === "lead" ? "PINs" : acctKind(v) === "member" ? "How you sign in" : "My PIN"]].filter(Boolean);
   return head + `<div class="wrap page-body">
     ${secs.length > 1 ? `<nav class="con-sub" role="tablist" aria-label="Console sections">${secs.map(([id, l]) => `<button type="button" role="tab" data-jump="${id}">${l}</button>`).join("")}</nav>` : ""}
     ${welcomeHtml(v, secs)}
@@ -2766,7 +2900,7 @@ function pageConsole(a, b) {
         <label><span>New PIN</span><input type="password" id="mp-a" autocomplete="new-password" data-ro-ok placeholder="At least 6 characters"></label>
         <label><span>Type it again</span><input type="password" id="mp-b" autocomplete="new-password" data-ro-ok></label>
         <div class="ed-actions full"><button type="submit" class="btn fill" id="mp-save" data-ro-ok>Change my PIN</button><span class="ed-msg" id="mp-msg" role="status"></span></div>
-      </form>` : `<h2 class="h2">Your PIN</h2><p class="small">You sign in with your registered email and your CWG's PIN. If it stops working, ask your CWG lead for the current one.</p>`}</section>
+      </form>` : `<h2 class="h2">How you sign in</h2><div class="pin-how"><div class="wel-ic">${WICON.pinset}</div><p class="small">You sign in with your registered email${myTerrs(v).length ? ` (registered for ${esc(myTerrs(v).join(" and "))})` : ""} and your CWG's PIN. There's no PIN of your own to set up or change. If your CWG lead changes the PIN, they'll give you the new one; if it stops working, ask them for the current one.</p></div>`}</section>
   </div>`;
 }
 // ---- console: ASLP group details and members ----
@@ -3675,11 +3809,11 @@ function signinDemo(box) {
   // each step: caption, screen, then actions: ["type", field, text] ["click", target] ["wait", ms] ["send"] ["show", target]
   const FLOWS = {
     member: [
-      { cap: "Your CWG lead adds your email to your territory, and gives your CWG its PIN.", html: `<div class="sd-h">From your CWG lead</div><div class="sd-note">Registered for Philippines Territory, SPEA 2.</div>` + flow("Your CWG lead", "CL", "CWG PIN: 987654"),
+      { cap: "Your CWG lead registers your email for your territory and gives you your CWG's PIN.", html: `<div class="sd-h">From your CWG lead</div><div class="sd-note">Registered for Philippines Territory, SPEA 2.</div>` + flow("Your CWG lead", "CL", "CWG PIN: 987654"),
         act: [["send"], ["show", "tick"], ["show", "bub"], ["wait", 900]] },
       { cap: "Type your registered email (your work email is fine) and your CWG's PIN, then sign in.", html: signin(""),
         act: [["type", "em", EM], ["type", "pin", DOTS], ["click", "in"]] },
-      { cap: "You're in your territory: you can edit its profile and its CD Strategy, and nothing else.", html: `<div class="sd-done"><i>✓</i>Philippines Territory: profile and CD Strategy</div>`, act: [["wait", 1800]] },
+      { cap: "You're in. You can edit your own territory: its profile, its contact persons and its CD Strategy.", html: `<div class="sd-done"><i>✓</i>Philippines Territory: profile and CD Strategy</div>`, act: [["wait", 1800]] },
     ],
     lead: [
       { cap: "Type your email, then select First time? Set up your PIN.", html: signin(""),
@@ -3689,13 +3823,29 @@ function signinDemo(box) {
         act: [["type", "a", DOTS], ["type", "b", DOTS], ["click", "send"]] },
       { cap: "An ASLP admin approves it in the console.", html: `<div class="sd-h">Waiting for approval</div><div class="sd-note">You can close the page. Nothing else to do until it's approved.</div>` + flow("An ASLP admin", "AD", "Approved ✓"),
         act: [["send"], ["show", "tick"], ["show", "bub"], ["wait", 900]] },
-      { cap: "Once it's approved, sign in with your email and PIN. Forgot it later? An admin resets it and you choose a new one.", html: signin(EM),
+      { cap: "Sign in with your email and your own PIN.", html: signin(EM),
         act: [["type", "pin", DOTS], ["click", "in"]] },
-      { cap: "You're in, on this website, the Calendar and CD Strategies.", html: `<div class="sd-done"><i>✓</i>Signed in on this website, the Calendar and CD Strategies</div>`, act: [["wait", 1800]] },
+      { cap: "In the console, open PINs and set your CWG's PIN.", html: `<div class="sd-k">Console · PINs</div><div class="sd-pinrow"><b>SPEA 2</b><span>No PIN yet</span></div>` + field("cp", "Choose a PIN (6 to 12 numbers)", "Choose a PIN", "") + `<div class="sd-go"><span class="sd-btn" data-t="set">Set PIN</span></div>`,
+        act: [["type", "cp", "987654"], ["click", "set"]] },
+      { cap: "Register your members' and contact persons' emails, then share the PIN with them.", html: `<div class="sd-k">Console · CWG members</div><div class="sd-reg"><span data-t="r1">Jo Tan · jo.tan@salvationarmy.org · Philippines</span><span data-t="r2">Ana Cruz · ana.cruz@salvationarmy.org · Indonesia</span></div>` + flow("Your CWG", "CW", "CWG PIN: 987654"),
+        act: [["show", "r1"], ["show", "r2"], ["send"], ["show", "tick"], ["show", "bub"], ["wait", 1000]] },
+    ],
+    admin: [
+      { cap: "Type your email, then select First time? Set up your PIN.", html: signin(""),
+        act: [["type", "em", EM], ["click", "first"]] },
+      { cap: "Choose your own PIN, type it again, and send it for approval.", html: `<div class="sd-k">First time: set up your PIN</div>` + field("em", "Your registered email", "", EM) +
+        `<div class="sd-row"><div>${field("a", "Choose a PIN", "At least 6 characters", "")}</div><div>${field("b", "Type it again", "", "")}</div></div><div class="sd-go"><span class="sd-btn" data-t="send">Send for approval</span><span class="sd-lnk">Back to sign in</span></div>`,
+        act: [["type", "a", DOTS], ["type", "b", DOTS], ["click", "send"]] },
+      { cap: "An ASLP admin approves it in the console.", html: `<div class="sd-h">Waiting for approval</div><div class="sd-note">You can close the page. Nothing else to do until it's approved.</div>` + flow("An ASLP admin", "AD", "Approved ✓"),
+        act: [["send"], ["show", "tick"], ["show", "bub"], ["wait", 900]] },
+      { cap: "Sign in with your email and your own PIN.", html: signin(EM),
+        act: [["type", "pin", DOTS], ["click", "in"]] },
+      { cap: "Admins: you approve PIN requests and reset forgotten PINs under PINs. View-only accounts see everything but change nothing.", html: `<div class="sd-k">Console · PINs</div><div class="sd-reg"><span data-t="r1">PIN request · lead@salvationarmy.org <i>Approve</i></span><span data-t="r2">Forgot PIN · viewer@gmail.com <i>Reset</i></span></div>`,
+        act: [["show", "r1"], ["show", "r2"], ["wait", 1600]] },
     ],
   };
   box.innerHTML = `<div class="sd" role="region" aria-label="How signing in works">
-    <div class="sd-head"><h3>See how it works</h3><div class="sd-tabs" role="tablist"><button role="tab" data-flow="member" aria-selected="true">CWG members</button><button role="tab" data-flow="lead" aria-selected="false">Leads and admins</button></div></div>
+    <div class="sd-head"><h3>See how it works</h3><div class="sd-tabs" role="tablist"><button role="tab" data-flow="member" aria-selected="true">Members and contacts</button><button role="tab" data-flow="lead" aria-selected="false">CWG leads</button><button role="tab" data-flow="admin" aria-selected="false">Admins and viewers</button></div></div>
     <div class="sd-stage" aria-hidden="true"><div class="sd-bar"><i></i><i></i><i></i><span>asia-sharing-and-learning-programme.github.io</span></div><div class="sd-scr"></div>
       <svg class="sd-cur" viewBox="0 0 18 22"><path d="M1 1l15 11-6.5 1.2L13 20l-3 1.3-3.4-6.8L1 18z" fill="#fff" stroke="#000" stroke-width="1.4" stroke-linejoin="round"/></svg></div>
     <div class="sd-foot"><p class="sd-cap" aria-live="off"></p><div class="sd-dots"></div><div class="sd-ctl"><button type="button" data-c="play"></button></div></div></div>`;
@@ -3751,7 +3901,8 @@ function signinDemo(box) {
     box.querySelectorAll(".sd-tabs button").forEach(b => b.setAttribute("aria-selected", b.dataset.flow === n ? "true" : "false"));
     if (RM) { idx = from; finalState(from); setBtn(); } else loop(from);
   }
-  box.querySelectorAll(".sd-tabs button").forEach(b => b.onclick = () => { playing = !RM; load(b.dataset.flow); });
+  box.querySelectorAll(".sd-tabs button").forEach(b => b.onclick = () => { playing = !RM; load(b.dataset.flow);
+    const g = document.querySelector(`[data-sirole="${b.dataset.flow}"]`); if (g && g.getAttribute("aria-selected") !== "true") g.click(); });
   ctl.onclick = () => {
     if (RM) { idx = (idx + 1) % FLOWS[name].length; finalState(idx); return; }
     playing = !playing; setBtn();
@@ -4201,6 +4352,9 @@ function buildMenus() {
 
 // ---- motion: reveal sections and cards as they scroll into view, with a few calm variations ----
 let rvTick = 0, rvStop = () => {};
+// thematic and strength cards: their pictures move only while on screen
+const LIVE_IO = "IntersectionObserver" in window ? new IntersectionObserver(es => es.forEach(e => e.target.classList.toggle("live", e.isIntersecting)), { threshold: .2 }) : null;
+function liveCards(root) { root.querySelectorAll(".gv-card").forEach(c => LIVE_IO ? LIVE_IO.observe(c) : c.classList.add("live")); }
 function reveal(root) {
   rvStop();
   if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
@@ -4235,6 +4389,7 @@ function route() {
   document.body.classList.toggle("is-home", !p);
   pendingMaps.forEach(f => f()); pendingMaps = [];
   if (p === "console") mountSignin(); else reveal($("view"));
+  liveCards($("view"));
   const nav = p === "zone" || p === "cwg" || p === "territory" || p === "cwgs" || p === "group" ? "groups" : p === "history" ? "about" : p === "newsletter" || p === "update" || p === "programmatic" ? "updates" : p;
   document.querySelectorAll("[data-nav]").forEach(x => x.classList.toggle("on", x.dataset.nav === nav));
   $("menu").classList.remove("open"); $("menu-btn").setAttribute("aria-expanded", "false");
