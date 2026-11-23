@@ -362,6 +362,10 @@
   .office-list { list-style: none; padding: 0; margin: var(--g3) 0 0; display: grid; gap: 6px; font-size: 15px; }
   .office-list li { display: flex; gap: 10px; align-items: baseline; line-height: 1.45; }
   .office-list svg { flex: none; transform: translateY(2px); }
+  .pv-dlg { width: min(1240px, 96vw); max-width: none; max-height: 94vh; padding: 0; border: 0; border-radius: 18px; overflow: auto; background: var(--paper); color: var(--ink); }
+  .pv-dlg::backdrop { background: rgba(10, 10, 20, .55); }
+  .pv-bar { position: sticky; top: 0; z-index: 5; display: flex; gap: 12px; align-items: center; flex-wrap: wrap; padding: 12px 20px; background: #f5c400; color: #111; font-size: 14px; }
+  .pv-bar span { flex: 1 1 260px; } .pv-body { pointer-events: auto; } .pv-body .crumbs, .pv-body .pv-hide { display: none; }
   .pd-note { display: flex; gap: 12px; align-items: center; justify-content: space-between; flex-wrap: wrap; margin: var(--g4) 0 0; padding: 12px 16px; border-radius: 12px; background: color-mix(in srgb, #f5c400 22%, var(--paper)); border: 1.5px solid color-mix(in srgb, #f5c400 60%, var(--line)); font-size: 14px; }
   .con-grp + .con-grp { margin-top: var(--g3); padding-top: var(--g3); border-top: 1.5px solid var(--line); }
   .con-k { font-size: 13px; font-weight: 800; color: var(--ink-2); margin: 0 0 4px; display: flex; gap: 8px; align-items: baseline; flex-wrap: wrap; }
@@ -2057,7 +2061,7 @@ function pageTerritory(id) {
         ${sec("Technical support they can offer other territories", p.techSupport ? tidyHtml(p.techSupport) : "", "Support offers will appear here once the territory adds them.")}
       </div>
       <aside>
-        ${canTerr(t.id) ? `<a class="btn fill" style="margin-bottom:var(--g3)" href="#/console/territory/${esc(t.id)}">Edit this territory's profile</a>` : ""}
+        ${canTerr(t.id) ? `<a class="btn fill pv-hide" style="margin-bottom:var(--g3)" href="#/console/territory/${esc(t.id)}">Edit this territory's profile</a>` : ""}
         <div class="aside-box"><h2 class="h3">Contact persons</h2>${terrContactsBox(t)}</div>
         <div class="aside-box"><h2 class="h3">CD Strategy</h2><div class="stack" style="--gap:var(--g1)"><div>${statusChip(t)}</div>${t.strategyPeriod ? `<div class="small">Strategy period ${esc(t.strategyPeriod)}</div>` : ""}
           ${t.focal ? `<div class="small">CD focal person: <b style="color:var(--ink)">${esc(t.focal.name)}</b>${t.focal.role ? `, ${esc(t.focal.role)}` : ""}</div>` : ""}
@@ -2116,7 +2120,7 @@ function pageUnit(u) {
         ${sec("Technical support they can offer others", p.techSupport ? tidyHtml(p.techSupport) : "", "Support offers will appear here once they're added.")}
       </div>
       <aside>
-        ${canUnit(u.id) ? `<a class="btn fill" style="margin-bottom:var(--g3)" href="#/console/territory/${esc(u.id)}">Edit this profile</a>` : ""}
+        ${canUnit(u.id) ? `<a class="btn fill pv-hide" style="margin-bottom:var(--g3)" href="#/console/territory/${esc(u.id)}">Edit this profile</a>` : ""}
         <div class="aside-box"><h2 class="h3">Contact persons</h2>${unitContacts(u).length ? `<div>${unitContacts(u).map(c => contactHtml({ ...c, email: "" })).join("")}</div>` : `<p class="empty">Contacts will be listed here. Until then, reach ${esc(u.name)} through the ${esc(shortName(t.name))} territory or the ${esc(c)} CWG lead.</p>`}</div>
         <div class="aside-box"><h2 class="h3">${esc(OFFICIAL_NAME[t.id] || t.name)}</h2><div class="stack" style="--gap:var(--g1)">
           <p class="small" style="margin:0">${esc(u.name)} follows the territory's Community Development Strategy.</p><div>${statusChip(t)}</div>
@@ -2191,7 +2195,7 @@ function unitEditor(id, dr, noFetch) {
     ${canConU ? `<p class="small">Names and roles only: the website doesn't show contact persons' emails or phone numbers. CWG members linked to ${esc(u.name)} also show as contacts.</p>
     <div id="con-box" class="unit-con"><div class="ed-rows">${(cons.length ? cons : [{}]).map(c => fieldRow(UNIT_CON_COLS, c, [])).join("")}</div>
       <div class="ed-actions"><button type="button" class="btn sm ed-add">Add a contact</button></div></div>` : roContacts(u.contacts)}
-    <div class="ed-actions sticky"><button type="button" class="btn fill" id="terr-save">Publish ${esc(u.name)}</button><button type="button" class="btn" id="terr-draft">Save draft</button><a class="textlink" href="#/territory/${esc(u.id)}">View the page</a><span class="ed-msg" id="terr-msg" role="status"></span></div>`;
+    <div class="ed-actions sticky"><button type="button" class="btn fill" id="terr-save">Publish ${esc(u.name)}</button><button type="button" class="btn" id="terr-draft">Save draft</button><button type="button" class="btn" id="terr-preview">Preview</button><a class="textlink" href="#/territory/${esc(u.id)}">View the page</a><span class="ed-msg" id="terr-msg" role="status"></span></div>`;
   const pT = tagPicker($("p-them"), [["Thematic areas", THEME_LIST]], themesOf(p), "a thematic area", THEME_MAX), pS = tagPicker($("p-str"), STRENGTH_GROUPS, strengthsOf(p), "a strength", STRENGTH_MAX);
   if (canConU) wireRows($("con-box"), UNIT_CON_COLS, []);
   wireTidy("p-work"); wireTidy("p-tech");
@@ -3699,6 +3703,7 @@ function wireProfileDraft(target, dr, rerender, read, label) {
   const box = $("terr-editor"); box.dataset.pd = target;
   if (!dr) db.rpc("aslp_get_profile_draft", { p_target: target }).then(r => { const d = r && r.data;
     if (d && d.body && box.isConnected && box.dataset.pd === target) rerender({ ...d.body, _by: d.saved_by, _at: d.saved_at }); }, () => {});
+  const pBtn = $("terr-preview"); if (pBtn) pBtn.addEventListener("click", () => previewProfile(target, read));
   const dBtn = $("terr-draft"); if (dBtn) dBtn.addEventListener("click", async () => {
     const m = $("terr-msg"); dBtn.disabled = true; m.className = "ed-msg"; m.textContent = "Saving the draft…";
     const { error } = await db.rpc("aslp_save_profile_draft", { p_target: target, p_body: read() });
@@ -3710,6 +3715,23 @@ function wireProfileDraft(target, dr, rerender, read, label) {
     if (!confirm("Discard this draft? The published profile stays as it is.")) return;
     await db.rpc("aslp_save_profile_draft", { p_target: target, p_body: null }); rerender(null, true);
   }));
+}
+// preview: the public page as it would look with what's in the form now (nothing is saved or published)
+function previewProfile(target, read) {
+  const isU = target.startsWith("u:"), id = isU ? target.slice(2) : target, obj = isU ? anyUnitById(id) : terrs().find(x => x.id === id); if (!obj) return;
+  const d = read(), keep = { profile: obj.profile, contacts: obj.contacts, enabled: obj.enabled }, nMaps = pendingMaps.length;
+  obj.profile = { ...(obj.profile || {}), workAreas: d.workAreas, techSupport: d.techSupport, thematic: d.thematic, strengths: (d.strengths || []).join("\n") };
+  if (d.contacts) obj.contacts = d.contacts.filter(c => (c.name || "").trim()).map(c => ({ ...c, isMember: !!c.is_member, email: "" }));
+  if (isU) obj.enabled = true;
+  let html = "", mapsToDraw = []; try { html = isU ? pageUnit(obj) : pageTerritory(id); } finally { mapsToDraw = pendingMaps.splice(nMaps); Object.assign(obj, keep); }
+  const dlg = document.createElement("dialog"); dlg.className = "pv-dlg"; dlg.setAttribute("aria-label", "Preview");
+  dlg.innerHTML = `<div class="pv-bar"><b>Preview</b><span>This is how the page will look once it's published. Nothing has been published yet.</span><button type="button" class="btn fill sm" data-pv-close>Back to editing</button></div><div class="pv-body">${html}</div>`;
+  document.body.appendChild(dlg); dlg.showModal();
+  dlg.querySelectorAll(".pv-body a, .pv-body button").forEach(a => a.addEventListener("click", e => { e.preventDefault(); e.stopPropagation(); }));
+  dlg.querySelectorAll(".pv-body .rv, .pv-body [data-rv]").forEach(x => x.classList.add("in"));
+  try { reveal(dlg.querySelector(".pv-body")); liveCards(dlg); } catch (e) {}
+  mapsToDraw.forEach(f => { try { f(); } catch (e) {} });   // the map, drawn inside the preview
+  dlg.querySelector("[data-pv-close]").onclick = () => dlg.close(); dlg.addEventListener("close", () => dlg.remove());
 }
 const dropProfileDraft = target => db.rpc("aslp_save_profile_draft", { p_target: target, p_body: null }).then(() => {}, () => {});
 function terrEditor(id, dr, noFetch) {
@@ -3736,7 +3758,7 @@ function terrEditor(id, dr, noFetch) {
     <div id="con-box" data-max="2"><div class="ed-rows">${(cons.length ? cons : [{}]).map(c => fieldRow(CON_COLS, c, [])).join("")}</div>
       <div class="ed-actions"><button type="button" class="btn sm ed-add">Add a contact</button></div></div>` : roContacts(t.contacts)}
     <h3 class="h3" style="margin-top:var(--g5)">Update history</h3><div id="t-hist" class="small">Loading…</div>
-    <div class="ed-actions sticky"><button type="button" class="btn fill" id="terr-save">Publish ${esc(shortName(t.name))}</button><button type="button" class="btn" id="terr-draft">Save draft</button><a class="textlink" href="#/territory/${esc(t.id)}">View the page</a><span class="ed-msg" id="terr-msg" role="status"></span></div>`;
+    <div class="ed-actions sticky"><button type="button" class="btn fill" id="terr-save">Publish ${esc(shortName(t.name))}</button><button type="button" class="btn" id="terr-draft">Save draft</button><button type="button" class="btn" id="terr-preview">Preview</button><a class="textlink" href="#/territory/${esc(t.id)}">View the page</a><span class="ed-msg" id="terr-msg" role="status"></span></div>`;
   const pT = tagPicker($("p-them"), [["Thematic areas", THEME_LIST]], themesOf(p), "a thematic area", THEME_MAX), pS = tagPicker($("p-str"), STRENGTH_GROUPS, strengthsOf(p), "a strength", STRENGTH_MAX);
   if (canCon) wireRows($("con-box"), CON_COLS, []);
   terrHistory($("t-hist"), id); wireTidy("p-work"); wireTidy("p-tech");
