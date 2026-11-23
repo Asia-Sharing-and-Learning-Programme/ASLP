@@ -951,6 +951,11 @@
   .si-alt { margin-top: var(--g4); border-top: 1px solid var(--line); padding-top: var(--g3); }
   .si-alt summary { cursor: pointer; font-weight: 700; font-size: 15px; color: var(--ink-2); }
   .si-alt[open] summary { margin-bottom: var(--g2); }
+  .tidy-list { margin: 6px 0 0; padding-left: 1.15em; display: grid; gap: 4px; }
+  .tidy-list li { line-height: 1.45; }
+  .tidy-sug { margin-top: 8px; padding: 10px 14px 12px; border-radius: 10px; background: color-mix(in srgb, var(--yellow) 14%, var(--paper)); border: 1px solid color-mix(in srgb, var(--yellow) 45%, var(--line)); font-size: 14px; }
+  .tidy-h { display: grid; gap: 2px; } .tidy-h span { font-size: 12.5px; color: var(--ink-2); }
+  .tidy-sug .btn { margin-top: 8px; }
   /* Excel upload and update history */
   .xl-box { margin: 0 0 var(--g4); border: 1px solid var(--line); border-radius: 12px; padding: 12px 16px; background: var(--paper); }
   .xl-box summary { cursor: pointer; font-weight: 700; }
@@ -1855,12 +1860,12 @@ function pageTerritory(id) {
           <div class="aslp-map sm" id="map-terr" role="region" aria-label="Map of ${esc(t.name)}"></div>
           <div class="map-legend"><span>${pinSvg(color, 12)}${isRegion(t) ? "Regional" : "Territorial"} Headquarters</span>${offices.length ? `<span>${officeSvg(13)}Regional, divisional and other offices</span>` : ""}<span><span class="dot" style="background:${color};opacity:.45;border-radius:3px"></span>${(t.countries || []).length > 1 ? "Countries covered" : "Country"}</span></div>
           ${offices.length ? `<ul class="office-list">${offices.map(o => `<li>${officeSvg(14)}<span>${esc(o.name)}</span></li>`).join("")}</ul>` : ""}
-          ${p.workAreas ? `<p style="margin-top:var(--g3)">${esc(p.workAreas)}</p>` : ""}
+          ${p.workAreas ? tidyHtml(p.workAreas, "margin-top:var(--g3)") : ""}
         </div>
         ${unitsOf(t.id).length ? `<div class="t-sec"><h2 class="h3">Regions, divisions and countries</h2><div class="terr-grid">${unitRows(unitsOf(t.id))}</div></div>` : ""}
         ${sec("Thematic areas", (p.thematic || []).length ? tags(p.thematic) : "", "Thematic areas will appear here once the territory adds them.")}
         ${sec("Strengths", strengthsOf(p).length ? tags(strengthsOf(p)) : "", "Strengths will appear here once the territory adds them.")}
-        ${sec("Technical support they can offer other territories", p.techSupport ? `<p>${esc(p.techSupport)}</p>` : "", "Support offers will appear here once the territory adds them.")}
+        ${sec("Technical support they can offer other territories", p.techSupport ? tidyHtml(p.techSupport) : "", "Support offers will appear here once the territory adds them.")}
       </div>
       <aside>
         ${canTerr(t.id) ? `<a class="btn fill" style="margin-bottom:var(--g3)" href="#/console/territory/${esc(t.id)}">Edit this territory's profile</a>` : ""}
@@ -1908,10 +1913,10 @@ function pageUnit(u) {
       <div>
         <div class="t-sec"><h2 class="h3">Where they work</h2>
           <div class="aslp-map sm" id="map-terr" role="region" aria-label="Map of ${esc(u.name)}"></div>
-          ${p.workAreas ? `<p style="margin-top:var(--g3)">${esc(p.workAreas)}</p>` : ""}</div>
+          ${p.workAreas ? tidyHtml(p.workAreas, "margin-top:var(--g3)") : ""}</div>
         ${sec("Thematic areas", (p.thematic || []).length ? tags(p.thematic) : "", `Thematic areas will appear here once ${esc(u.name)} adds them.`)}
         ${sec("Strengths", strengthsOf(p).length ? tags(strengthsOf(p)) : "", `Strengths will appear here once ${esc(u.name)} adds them.`)}
-        ${sec("Technical support they can offer others", p.techSupport ? `<p>${esc(p.techSupport)}</p>` : "", "Support offers will appear here once they're added.")}
+        ${sec("Technical support they can offer others", p.techSupport ? tidyHtml(p.techSupport) : "", "Support offers will appear here once they're added.")}
       </div>
       <aside>
         ${canUnit(u.id) ? `<a class="btn fill" style="margin-bottom:var(--g3)" href="#/console/territory/${esc(u.id)}">Edit this profile</a>` : ""}
@@ -1991,6 +1996,7 @@ function unitEditor(id) {
     <div class="ed-actions sticky"><button type="button" class="btn fill" id="terr-save">Save ${esc(u.name)}</button><a class="textlink" href="#/territory/${esc(u.id)}">View the page</a><span class="ed-msg" id="terr-msg" role="status"></span></div>`;
   const pT = tagPicker($("p-them"), THEMES, p.thematic || [], "a thematic area"), pS = tagPicker($("p-str"), STRENGTHS.map(([g, xs]) => [g, xs.map(x => x[0])]), strengthsOf(p), "a strength");
   if (canConU) wireRows($("con-box"), CON_COLS, []);
+  wireTidy("p-work"); wireTidy("p-tech");
   makeDraftable(box, `unit:${id}`, () => unitEditor(id));
   $("terr-save").addEventListener("click", () => saveWith("terr-save", "terr-msg", () => tpCheck(pT.value(), pS.value()) ? Promise.resolve({ error: { message: tpCheck(pT.value(), pS.value()) } }) : db.rpc("aslp_save_unit", { p_id: id,
     p_profile: { workAreas: $("p-work").value.trim(), thematic: pT.value(), strengths: pS.value().join("\n"), techSupport: $("p-tech").value.trim() },
@@ -2440,18 +2446,24 @@ async function groupPDF(key, btn) {
       doc.text(SITE_URL.replace(/^https:\/\//, "") + "#/group/" + key, PW - M, 290, { align: "right" });
       return { doc, y };
     };
-    // the largest text that fits; then share whatever space is left between the sections, so the page is evenly filled
-    const LIMIT = 266, tries = [];
-    // readable text comes first: the diagram gets shorter before the text gets smaller; very full pages drop the roles list before the text goes below 86%
-    for (let sc = 1.3; sc >= .86; sc -= .04) for (const vs of [1, .86, .72, .62]) tries.push([+sc.toFixed(2), vs, false]);
-    for (let sc = 1.1; sc >= .8; sc -= .04) for (const vs of [.86, .72, .62]) tries.push([+sc.toFixed(2), vs, true]);
-    let out = null, pick = null;
-    for (const [sc, vs, lite] of tries) { out = await build(sc, vs, 0, false, lite); if (out.y <= LIMIT) { pick = [sc, vs, lite]; break; } }
-
+    // fill the page: find the largest text that fits (in fine steps), then share what's left between the sections, so there's no empty space above the footer.
+    // Readable text comes first: the diagram gets shorter before the text gets smaller, and a very full page drops the roles list rather than going below 84%.
+    const LIMIT = 266, MIN = .84;
+    const fits = async (sc, vs, lite) => (await build(sc, vs, 0, false, lite)).y <= LIMIT;
+    const maxSc = async (vs, lite) => { let lo = .6, hi = 1.6; if (!(await fits(lo, vs, lite))) return 0; if (await fits(hi, vs, lite)) return hi;
+      for (let k = 0; k < 8; k++) { const m = (lo + hi) / 2; if (await fits(m, vs, lite)) lo = m; else hi = m; } return lo; };
+    let pick = null;
+    for (const lite of [false, true]) {
+      for (const vs of [1, .86, .72, .62]) { const sc = await maxSc(vs, lite); if (sc >= MIN || (lite && sc >= .7)) { pick = [sc, vs, lite]; break; } }
+      if (pick) break;
+    }
+    let out;
     if (pick) {
+      if (pick[1] === 1) { const big = await maxSc(1.2, pick[2]); if (big >= pick[0] - .02) pick = [big, 1.2, pick[2]]; }   // room to spare: a taller diagram as well
+      out = await build(pick[0], pick[1], 0, false, pick[2]);
       const nSec = 3 + ((g.members || []).length > 5 || (key === "apsg" && (g.members || []).length) ? 1 : 0) + (DIAGRAMS[key] ? 2 : 0);
-      const extra = Math.min(10, (LIMIT - out.y) / nSec);
-      if (extra > 0.5) out = await build(pick[0], pick[1], extra, false, pick[2]);
+      const extra = (LIMIT - out.y) / nSec;
+      if (extra > 0.3) out = await build(pick[0], pick[1], extra, false, pick[2]);
     } else {   // very long: drop the footer shapes and use the space down to the footer line
       for (let sc = .76; sc >= .6; sc -= .04) { out = await build(+sc.toFixed(2), .7, 0, true, true); if (out.y <= 281) break; }
     }
@@ -3253,6 +3265,47 @@ function memEditor(c) {
   makeDraftable(box, `mem:${c}`, () => memEditor(c));
   $("mem-save").addEventListener("click", () => saveWith("mem-save", "mem-msg", () => db.rpc("aslp_set_cwg_members", { p_cwg: c, p_items: readRows(box) }), `${c} members saved.`));
 }
+// ---- tidier wording for free-text profile fields: a clean list, consistent capitals and common phrasing fixes (built in, no outside service) ----
+const TIDY_FIX = [
+  [/\bchild[\s-]rights?\b/gi, "child rights"], [/\bmulti[\s-]?donors?\b/gi, "multi-donor"], [/\bmulti[\s-]?sector(al)?\b/gi, "multi-sector$1"],
+  [/\bmajority[\s-]muslim\b/gi, "Muslim-majority"], [/\bmajority[\s-]christian\b/gi, "Christian-majority"], [/\bmajority[\s-]hindu\b/gi, "Hindu-majority"], [/\bmajority[\s-]buddhist\b/gi, "Buddhist-majority"],
+  [/\bfaith[\s-]based\b/gi, "faith-based"], [/\bcommunity[\s-]based\b/gi, "community-based"], [/\bevidence[\s-]based\b/gi, "evidence-based"], [/\bself[\s-]help\b/gi, "self-help"],
+  [/\bngos?\b/gi, m => m.toUpperCase().replace(/S$/, "s")], [/\b(drr|wash|meal|gbv|gedsi|cbo|cbos|psea|psychosocial)\b/gi, m => /psychosocial/i.test(m) ? "psychosocial" : m.toUpperCase().replace(/S$/, "s")],
+  [/\bm\s*&\s*e\b/gi, "M&E"], [/\s+&\s+/g, " and "], [/\betc\.?$/i, ""], [/\s{2,}/g, " "]];
+const tidyOne = p => {
+  p = String(p).trim().replace(/^[-–—•*·▪●◦•]+\s*|^\d+[.)]\s+/, "").replace(/[.,;:\s]+$/, "");
+  TIDY_FIX.forEach(([r, s]) => { p = p.replace(r, s); });
+  // "Social institution - child rights focus" → "Social institutions with a child rights focus"
+  p = p.replace(/^(.+?)\s*[-–—:]\s*(.{3,40}?)\s+focus(ed)?$/i, (m, a, b) => `${a} with a ${b.toLowerCase()} focus`)
+       .replace(/\s+[-–—]\s+/, ": ").trim();
+  return p ? p.charAt(0).toUpperCase() + p.slice(1) : "";
+};
+function tidyItems(t) {
+  t = String(t || "").trim(); if (!t) return [];
+  let parts = /\n/.test(t) ? t.split(/\n+/) : /;/.test(t) ? t.split(";") : [t];
+  // a single line of short phrases separated by commas becomes a list; real sentences stay as they are
+  if (parts.length === 1 && !/[.!?]\s+\S/.test(t)) { const cs = t.split(/,(?![^()]*\))\s*/); if (cs.length > 1 && cs.every(x => x.trim().split(/\s+/).length <= 9)) parts = cs; }
+  const seen = new Set();
+  return parts.map(tidyOne).filter(x => x && !seen.has(x.toLowerCase()) && seen.add(x.toLowerCase()));
+}
+// what the website shows: a list when there are several items, else the text with a capital letter
+const tidyHtml = (t, style = "") => { const xs = tidyItems(t); if (!xs.length) return "";
+  return xs.length > 1 ? `<ul class="tidy-list"${style ? ` style="${style}"` : ""}>${xs.map(x => `<li>${esc(x)}</li>`).join("")}</ul>` : `<p${style ? ` style="${style}"` : ""}>${esc(xs[0])}${/[.!?]$/.test(xs[0]) ? "" : "."}</p>`; };
+// in the editor: suggest the tidier wording under the box, with a button to use it
+function wireTidy(id) {
+  const ta = $(id); if (!ta) return;
+  const box = document.createElement("div"); box.className = "tidy-sug"; box.hidden = true; ta.insertAdjacentElement("afterend", box);
+  const show = () => {
+    const xs = tidyItems(ta.value), out = xs.join("\n");
+    if (!xs.length || out === ta.value.trim()) { box.hidden = true; return; }
+    box.hidden = false;
+    box.innerHTML = `<div class="tidy-h"><b>Suggested wording</b><span>This is how the website will show it. Use it as it is, or keep your own.</span></div>
+      ${xs.length > 1 ? `<ul class="tidy-list">${xs.map(x => `<li>${esc(x)}</li>`).join("")}</ul>` : `<p>${esc(xs[0])}</p>`}
+      <button type="button" class="btn sm">Use this wording</button>`;
+    box.querySelector("button").onclick = () => { ta.value = out; ta.dispatchEvent(new Event("input", { bubbles: true })); box.hidden = true; ta.focus(); };
+  };
+  let t; ta.addEventListener("input", () => { clearTimeout(t); t = setTimeout(show, 600); }); show();
+}
 // ---- console: update several territory profiles at once from the Excel template (admins and CWG leads) ----
 const XL_TPL = "templates/ASLP-Territory-Profiles-Template.xlsx";
 const xlText = c => { let v = c && c.value; if (v == null) return ""; if (v instanceof Date) return v.toISOString().slice(0, 10);
@@ -3354,7 +3407,7 @@ function terrEditor(id) {
     <div class="ed-actions sticky"><button type="button" class="btn fill" id="terr-save">Save ${esc(shortName(t.name))}</button><a class="textlink" href="#/territory/${esc(t.id)}">View the page</a><span class="ed-msg" id="terr-msg" role="status"></span></div>`;
   const pT = tagPicker($("p-them"), THEMES, p.thematic || [], "a thematic area"), pS = tagPicker($("p-str"), STRENGTHS.map(([g, xs]) => [g, xs.map(x => x[0])]), strengthsOf(p), "a strength");
   if (canCon) wireRows($("con-box"), CON_COLS, []);
-  terrHistory($("t-hist"), id);
+  terrHistory($("t-hist"), id); wireTidy("p-work"); wireTidy("p-tech");
   makeDraftable(box, `terr:${id}`, () => terrEditor(id));
   $("terr-save").addEventListener("click", () => saveWith("terr-save", "terr-msg", async () => {
     const tpBad = tpCheck(pT.value(), pS.value()); if (tpBad) return { error: { message: tpBad } };
