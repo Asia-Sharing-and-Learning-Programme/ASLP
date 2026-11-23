@@ -68,9 +68,10 @@
     function signInView(msg, cls) {
       box.innerHTML = '<form class="pin" novalidate>' + emailField() +
         '<label for="pin-pin">Your PIN</label><input type="password" id="pin-pin" autocomplete="current-password" placeholder="Your PIN">' +
-        '<div class="pin-go"><button type="submit" class="pin-btn" id="pin-in">Sign in</button><button type="button" class="pin-link" id="pin-first">First time? Set up your PIN</button><button type="button" class="pin-link" id="pin-forgot">Forgot your PIN?</button></div>' +
+        '<div class="pin-go"><button type="submit" class="pin-btn" id="pin-in">Sign in</button><button type="button" class="pin-link" id="pin-first">First time? Set up your PIN</button><button type="button" class="pin-link" id="pin-forgot">Forgot your PIN?</button><button type="button" class="pin-link" id="pin-wa" hidden>Get a sign-in code on WhatsApp</button></div>' +
         '<div class="pin-msg ' + (cls || '') + '" role="status" id="pin-msg">' + (msg || '') + '</div></form>';
-      wire({ 'pin-first': function () { setView(); }, 'pin-forgot': function () { forgotView(); } });
+      wire({ 'pin-first': function () { setView(); }, 'pin-forgot': function () { forgotView(); }, 'pin-wa': function () { waView(); } });
+      waOn(db).then(function (on) { var w = box.querySelector('#pin-wa'); if (w) w.hidden = !on; });
       box.querySelector('form').onsubmit = async function (ev) {
         ev.preventDefault(); grab();
         var pin = box.querySelector('#pin-pin').value;
@@ -147,9 +148,9 @@
       box.innerHTML = '<form class="pin" novalidate><p class="pin-k">Add your Gmail to reset your PIN</p><h3>You haven’t added a Gmail yet</h3>' +
         '<p class="pin-note">Add one now. Your CWG lead or an admin approves it (they get an email). Then we email a link to that Gmail, and you choose a new PIN. From then on, sign-in emails reach you there quickly.</p>' +
         '<label for="pin-g">Your Gmail</label><input type="email" id="pin-g" autocomplete="email" placeholder="yourname@gmail.com">' +
-        '<div class="pin-go"><button type="submit" class="pin-btn" id="pin-gsend">Send for approval</button><button type="button" class="pin-link" id="pin-new">Or choose a new PIN for approval instead</button><button type="button" class="pin-link" id="pin-back">Back to sign in</button></div>' +
+        '<div class="pin-go"><button type="submit" class="pin-btn" id="pin-gsend">Send for approval</button><button type="button" class="pin-link" id="pin-nogmail">I\u2019d rather not add a Gmail</button><button type="button" class="pin-link" id="pin-back">Back to sign in</button></div>' +
         '<div class="pin-msg" role="status" id="pin-msg"></div></form>';
-      wire({ 'pin-back': function () { signInView(); }, 'pin-new': function () { setView(true); } });
+      wire({ 'pin-back': function () { signInView(); }, 'pin-nogmail': function () { leadCodeView(); } });
       box.querySelector('form').onsubmit = async function (ev) {
         ev.preventDefault(); var g = norm(box.querySelector('#pin-g').value);
         if (!okGmail(g)) return say('Please enter your Gmail address (ending in @gmail.com).', 'err');
@@ -160,7 +161,95 @@
         signInView('<b>Sent for approval.</b> ' + (d.notified ? 'We’ve emailed your CWG lead and the admins. ' : '') + 'Once one of them approves it, a link to choose a new PIN arrives in <b>' + esc(g) + '</b>.', 'ok');
       };
     }
+    // no Gmail wanted: a one-time code goes to the person's CWG lead and the admins, who pass it on (valid 1 hour)
+    function leadCodeView() {
+      box.innerHTML = '<form class="pin" novalidate><p class="pin-k">Forgot your PIN, without a Gmail</p><h3>Get a one-time code from your CWG lead</h3>' +
+        '<p class="pin-note">We\u2019ll email a one-time code to your CWG lead and the ASLP admins (for admins and CWG leads: the admins). Contact one of them to get it. The code works for 1 hour. With it, you choose a new PIN here.</p>' +
+        '<div class="pin-go"><button type="submit" class="pin-btn" id="pin-lc">Send the code to my CWG lead</button><button type="button" class="pin-link" id="pin-have">I already have a code</button><button type="button" class="pin-link" id="pin-back">Back to sign in</button></div>' +
+        '<div class="pin-msg" role="status" id="pin-msg"></div></form>';
+      wire({ 'pin-back': function () { signInView(); }, 'pin-have': function () { codeResetView(); } });
+      box.querySelector('form').onsubmit = async function (ev) {
+        ev.preventDefault(); if (!okEmail(email)) return forgotView();
+        var b = box.querySelector('#pin-lc'); b.disabled = true; say('Sending\u2026');
+        var r = await fn(db, 'aslp-signin', { action: 'code_request', email: email }); b.disabled = false;
+        var d = (r && r.data) || {};
+        if (d.ok) return codeResetView('<b>Code sent.</b> We\u2019ve emailed a one-time code to your CWG lead and the admins. Contact one of them for it. It works until <b>' + hhmm(d.expires_at) + '</b>.');
+        if (d.reason === 'active') return codeResetView('A code was already sent to your CWG lead and the admins. It works until <b>' + hhmm(d.expires_at) + '</b>. You can ask for a new one after that.');
+        say(d.reason === 'not_registered' ? NOT_REG : d.reason === 'not_sent' ? 'We couldn\u2019t email your CWG lead or the admins. Please contact them or the ASLP team directly.' : 'That didn\u2019t work. Please try again.', 'err');
+      };
+    }
+    function codeResetView(note) {
+      box.innerHTML = '<form class="pin" novalidate><p class="pin-k">Forgot your PIN, without a Gmail</p>' + (note ? '<p class="pin-note" style="margin-bottom:6px">' + note + '</p>' : '') + emailField() +
+        '<label for="pin-oc">One-time code from your CWG lead or an admin</label><input type="text" id="pin-oc" inputmode="numeric" autocomplete="one-time-code" placeholder="6 digits">' +
+        '<div class="pin-row"><div><label for="pin-a">New PIN</label><input type="password" id="pin-a" autocomplete="new-password" placeholder="At least 6 characters"></div><div><label for="pin-b">Type it again</label><input type="password" id="pin-b" autocomplete="new-password"></div></div>' +
+        '<div class="pin-go"><button type="submit" class="pin-btn" id="pin-oset">Set my new PIN</button><button type="button" class="pin-link" id="pin-again">Ask for a code</button><button type="button" class="pin-link" id="pin-back">Back to sign in</button></div>' +
+        '<div class="pin-msg" role="status" id="pin-msg"></div></form>';
+      wire({ 'pin-back': function () { signInView(); }, 'pin-again': function () { leadCodeView(); } });
+      box.querySelector('form').onsubmit = async function (ev) {
+        ev.preventDefault(); grab();
+        var c = box.querySelector('#pin-oc').value.replace(/\s+/g, ''), a = box.querySelector('#pin-a').value, b2 = box.querySelector('#pin-b').value;
+        if (!okEmail(email)) return say('Please enter your registered email.', 'err');
+        if (!/^\d{6}$/.test(c)) return say('Please type the 6-digit code.', 'err');
+        var bad = pinCheck(a, b2); if (bad) return say(bad, 'err');
+        var btn = box.querySelector('#pin-oset'); btn.disabled = true; say('Checking\u2026');
+        var r = await fn(db, 'aslp-signin', { action: 'code_reset', email: email, code: c, pin: a });
+        var d = (r && r.data) || {};
+        if (!d.ok) { btn.disabled = false; return say(d.reason === 'wrong' ? 'That code isn\u2019t right. ' + (d.left > 0 ? d.left + ' more ' + (d.left === 1 ? 'try' : 'tries') + '.' : 'Please ask for a new code.') : d.reason === 'locked' ? 'Too many wrong tries. Please ask for a new code after this one runs out.' : d.reason === 'no_code' ? 'There\u2019s no valid code for this email: it may have run out or been used. Ask for a new one.' : 'That didn\u2019t work. Please try again.', 'err'); }
+        remember(); say('New PIN saved. Signing you in\u2026', 'ok');
+        var si = await db.auth.signInWithPassword({ email: d.email || email, password: a }); btn.disabled = false;
+        if (si.error) return signInView('<b>New PIN saved.</b> Sign in with your email and new PIN.', 'ok');
+        if (opts.onSignedIn) opts.onSignedIn(email);
+      };
+    }
+    // WhatsApp: a sign-in code and link to the number the person saved in their console
+    function waView() {
+      box.innerHTML = '<form class="pin" novalidate><p class="pin-k">Sign in with WhatsApp</p>' + emailField() +
+        '<p class="pin-note">We\u2019ll send a sign-in code and link to the WhatsApp number you saved in your console. No number saved yet? Sign in another way once, then add it under <b>My PIN</b>.</p>' +
+        '<div class="pin-go"><button type="submit" class="pin-btn" id="pin-wsend">Send it to my WhatsApp</button><button type="button" class="pin-link" id="pin-back">Back to sign in</button></div>' +
+        '<div class="pin-msg" role="status" id="pin-msg"></div></form>';
+      wire({ 'pin-back': function () { signInView(); } });
+      box.querySelector('form').onsubmit = async function (ev) {
+        ev.preventDefault(); grab(); if (!okEmail(email)) return say('Please enter your registered email.', 'err');
+        var b = box.querySelector('#pin-wsend'); b.disabled = true; say('Sending\u2026'); remember();
+        var r = await fn(db, 'aslp-signin', { action: 'wa_send', email: email, redirect: location.origin + location.pathname }); b.disabled = false;
+        var d = (r && r.data) || {};
+        if (d.ok) return waCodeView(d.to);
+        say(d.reason === 'no_number' ? 'You haven\u2019t saved a WhatsApp number yet. Sign in another way once, then add it in your console under My PIN.' : d.reason === 'not_registered' ? NOT_REG : d.reason === 'wa_off' ? 'WhatsApp sign-in isn\u2019t switched on yet.' : d.reason === 'limit' ? 'You\u2019ve asked several times this hour. Please try again a little later.' : 'We couldn\u2019t send the WhatsApp message. Please try another way.', 'err');
+      };
+    }
+    function waCodeView(to) {
+      box.innerHTML = '<form class="pin" novalidate><p class="pin-k">Check WhatsApp</p><h3>We\u2019ve sent a code to ' + esc(to) + '</h3>' +
+        '<p class="pin-note">Type the code here, or open the link in the message on this device.</p>' +
+        '<label for="pin-code">Code from WhatsApp</label><input type="text" id="pin-code" inputmode="numeric" autocomplete="one-time-code" placeholder="123456">' +
+        '<div class="pin-go"><button type="submit" class="pin-btn" id="pin-cgo">Sign in</button><button type="button" class="pin-link" id="pin-back">Back to sign in</button></div>' +
+        '<div class="pin-msg" role="status" id="pin-msg"></div></form>';
+      wire({ 'pin-back': function () { signInView(); } });
+      box.querySelector('form').onsubmit = async function (ev) {
+        ev.preventDefault(); var t = box.querySelector('#pin-code').value.replace(/\s+/g, '');
+        if (!/^\d{6,10}$/.test(t)) return say('Please type the code from WhatsApp (numbers only).', 'err');
+        var b = box.querySelector('#pin-cgo'); b.disabled = true; say('Checking\u2026');
+        var r = await fn(db, 'aslp-signin', { action: 'verify', channel: 'wa', email: email, token: t }); var d = (r && r.data) || {};
+        var ok = d.ok && d.session && !(await db.auth.setSession(d.session)).error; b.disabled = false;
+        if (!ok) return say('That code didn\u2019t work. It may have expired or already been used.', 'err');
+        say('Signed in.', 'ok'); if (opts.onSignedIn) opts.onSignedIn(email);
+      };
+    }
     signInView();
+  }
+  var hhmm = function (t) { try { return new Date(t).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }); } catch (e) { return ''; } };
+  var _wa = null; function waOn(db) { if (!_wa) _wa = db.rpc('aslp_wa_enabled').then(function (r) { return !!(r && r.data); }, function () { return false; }); return _wa; }
+  // console: the person's WhatsApp number (saved once, only while signed in)
+  async function waManager(box, db) {
+    if (!box) return; var r = await db.rpc('aslp_my_whatsapp'); var s = (r && r.data) || {};
+    box.innerHTML = '<form class="pin" novalidate><p class="pin-note" style="margin:0 0 6px">' + (s.ready ? 'Get sign-in codes and links on WhatsApp instead of email.' : 'WhatsApp sign-in isn\u2019t switched on yet. Save your number now and it will work once it is.') + ' Use the full number with its country code.</p>' +
+      '<label for="wa-in">Your WhatsApp number</label><input type="tel" id="wa-in" autocomplete="tel" placeholder="+63 917 123 4567" value="' + (s.number ? '+' + esc(s.number) : '') + '">' +
+      '<div class="pin-go"><button type="submit" class="pin-btn" id="wa-save">Save</button>' + (s.number ? '<button type="button" class="pin-link" id="wa-rm">Remove it</button>' : '') + '</div><div class="pin-msg" role="status" id="wa-msg"></div></form>';
+    var m = box.querySelector('#wa-msg');
+    var save = async function (v) { m.className = 'pin-msg'; m.textContent = 'Saving\u2026'; var x = await db.rpc('aslp_set_whatsapp', { p_number: v });
+      if (x.error) { m.className = 'pin-msg err'; m.textContent = (x.error.message || '').replace(/^.*?:\s*/, '') || 'That didn\u2019t work.'; return; }
+      if (!v) return waManager(box, db); m.className = 'pin-msg ok'; m.textContent = 'Saved.'; };
+    box.querySelector('form').onsubmit = function (ev) { ev.preventDefault(); save(box.querySelector('#wa-in').value); };
+    var rm = box.querySelector('#wa-rm'); if (rm) rm.onclick = function () { save(''); };
   }
 
   // ---- after signing in: choose a new PIN if a reset is due; otherwise finish setting up (PIN, then Gmail) ----
@@ -243,5 +332,5 @@
     if (s.via_alt) { box.innerHTML = '<p class="pin-note">You signed in through your Gmail, <b>' + esc(s.alt || '') + '</b>. To change it, sign in with your registered email and PIN.</p>'; return; }
     altForm(box, db, s.alt || '', null, false);
   }
-  window.ASLPPin = { mount: mount, sendEmail: sendEmail, verifyCode: verifyCode, setMyPin: setMyPin, altPrompt: altPrompt, altManager: altManager };
+  window.ASLPPin = { mount: mount, sendEmail: sendEmail, verifyCode: verifyCode, setMyPin: setMyPin, altPrompt: altPrompt, altManager: altManager, waManager: waManager };
 })();

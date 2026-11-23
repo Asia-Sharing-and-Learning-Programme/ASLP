@@ -1196,7 +1196,7 @@ const V = () => { const v = (data && data.viewer) || {};
 // ---- view-only accounts: everything shows, nothing can be changed ----
 const RO_OK = "[data-jump],[data-goto],[data-tour],[data-tn],#tour-end,#si-out,[data-ue],#up-new,#ue-cancel,#t-pick,#g-pick,.ctabs a,a[href],[data-ro-ok]";
 const inCon = () => /^#\/console/.test(location.hash);
-const roZone = el => !el.closest("#alt-box, #my-pin, .alt-ov") && ((inCon() && el.closest("#view")) || el.closest("[data-uap-page]"));
+const roZone = el => !el.closest("#alt-box, #wa-box, #my-pin, .alt-ov") && ((inCon() && el.closest("#view")) || el.closest("[data-uap-page]"));
 function roNote() {
   let t = $("ro-toast"); if (!t) { t = document.createElement("div"); t.id = "ro-toast"; t.className = "hello-toast"; t.setAttribute("role", "status"); document.body.appendChild(t); }
   t.innerHTML = `<b>View only.</b> Your account can see everything but can't change anything.`;
@@ -1206,7 +1206,7 @@ function roLock() {
   const on = !!(V().ro && inCon()); if (document.body.classList.contains("view-only") !== on) document.body.classList.toggle("view-only", on);
   if (!on) return;
   document.querySelectorAll("#view input, #view textarea, #view select, #view [contenteditable]").forEach(el => {
-    if (el.matches(RO_OK) || el.dataset.roLocked || el.closest("#alt-box, #my-pin")) return; el.dataset.roLocked = "1";
+    if (el.matches(RO_OK) || el.dataset.roLocked || el.closest("#alt-box, #wa-box, #my-pin")) return; el.dataset.roLocked = "1";
     if (el.isContentEditable) el.contentEditable = "false";
     else if (el.tagName === "TEXTAREA" || (el.tagName === "INPUT" && /^(text|email|url|date|search|number|tel|)$/.test(el.type))) el.readOnly = true;
     else el.disabled = true;
@@ -2421,7 +2421,8 @@ function consoleSignin() {
         <li><b>Finish setting up.</b><span>Once you're in, the site asks you to choose a PIN (if you haven't) and, if you like, to add your Gmail. Gmail gets sign-in emails fast and lets you reset a forgotten PIN yourself.</span></li>
         <li><b>Next time.</b><span>Just your email and PIN, on any of the three sites.</span></li>
       </ol>
-      <div class="si-forgot"><b>Forgot your PIN?</b><span>Select <b>Forgot your PIN?</b>. If you added a Gmail, a reset link goes there. If not, add your Gmail; once your CWG lead or an admin approves it, the reset link goes to it.</span></div>
+      <div class="si-forgot"><b>Forgot your PIN?</b><span>Select <b>Forgot your PIN?</b>. If you added a Gmail, a reset link goes there. If not, you can add your Gmail (your CWG lead or an admin approves it, then the link goes there), or get a one-time code: it's emailed to your CWG lead and the admins, works for 1 hour, and lets you choose a new PIN.</span></div>
+      <div class="si-forgot"><b>Prefer WhatsApp?</b><span>Once you're signed in, save your WhatsApp number under <b>My PIN</b>. Then choose <b>Get a sign-in code on WhatsApp</b> when you sign in.</span></div>
     </aside></div>`;
 }
 // ---- console welcome: a greeting and, in plain steps, what this person's access lets them do ----
@@ -2656,6 +2657,8 @@ function pageConsole(a, b) {
       <p class="small">You sign in with your email and PIN on this website, the Calendar and CD Strategies. Change it here any time. You're signed in, so no approval is needed.</p>
       <h3 class="h3" style="margin-top:var(--g3)">Your Gmail for sign-in emails</h3>
       <div id="alt-box" style="max-width:560px" data-ro-zone></div>
+      <h3 class="h3" style="margin-top:var(--g4)">Your WhatsApp number</h3>
+      <div id="wa-box" style="max-width:560px"></div>
       <h3 class="h3" style="margin-top:var(--g4)">Change your PIN</h3>
       <form id="my-pin" class="ed-grid" autocomplete="off" style="max-width:560px">
         <label><span>New PIN</span><input type="password" id="mp-a" autocomplete="new-password" data-ro-ok placeholder="At least 6 characters"></label>
@@ -3094,6 +3097,13 @@ async function accessEditor() {
     <h3 class="h3" style="margin-top:var(--g4)">View-only accounts</h3>
     <p class="small">A viewer can sign in and see everything an admin sees, on this website, the Calendar and CD Strategies, except who the admins and viewers are. They can't change, post, approve or delete anything.</p>
     <div class="xa-rows">${[1, 2, 3, 4, 5].map(i => xaRow("viewer", i, "Viewer")).join("")}</div>
+    <h3 class="h3" style="margin-top:var(--g4)">WhatsApp sign-in</h3>
+    <p class="small">Sends sign-in codes and links by WhatsApp through your Brevo account. First connect a WhatsApp Business number in Brevo and get a message template approved (see the note in your chat with Claude). Then enter the sender number and template ID here and switch it on.</p>
+    <div class="ed-grid" style="max-width:760px">
+      <label class="ac-row" style="grid-column:1/-1"><input type="checkbox" id="ac-wa-on" ${(st.whatsapp || {}).enabled ? "checked" : ""}> <span>Offer WhatsApp sign-in</span></label>
+      <label><span>Sender WhatsApp number (with country code)</span><input type="tel" id="ac-wa-sender" value="${esc((st.whatsapp || {}).sender ? "+" + st.whatsapp.sender : "")}" placeholder="+41 79 123 45 67"></label>
+      <label><span>Brevo template ID</span><input type="text" id="ac-wa-tpl" inputmode="numeric" value="${esc((st.whatsapp || {}).template_id || "")}" placeholder="e.g. 12"></label>
+    </div>
     <h3 class="h3" style="margin-top:var(--g4)">CWG leads' alternative emails</h3>
     <p class="small">Each CWG lead can have one alternative email, for example their Gmail. It can also sign in as the lead, and it's where PIN approval requests from their CWG are emailed (to the main email if there's no alternative). Admins' approval requests go to the admins above.</p>
     <div class="xa-rows">${(a.leads || []).map(l => `<div class="xa-row"><span class="xa-n">${esc(l.cwg)}</span><label><span>Lead</span><input type="text" value="${esc(l.name ? `${l.name} · ${l.email}` : l.email)}" readonly tabindex="-1"></label>
@@ -3125,7 +3135,8 @@ async function accessEditor() {
     return (async () => {
       for (const x of altCh) { const r = await db.rpc("aslp_set_lead_alt", { p_cwg: x.dataset.leadAlt, p_email: x.value.trim().toLowerCase() }); if (r.error) return r; x.dataset.was = x.value.trim().toLowerCase(); }
       return db.rpc("aslp_set_access", { p_settings: { lead_web: $("ac-lead").checked, member_web: $("ac-member").checked, focal_cds: $("ac-focal").checked, group_editors: groupsSel, zone_coordinators: { SPEA: zc("SPEA"), SASIA: zc("SASIA") },
-      ...(V().ro ? {} : { admins: xrows("admin"), viewers: xrows("viewer") }) } }); })();
+      ...(V().ro ? {} : { admins: xrows("admin"), viewers: xrows("viewer"),
+        whatsapp: { enabled: !!($("ac-wa-on") || {}).checked, sender: ($("ac-wa-sender") || {}).value || "", template_id: ($("ac-wa-tpl") || {}).value || "" } }) } }); })();
   }, "Access saved. It applies straight away. New admins and viewers can sign in with their email now."));
 }
 // the countries, regions and divisions inside a territory, using The Salvation Army's own terms
@@ -3291,6 +3302,7 @@ async function refresh() { const { data: d, error } = await db.rpc("get_aslp_sit
 const pinApprover = v => !!((v.is_full_admin && !v.ro) || (v.lead_cwgs || []).length);
 async function pinConsole() {
   if ($("alt-box") && window.ASLPPin) ASLPPin.altManager($("alt-box"), db);
+  if ($("wa-box") && window.ASLPPin) ASLPPin.waManager($("wa-box"), db);
   const f = $("my-pin");
   if (f) f.addEventListener("submit", async e => {
     e.preventDefault(); const a = $("mp-a").value, b = $("mp-b").value, m = $("mp-msg");
