@@ -1732,12 +1732,27 @@ const STRENGTHS = [
 const STRENGTH_SRC = Object.fromEntries(STRENGTHS.flatMap(([, xs]) => xs.map(([n, y]) => [n, y])));
 const THEME_GROUP = Object.fromEntries(THEMES.flatMap(([g, xs]) => xs.map(x => [x, g])));
 const STRENGTH_GROUP = Object.fromEntries(STRENGTHS.flatMap(([g, xs]) => xs.map(([x]) => [x, g])));
-const strengthsOf = p => String((p && p.strengths) || "").split("\n").map(x => x.trim()).filter(Boolean);
+// short, grouped lists for profiles; the detailed options from before map onto them
+const THEME_LIST = ["Health", "WASH", "Education", "Livelihoods", "Food security and agriculture", "Climate and environment", "Disasters and emergencies", "Anti-human trafficking", "Protection and safeguarding", "Gender equality", "Children, youth and families", "Inclusion", "Community development", "Capacity development and partnerships"];
+const STRENGTH_LIST = ["Faith and integrated mission", "Committed people and leadership", "Community-led approaches", "Partnerships and networks", "Systems and governance", "Technical expertise"];
+const THEME_MAX = 8, STRENGTH_MAX = 8;
+const THEME_SHORT = { "Health and wellbeing": "Health", "Water, sanitation and hygiene (WASH)": "WASH", "Education and skills": "Education", "Livelihoods and economic empowerment": "Livelihoods",
+  "Agriculture, food security and environment": "Food security and agriculture", "Disasters and emergencies": "Disasters and emergencies", "Protection, justice and peace": "Protection and safeguarding",
+  "Children, youth and families": "Children, youth and families", "Inclusion": "Inclusion", "Community development": "Community development", "Ways of working": "Capacity development and partnerships" };
+const THEME_OVR = { "Climate change adaptation and resilience": "Climate and environment", "Environmental protection and natural resources": "Climate and environment", "Renewable energy": "Climate and environment",
+  "Anti-human trafficking and modern slavery": "Anti-human trafficking", "Gender-based violence prevention": "Gender equality", "Gender equality and women's empowerment": "Gender equality" };
+const STRENGTH_SHORT = { "Faith, values and mission": "Faith and integrated mission", "People and leadership": "Committed people and leadership", "Working with communities": "Community-led approaches",
+  "Partnerships and networks": "Partnerships and networks", "Systems and governance": "Systems and governance", "Expertise to share": "Technical expertise" };
+const themeOf = x => THEME_LIST.includes(x) ? x : THEME_OVR[x] || THEME_SHORT[THEME_GROUP[x]] || null;
+const strengthOf = x => STRENGTH_LIST.includes(x) ? x : STRENGTH_SHORT[STRENGTH_GROUP[x]] || null;
+const themesOf = p => [...new Set(((p && p.thematic) || []).map(themeOf).filter(Boolean))];
+const strengthsOf = p => [...new Set(String((p && p.strengths) || "").split("\n").map(x => strengthOf(x.trim())).filter(Boolean))];
 
 // a searchable multi-pick from a standard list
 // a plain dropdown (grouped) to add items one after another, chips to remove them; 1 to 20 items
 const TP_MAX = 20;
-function tagPicker(box, groups, selected, label) {
+function tagPicker(box, groups, selected, label, max) {
+  const TP_MAX = max || 20;
   const sel = [...new Set(selected)]; const known = new Set(groups.flatMap(g => g[1]));
   const draw = focus => {
     const full = sel.length >= TP_MAX;
@@ -1755,8 +1770,8 @@ function tagPicker(box, groups, selected, label) {
   return { value: () => sel.slice() };
 }
 // 1 to 20 thematic areas and strengths before saving a profile
-const tpCheck = (th, st) => !th.length ? "Please pick at least one thematic area." : th.length > TP_MAX ? `Please keep to ${TP_MAX} thematic areas or fewer (you have ${th.length}).`
-  : !st.length ? "Please pick at least one strength." : st.length > TP_MAX ? `Please keep to ${TP_MAX} strengths or fewer (you have ${st.length}).` : "";
+const tpCheck = (th, st) => !th.length ? "Please pick at least one thematic area." : th.length > THEME_MAX ? `Please keep to ${THEME_MAX} thematic areas or fewer (you have ${th.length}).`
+  : !st.length ? "Please pick at least one strength." : st.length > STRENGTH_MAX ? `Please keep to ${STRENGTH_MAX} strengths or fewer (you have ${st.length}).` : "";
 
 // territories and switched-on regions, for the grouped views
 const placesIn = cwgs => [...terrs().filter(t => cwgs.includes((t.cwg || "").trim())).map(t => ({ id: t.id, name: shortName(OFFICIAL_NAME[t.id] || t.name), cwg: (t.cwg || "").trim(), p: t.profile || {} })),
@@ -1770,7 +1785,7 @@ function groupedView(places, groups, pick, cwgPair, emptyMsg) {
   const shared = cwgPair ? used.flatMap(([, xs]) => xs).filter(k => cwgPair.every(c => by[k].some(x => x.cwg === c))) : [];
   const head = cwgPair ? `<div class="gv-links"><b>${shared.length ? `${shared.length} ${shared.length === 1 ? "area links" : "areas link"} ${esc(cwgPair[0])} and ${esc(cwgPair[1])}` : `No shared areas between ${esc(cwgPair[0])} and ${esc(cwgPair[1])} yet`}</b>
       ${shared.length ? `<div class="gv-shared">${shared.map(k => `<a href="#gv-${esc(k.replace(/\W+/g, "-").toLowerCase())}" class="tag gv-sh">${esc(k)}</a>`).join("")}</div>` : ""}</div>` : "";
-  return head + `<div class="gv-flow">` + used.map(([g, xs]) => `<section class="gv-grp"><h3 class="h3">${esc(g)}</h3><div class="gv-grid">${xs.map(k => {
+  return head + `<div class="gv-flow">` + used.map(([g, xs]) => `<section class="gv-grp">${g ? `<h3 class="h3">${esc(g)}</h3>` : ""}<div class="gv-grid">${xs.map(k => {
       const ps = by[k], both = cwgPair && cwgPair.every(c => ps.some(x => x.cwg === c));
       return `<div class="gv-card${both ? " both" : ""}" id="gv-${esc(k.replace(/\W+/g, "-").toLowerCase())}"><div class="gv-k"><b>${esc(k)}</b><span>${ps.length} ${ps.length === 1 ? "place" : "places"}${both ? ` · links ${esc(cwgPair.join(" and "))}` : ""}</span></div>
         ${cwgPair ? `<div class="gv-cols">${cwgPair.map(c => `<div><div class="gv-c" style="--c:${CWG_COL[c]}">${esc(c)}</div>${ps.filter(x => x.cwg === c).map(placeChip).join("") || `<span class="small">None yet</span>`}</div>`).join("")}</div>`
@@ -1792,7 +1807,7 @@ function pageCwgs() {
       ${viewSwitch("cwgs", [["cwg", "By CWG"], ["theme", "By thematic area"]])}
       <div data-vpane="cwgs" data-vk2="cwg">${ZONES.map(zoneSection).join("")}</div>
       <div data-vpane="cwgs" data-vk2="theme" hidden><p class="lede gv-lede">Every territory and region in SPEA and SASIA, grouped by the thematic areas they work in. Select one to open its profile.</p>
-        ${groupedView(placesIn(cwgList()), THEMES, x => x.p.thematic || [], null, "Thematic areas will show here once territories add them to their profiles.")}</div>
+        ${groupedView(placesIn(cwgList()), [["", THEME_LIST]], x => themesOf(x.p), null, "Thematic areas will show here once territories add them to their profiles.")}</div>
     </div>`;
 }
 function pageZone(zk) {
@@ -1802,7 +1817,7 @@ function pageZone(zk) {
     <div class="wrap page-body">${viewSwitch("zone", [["cwg", "By CWG"], ["theme", "By thematic area"]])}
       <div data-vpane="zone" data-vk2="cwg">${zoneSection(z)}</div>
       <div data-vpane="zone" data-vk2="theme" hidden><p class="lede gv-lede">${esc(z.label)} territories and regions grouped by thematic area, showing where its two CWGs work on the same things.</p>
-        ${(() => { const cs = cwgList().filter(c => zoneOf(c) === z.key); return groupedView(placesIn(cs), THEMES, x => x.p.thematic || [], cs.length === 2 ? cs : null, "Thematic areas will show here once territories add them to their profiles."); })()}</div>
+        ${(() => { const cs = cwgList().filter(c => zoneOf(c) === z.key); return groupedView(placesIn(cs), [["", THEME_LIST]], x => themesOf(x.p), cs.length === 2 ? cs : null, "Thematic areas will show here once territories add them to their profiles."); })()}</div>
       <div style="margin-top:var(--g6)"><div class="aslp-map" id="map-zone" role="region" aria-label="Map of ${esc(z.label)} headquarters"></div>${zoneLegend([z.key])}</div></div>`;
 }
 
@@ -1823,11 +1838,11 @@ function pageCwg(cs) {
       <p class="lede" style="margin-bottom:var(--g6)">${esc(c)} is one of four <a class="textlink" href="#/cwgs">Cluster Working Groups</a>. Its members meet online through the year and in person every two years to share what works, build their teams' skills and shape their territories' Community Development Strategies.</p>
       <div class="row-head"><h2 class="h2">${ts.length} territories and regions</h2>${viewSwitch("cwgst", [["list", "Territories"], ["str", "By strength"]])}</div>
       <div data-vpane="cwgst" data-vk2="str" hidden><p class="lede gv-lede">${esc(c)}'s territories and regions grouped by their strengths, as named at the Asia Sharing and Learning Forums.</p>
-        ${groupedView(placesIn([c]), STRENGTHS.map(([g, xs]) => [g, xs.map(x => x[0])]), x => strengthsOf(x.p), null, "Strengths will show here once territories pick them in their profiles.")}</div>
+        ${groupedView(placesIn([c]), [["", STRENGTH_LIST]], x => strengthsOf(x.p), null, "Strengths will show here once territories pick them in their profiles.")}</div>
       <div data-vpane="cwgst" data-vk2="list" class="terr-grid">${ts.map(t => { const p = t.profile || {}, us = unitsOf(t.id).filter(u => u.cwg === c);
         return `<a class="terr-row" href="#/territory/${esc(t.id)}"><div class="nm">${esc(t.name)}</div>
           <div class="where">${t.location ? `${isRegion(t) ? "Regional" : "Territorial"} Headquarters in ${esc(t.location)}` : ""}</div>
-          ${(p.thematic || []).length ? tags(p.thematic.slice(0, 4)) : `<span class="small">Profile coming soon</span>`}</a>${unitRows(us)}`; }).join("")}${unitRows(units().filter(u => u.cwg === c && !ts.some(t => t.id === u.parent)))}</div>
+          ${themesOf(p).length ? tags(themesOf(p).slice(0, 4)) : `<span class="small">Profile coming soon</span>`}</a>${unitRows(us)}`; }).join("")}${unitRows(units().filter(u => u.cwg === c && !ts.some(t => t.id === u.parent)))}</div>
       ${(() => { const ms = membersOf(c); return `<div class="stack" style="margin-top:var(--g6)"><div class="row-head"><h2 class="h2">${esc(c)} CWG members</h2>${canCwg(c) ? `<a class="btn sm" href="#/console/cwg/${cwgSlug(c)}">Edit members</a>` : ""}</div>
         ${ms.length ? memberGroups(ms, c) : `<p class="empty">The members of ${esc(c)} will be listed here.</p>`}</div>`; })()}
       <div style="margin-top:var(--g6)"><div class="aslp-map" id="map-cwg" role="region" aria-label="Map of ${esc(c)} headquarters"></div>${z ? zoneLegend([z.key]) : ""}</div>
@@ -1864,7 +1879,7 @@ function pageTerritory(id) {
           ${p.workAreas ? tidyHtml(p.workAreas, "margin-top:var(--g3)") : ""}
         </div>
         ${unitsOf(t.id).length ? `<div class="t-sec"><h2 class="h3">Regions, divisions and countries</h2><div class="terr-grid">${unitRows(unitsOf(t.id))}</div></div>` : ""}
-        ${sec("Thematic areas", (p.thematic || []).length ? tags(p.thematic) : "", "Thematic areas will appear here once the territory adds them.")}
+        ${sec("Thematic areas", themesOf(p).length ? tags(themesOf(p)) : "", "Thematic areas will appear here once the territory adds them.")}
         ${sec("Strengths", strengthsOf(p).length ? tags(strengthsOf(p)) : "", "Strengths will appear here once the territory adds them.")}
         ${sec("Technical support they can offer other territories", p.techSupport ? tidyHtml(p.techSupport) : "", "Support offers will appear here once the territory adds them.")}
       </div>
@@ -1915,7 +1930,7 @@ function pageUnit(u) {
         <div class="t-sec"><h2 class="h3">Where they work</h2>
           <div class="aslp-map sm" id="map-terr" role="region" aria-label="Map of ${esc(u.name)}"></div>
           ${p.workAreas ? tidyHtml(p.workAreas, "margin-top:var(--g3)") : ""}</div>
-        ${sec("Thematic areas", (p.thematic || []).length ? tags(p.thematic) : "", `Thematic areas will appear here once ${esc(u.name)} adds them.`)}
+        ${sec("Thematic areas", themesOf(p).length ? tags(themesOf(p)) : "", `Thematic areas will appear here once ${esc(u.name)} adds them.`)}
         ${sec("Strengths", strengthsOf(p).length ? tags(strengthsOf(p)) : "", `Strengths will appear here once ${esc(u.name)} adds them.`)}
         ${sec("Technical support they can offer others", p.techSupport ? tidyHtml(p.techSupport) : "", "Support offers will appear here once they're added.")}
       </div>
@@ -1955,7 +1970,7 @@ function memberGroups(ms, c) {
 const unitRows = us => us.map(u => { const p = u.profile || {}, t = terrs().find(x => x.id === u.parent) || {};
   return `<a class="terr-row unit-row" href="#/territory/${esc(u.id)}"><div class="nm">${esc(u.name)} <span class="unit-tag">${esc(unitTag(u))}</span></div>
     ${u.location ? `<div class="where">Based in ${esc(u.location)}</div>` : ""}
-    ${(p.thematic || []).length ? tags(p.thematic.slice(0, 4)) : `<span class="small">Profile coming soon</span>`}</a>`; }).join("");
+    ${themesOf(p).length ? tags(themesOf(p).slice(0, 4)) : `<span class="small">Profile coming soon</span>`}</a>`; }).join("");
 // console: CWG leads and admins switch sub-unit profiles on or off
 function unitsToggles() {
   const box = $("units-editor"); if (!box) return;
@@ -1995,7 +2010,7 @@ function unitEditor(id) {
     <div id="con-box"><div class="ed-rows">${((u.contacts || []).length ? u.contacts : [{}]).map(c => fieldRow(CON_COLS, c, [])).join("")}</div>
       <div class="ed-actions"><button type="button" class="btn sm ed-add">Add a contact</button></div></div>` : roContacts(u.contacts)}
     <div class="ed-actions sticky"><button type="button" class="btn fill" id="terr-save">Save ${esc(u.name)}</button><a class="textlink" href="#/territory/${esc(u.id)}">View the page</a><span class="ed-msg" id="terr-msg" role="status"></span></div>`;
-  const pT = tagPicker($("p-them"), THEMES, p.thematic || [], "a thematic area"), pS = tagPicker($("p-str"), STRENGTHS.map(([g, xs]) => [g, xs.map(x => x[0])]), strengthsOf(p), "a strength");
+  const pT = tagPicker($("p-them"), [["Thematic areas", THEME_LIST]], themesOf(p), "a thematic area", THEME_MAX), pS = tagPicker($("p-str"), [["Strengths", STRENGTH_LIST]], strengthsOf(p), "a strength", STRENGTH_MAX);
   if (canConU) wireRows($("con-box"), CON_COLS, []);
   wireTidy("p-work"); wireTidy("p-tech");
   makeDraftable(box, `unit:${id}`, () => unitEditor(id));
@@ -3321,31 +3336,32 @@ async function xlRead(file) {
 }
 // read a CWG's territory profiles template: one entry per territory, with what the file says (the server only saves real changes)
 function xlProfiles(wb) {
-  const rows = {}, warn = [], row = id => (rows[id] = rows[id] || { territory: id });
-  const ids = new Set(terrs().map(t => t.id)), byName = Object.fromEntries(terrs().map(t => [String(t.name).toLowerCase(), t.id]));
-  const pr = wb.getWorksheet("Profiles"); if (!pr || !wb.getWorksheet("Thematic areas")) throw new Error("This isn't the territory profiles template. Download your CWG's template here and try again.");
-  pr.eachRow((r, n) => { if (n < 2) return; const id = xlText(r.getCell(1)); if (!id) return;
-    if (!ids.has(id)) return warn.push(`Profiles, row ${n}: unknown territory ID "${id}".`);
-    const w = xlText(r.getCell(4)); if (w) row(id).workAreas = xlEmpty(w); });
-  const themes = new Set(THEMES.flatMap(g => g[1])), strengths = new Set(STRENGTHS.flatMap(g => g[1].map(x => x[0])));
-  const listTab = (tab, key, known, label) => { const ws = wb.getWorksheet(tab); if (!ws) return;
-    ws.eachRow((r, n) => { if (n < 2) return; const tn = xlText(r.getCell(1)), v = xlText(r.getCell(2)); if (!tn && !v) return;
-      const id = byName[tn.toLowerCase()]; if (!id) return warn.push(`${tab}, row ${n}: ${tn ? `unknown territory "${tn}"` : "no territory picked"}, so it was left out.`);
-      if (!v) return; if (known && !known.has(v)) return warn.push(`${tab}, row ${n}: "${v}" isn't in the list of ${label}, so it was left out.`);
-      const a = (row(id)[key] = row(id)[key] || []); if (!a.includes(v)) a.push(v); }); };
-  listTab("Thematic areas", "thematic", themes, "thematic areas"); listTab("Strengths", "strengths", strengths, "strengths"); listTab("Technical support", "support", null);
-  Object.values(rows).forEach(r => { if (r.support) { r.techSupport = r.support.join("\n"); delete r.support; } });
-  const con = wb.getWorksheet("Contact persons");
-  if (con) con.eachRow((r, n) => { if (n < 2) return; const tn = xlText(r.getCell(1)), c = { rank: xlText(r.getCell(2)), name: xlText(r.getCell(3)), role: xlText(r.getCell(4)) };
-    if (!tn && !c.name && !c.role) return; const id = byName[tn.toLowerCase()];
-    if (!id) return warn.push(`Contact persons, row ${n}: ${tn ? `unknown territory "${tn}"` : "no territory picked"}, so it was left out.`);
-    if (!c.name) return warn.push(`Contact persons, row ${n}: the contact for ${tn} has no name, so it was left out.`);
-    (row(id).contacts = row(id).contacts || []).push(c); });
+  const rows = {}, warn = [], ids = new Set(terrs().map(t => t.id)), nm = id => terrName(id);
+  const ws = wb.getWorksheet("Profiles"); if (!ws || !ws.getRow(1).getCell(4).value || !/thematic/i.test(xlText(ws.getRow(1).getCell(4)))) throw new Error("This isn't the territory profiles template. Download your CWG's template here and try again.");
+  const themes = new Set(THEME_LIST), strengths = new Set(STRENGTH_LIST);
+  let id = "";
+  ws.eachRow({ includeEmpty: true }, (r, n) => { if (n < 2) return; const rid = xlText(r.getCell(1)); if (rid) id = rid; if (!id) return;
+    if (!ids.has(id)) { if (!rows["?" + id]) { rows["?" + id] = 1; warn.push(`Unknown territory ID "${id}".`); } return; }
+    const e = rows[id] = rows[id] || { territory: id, thematic: [], strengths: [], support: [], contacts: [] };
+    const w = xlText(r.getCell(3)); if (w && !("workAreas" in e)) e.workAreas = xlEmpty(w);
+    const th = xlText(r.getCell(4)); if (th) { if (!themes.has(th)) warn.push(`${nm(id)}: "${th}" isn't one of the thematic areas, so it was left out.`); else if (!e.thematic.includes(th)) e.thematic.push(th); }
+    const st = xlText(r.getCell(5)); if (st) { if (!strengths.has(st)) warn.push(`${nm(id)}: "${st}" isn't one of the strengths, so it was left out.`); else if (!e.strengths.includes(st)) e.strengths.push(st); }
+    const su = xlText(r.getCell(6)); if (su && su !== "-") e.support.push(su);
+    const c = { rank: xlText(r.getCell(7)), name: xlText(r.getCell(8)), role: xlText(r.getCell(9)) };
+    if (c.name) e.contacts.push(c); else if (c.rank || c.role) warn.push(`${nm(id)}: a contact person has no name, so it was left out.`);
+  });
+  Object.keys(rows).filter(k => k[0] === "?").forEach(k => delete rows[k]);
+  Object.values(rows).forEach(e => { const t = nm(e.territory);
+    if (!e.thematic.length) delete e.thematic; else if (e.thematic.length > THEME_MAX) warn.push(`${t}: keep to ${THEME_MAX} thematic areas.`);
+    if (!e.strengths.length) delete e.strengths;
+    if (e.support.length) { const xs = tidyItems(e.support.join("\n")); if (xs.length < 2 || xs.length > 5) warn.push(`${t}: give 2 to 5 kinds of technical support (there are ${xs.length}).`); e.techSupport = xs.join("\n"); }
+    delete e.support;
+    if (!e.contacts.length) delete e.contacts; else if (e.contacts.length > 2) warn.push(`${t}: list 1 or 2 contact persons.`); });
   // keep only what differs from the website now, so the check before saving lists real changes
   const srt = a => [...(a || [])].map(x => String(x).trim()).filter(Boolean).sort().join("|");
   Object.values(rows).forEach(r => { const t = terrs().find(x => x.id === r.territory) || {}, p = t.profile || {};
     if ("workAreas" in r && r.workAreas.trim() === String(p.workAreas || "").trim()) delete r.workAreas;
-    if (r.thematic && srt(r.thematic) === srt(p.thematic)) delete r.thematic;
+    if (r.thematic && srt(r.thematic) === srt(themesOf(p))) delete r.thematic;
     if (r.strengths && srt(r.strengths) === srt(strengthsOf(p))) delete r.strengths;
     if ("techSupport" in r && r.techSupport === tidyItems(p.techSupport || "").join("\n")) delete r.techSupport;
     if (r.contacts && r.contacts.map(c => [c.rank, c.name, c.role].join("|")).join(";") === (t.contacts || []).map(c => [c.rank || "", c.name || "", c.role || ""].join("|")).join(";")) delete r.contacts; });
@@ -3357,9 +3373,9 @@ async function xlTemplate(cwg, btn) {
   try {
     await loadScript("vendor/exceljs.min.js"); await loadScript("aslp-xl.js");
     const ts = terrs().filter(t => (t.cwg || "").trim() === cwg).sort((a, b) => a.name.localeCompare(b.name));
-    const support = [...new Set([...THEMES.flatMap(g => g[1]), ...((STRENGTHS.find(g => g[0] === "Expertise to share") || [, []])[1].map(x => x[0]))])];
-    const blob = await ASLPXL.profiles({ cwg, terrs: ts.map(t => ({ id: t.id, name: t.name, profile: t.profile || {}, contacts: t.contacts || [] })),
-      themes: THEMES.flatMap(g => g[1]), strengths: STRENGTHS.flatMap(g => g[1].map(x => x[0])), support, tidy: tidyItems });
+    const blob = await ASLPXL.profiles({ cwg, themes: THEME_LIST, strengths: STRENGTH_LIST,
+      terrs: ts.map(t => { const p = t.profile || {}; return { id: t.id, name: t.name, contacts: t.contacts || [],
+        profile: { workAreas: p.workAreas || "", thematic: themesOf(p), strengths: strengthsOf(p), support: tidyItems(p.techSupport || "") } }; }) });
     ASLPXL.save(blob, `ASLP-${cwg.replace(/\s+/g, "")}-Territory-Profiles.xlsx`);
   } catch (e) { console.error(e); alert("The template couldn't be made. Please try again."); }
   btn.disabled = false; btn.textContent = lbl;
@@ -3423,7 +3439,7 @@ function terrEditor(id) {
       <label class="full"><span>Where they work</span><textarea id="p-work" rows="3" placeholder="Areas, communities and programmes the territory works in">${esc(p.workAreas || "")}</textarea></label>
       <div class="full ed-field"><span>Thematic areas <span class="ed-hint">pick as many as apply, from the standard list</span></span><div id="p-them" class="tp"></div></div>
       <div class="full ed-field"><span>Strengths <span class="ed-hint">pick from the strengths territories named at the ASLFs, 2018 to 2025</span></span><div id="p-str" class="tp"></div></div>
-      <label><span>Technical support they can offer other territories</span><textarea id="p-tech" rows="4">${esc(p.techSupport || "")}</textarea></label>
+      <label><span>Technical support they can offer other territories <span class="ed-hint">2 to 5, one per line</span></span><textarea id="p-tech" rows="5">${esc(p.techSupport || "")}</textarea></label>
     </div>
     <h3 class="h3" style="margin-top:var(--g5)">Contact persons</h3>
     ${canCon ? `<p class="small">Names and roles only: the website doesn't show contact persons' emails or phone numbers. CWG members linked to this territory also show as contacts.</p>
@@ -3431,12 +3447,14 @@ function terrEditor(id) {
       <div class="ed-actions"><button type="button" class="btn sm ed-add">Add a contact</button></div></div>` : roContacts(t.contacts)}
     <h3 class="h3" style="margin-top:var(--g5)">Update history</h3><div id="t-hist" class="small">Loading…</div>
     <div class="ed-actions sticky"><button type="button" class="btn fill" id="terr-save">Save ${esc(shortName(t.name))}</button><a class="textlink" href="#/territory/${esc(t.id)}">View the page</a><span class="ed-msg" id="terr-msg" role="status"></span></div>`;
-  const pT = tagPicker($("p-them"), THEMES, p.thematic || [], "a thematic area"), pS = tagPicker($("p-str"), STRENGTHS.map(([g, xs]) => [g, xs.map(x => x[0])]), strengthsOf(p), "a strength");
+  const pT = tagPicker($("p-them"), [["Thematic areas", THEME_LIST]], themesOf(p), "a thematic area", THEME_MAX), pS = tagPicker($("p-str"), [["Strengths", STRENGTH_LIST]], strengthsOf(p), "a strength", STRENGTH_MAX);
   if (canCon) wireRows($("con-box"), CON_COLS, []);
   terrHistory($("t-hist"), id); wireTidy("p-work"); wireTidy("p-tech");
   makeDraftable(box, `terr:${id}`, () => terrEditor(id));
   $("terr-save").addEventListener("click", () => saveWith("terr-save", "terr-msg", async () => {
     const tpBad = tpCheck(pT.value(), pS.value()); if (tpBad) return { error: { message: tpBad } };
+    const nTs = tidyItems($("p-tech").value).length; if (nTs < 2 || nTs > 5) return { error: { message: `Please give 2 to 5 kinds of technical support, one per line (you have ${nTs}).` } };
+    if (canCon) { const nC = readRows($("con-box")).length; if (nC < 1 || nC > 2) return { error: { message: `Please list 1 or 2 contact persons (you have ${nC}).` } }; }
     if (shared) {   // shared fields go to the one record both websites use
       const hq = $("s-hq").value.trim(), ct = $("s-ctry").value.split(",").map(x => x.trim()).filter(Boolean), det = {};
       if (hq !== (t.location || "")) det.location = hq;

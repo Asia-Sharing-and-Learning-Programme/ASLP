@@ -57,33 +57,50 @@
   var RANKS = ["Commissioner", "Colonel", "Lieut-Colonel", "Major", "Captain", "Lieutenant", "Envoy", "Cadet", "Mr", "Mrs", "Ms", "Dr"];
   var BODIES = ["Territorial Executive Council", "Territorial Cabinet", "Territorial Board", "Territorial Leadership Team", "Territorial Commander", "Programme Board", "Board of Trustees (BOT)", "Regional Leadership Team", "Regional Commander", "International Headquarters"];
 
+  // one block of rows per territory: the territory's name runs down the block, and everything for it is entered beside it
+  var MED = { style: "medium", color: { argb: NAVY } };
+  function blocks(ws, terrs, n, fill1) {
+    var r = 2;
+    terrs.forEach(function (t) {
+      var r2 = r + n - 1; fill1(t, r, r2);
+      for (var c = 1; c <= ws.columnCount; c++) { var cell = ws.getCell(r2, c); cell.border = Object.assign({}, cell.border || BOX, { bottom: MED }); }
+      r = r2 + 1;
+    });
+  }
+  function merged(ws, r1, r2, c, v, edit) { ws.mergeCells(r1, c, r2, c); var cell = ws.getCell(r1, c);
+    if (edit) input(cell, v); else locked(cell, v); cell.alignment = { vertical: "top", wrapText: true }; }
+  function grey(c) { c.fill = fill(GREY); c.border = BOX; }
+
   // ---------- territory profiles ----------
-  // o: { cwg, terrs: [{id, name, profile:{workAreas, thematic[], strengths, techSupport}, contacts:[{rank,name,role}]}], themes[], strengths[], support[], tidy(text) -> items[] }
+  // o: { cwg, terrs: [{id, name, profile:{workAreas, thematic[], strengths[], support[]}, contacts:[{rank,name,role}]}], themes[], strengths[] }
   async function profiles(o) {
     var wb = new ExcelJS.Workbook(); wb.creator = "ASLP website";
-    howTo(wb, o.cwg + " territory profiles: update template", "Filled in with each territory's profile as it is now (" + new Date().toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" }) + "). Change what needs changing and upload it again.", [
-      "Profiles tab: only \"Where they work\" is typed. Leave it as it is if nothing changed. To empty it, type a single hyphen: -",
-      "Thematic areas and Strengths tabs: one row per item. Pick the territory, then the item from the dropdown. Add rows to add items; clear a row to remove that item. Each territory needs 1 to 20 of each.",
-      "Technical support tab: one row per thing the territory can offer. Pick from the dropdown, or type your own if it's not in the list.",
-      "Contact persons tab: one row per person. Pick the territory and rank; type the name and appointment. No emails or phone numbers.",
-      "For each territory, the lists you upload replace what's on the website.",
+    var N = 8, TH = 8, ST = 8, SU = 5, CO = 2;
+    howTo(wb, o.cwg + " territory profiles: update template", "Filled in with each territory's profile as it is now (" + new Date().toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" }) + "). Each territory has its own block of rows: fill in everything for it beside its name, then upload the file again.", [
+      "Where they work: type it in the territory's box. Leave it as it is if nothing changed. To empty it, type a single hyphen: -",
+      "Thematic areas: pick 1 to " + TH + " from the dropdowns, one per row.",
+      "Strengths: pick at least 1 from the dropdowns, one per row.",
+      "Technical support they can offer other territories: type 2 to " + SU + ", one per row.",
+      "Contact persons: 1 or 2 people. Pick the rank (officers only) and type the name and appointment. No emails or phone numbers.",
+      "Clear a cell to remove that item. For each territory, what you upload replaces what's on the website.",
       "This file is for " + o.cwg + " only. Grey cells and the tab names can't be changed."]);
-    var names = o.terrs.map(function (t) { return t.name; });
-    var R = lists(wb, { Territories: names, Themes: o.themes, Strengths: o.strengths, Support: o.support, Ranks: RANKS });
-    var terr = list(R.Territories, true, "Pick the territory.");
-    var ws = sheet(wb, "Profiles", [["Territory ID", 18], ["Territory", 36], ["CWG", 10], ["Where they work (areas, communities and programmes)", 90]], 3);
-    o.terrs.forEach(function (t, i) { var r = i + 2; locked(ws.getCell(r, 1), t.id); locked(ws.getCell(r, 2), t.name); locked(ws.getCell(r, 3), o.cwg);
-      input(ws.getCell(r, 4), (t.profile || {}).workAreas || ""); ws.getRow(r).height = 48; });
-    var th = [], st = [], su = [], co = [];
-    o.terrs.forEach(function (t) { var p = t.profile || {};
-      (p.thematic || []).forEach(function (x) { th.push([t.name, x]); });
-      String(p.strengths || "").split("\n").map(function (x) { return x.trim(); }).filter(Boolean).forEach(function (x) { st.push([t.name, x]); });
-      (o.tidy ? o.tidy(p.techSupport || "") : String(p.techSupport || "").split("\n").filter(Boolean)).forEach(function (x) { su.push([t.name, x]); });
-      (t.contacts || []).forEach(function (c) { co.push([t.name, c.rank || "", c.name || "", c.role || ""]); }); });
-    rowsTab(wb, "Thematic areas", [["Territory", 40], ["Thematic area", 60]], th, [terr, list(R.Themes, true, "Pick a thematic area.")]);
-    rowsTab(wb, "Strengths", [["Territory", 40], ["Strength", 70]], st, [terr, list(R.Strengths, true, "Pick a strength.")]);
-    rowsTab(wb, "Technical support", [["Territory", 40], ["Technical support they can offer other territories", 80]], su, [terr, list(R.Support, false, "Pick from the list, or type your own.")], 40);
-    rowsTab(wb, "Contact persons", [["Territory", 40], ["Rank (officers only)", 18], ["Name", 30], ["Appointment / role", 44]], co, [terr, list(R.Ranks, true), null, null], 40);
+    var R = lists(wb, { Themes: o.themes, Strengths: o.strengths, Ranks: RANKS });
+    var ws = sheet(wb, "Profiles", [["ID", 4], ["Territory", 26], ["Where they work (areas, communities, programmes)", 42], ["Thematic areas (1 to " + TH + ")", 30], ["Strengths (at least 1)", 30],
+      ["Technical support they can offer (2 to " + SU + ", typed)", 40], ["Contact: rank", 14], ["Contact: name", 22], ["Contact: appointment / role", 30]], 2);
+    ws.getColumn(1).hidden = true;
+    var thDv = list(R.Themes, true, "Pick a thematic area."), stDv = list(R.Strengths, true, "Pick a strength."), rkDv = list(R.Ranks, true);
+    blocks(ws, o.terrs, N, function (t, r1, r2) {
+      var p = t.profile || {}, th = p.thematic || [], st = p.strengths || [], su = p.support || [], co = t.contacts || [];
+      merged(ws, r1, r2, 1, t.id); merged(ws, r1, r2, 2, t.name); ws.getCell(r1, 2).font = F({ bold: true });
+      merged(ws, r1, r2, 3, p.workAreas || "", true);
+      for (var k = 0; k < N; k++) { var r = r1 + k; ws.getRow(r).height = 18;
+        if (k < TH) input(ws.getCell(r, 4), th[k], thDv); else grey(ws.getCell(r, 4));
+        if (k < ST) input(ws.getCell(r, 5), st[k], stDv); else grey(ws.getCell(r, 5));
+        if (k < SU) input(ws.getCell(r, 6), su[k]); else grey(ws.getCell(r, 6));
+        if (k < CO) { var c = co[k] || {}; input(ws.getCell(r, 7), c.rank, rkDv); input(ws.getCell(r, 8), c.name); input(ws.getCell(r, 9), c.role); }
+        else { grey(ws.getCell(r, 7)); grey(ws.getCell(r, 8)); grey(ws.getCell(r, 9)); }
+      }
+    });
     await protect(wb);
     return new Blob([await wb.xlsx.writeBuffer()], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
   }
@@ -98,11 +115,11 @@
       "Target: pick the quarter the strategy is due.",
       "Only the document link, the focal person's name and appointment are typed. To empty one, type a single hyphen: -",
       "Consultation / workshop: pick Yes or No. If Yes, give the start date, the end date (blank for one day) and whether it was before or during drafting.",
-      "Approvals tab: one row per approval, as many as a territory has. Pick the territory and the approving body (or type it if it's not in the list) and give the date. For each territory, the approvals you upload replace what's on the website.",
+      "Approvals tab: each territory has its own rows. Type each approving body and give its date, one approval per row. For each territory, the approvals you upload replace what's on the website.",
       "No emails or phone numbers: the websites don't keep them.",
       "This file is for " + o.cwg + " only. Grey cells and the tab names can't be changed."]);
     var names = o.terrs.map(function (t) { return t.name; });
-    var R = lists(wb, { Territories: names, Status: o.statuses.map(function (s) { return s.label; }), Years: years(), Quarters: quarters(), YesNo: ["Yes", "No"], Timing: ["Before drafting", "During drafting"], Bodies: BODIES });
+    var R = lists(wb, { Territories: names, Status: o.statuses.map(function (s) { return s.label; }), Years: years(), Quarters: quarters(), YesNo: ["Yes", "No"], Timing: ["Before drafting", "During drafting"] });
     var ws = sheet(wb, "CD Strategies", [["Territory ID", 16], ["Territory", 34], ["CWG", 9], ["Status", 22], ["Status changed on", 13], ["Strategy start year", 11], ["Strategy end year", 11], ["Target", 11],
       ["Document link", 30], ["Focal person (name)", 24], ["Focal person appointment / role", 30], ["Consultation / workshop held?", 13], ["Consultation from", 13], ["Consultation to", 13], ["Consultation timing", 17]], 3);
     var lbl = {}; o.statuses.forEach(function (s) { lbl[s.key] = s.label; });
@@ -119,9 +136,18 @@
       input(ws.getCell(r, 15), c && c.held ? (c.timing === "during" ? "During drafting" : "Before drafting") : "", list(R.Timing, true));
       ws.getRow(r).height = 30;
     });
-    var ap = []; o.terrs.forEach(function (t) { (t.approvals || []).forEach(function (a) { ap.push([t.name, a.body || "", dateOf(a.date)]); }); });
-    rowsTab(wb, "Approvals", [["Territory", 40], ["Approving body", 40], ["Approval date", 15, "dd/mm/yyyy"]], ap,
-      [list(R.Territories, true, "Pick the territory."), list(R.Bodies, false, "Pick from the list, or type the body's name."), dateDv], 40);
+    var aw = sheet(wb, "Approvals", [["ID", 4], ["Territory", 34], ["Approving body (type it)", 44], ["Approval date", 15]], 2);
+    aw.getColumn(1).hidden = true;
+    var AP = 5;
+    var rr = 2;
+    o.terrs.forEach(function (t) {
+      var apps = t.approvals || [], n = Math.max(AP, apps.length + 1), r2 = rr + n - 1;
+      merged(aw, rr, r2, 1, t.id); merged(aw, rr, r2, 2, t.name); aw.getCell(rr, 2).font = F({ bold: true });
+      for (var k = 0; k < n; k++) { var a = apps[k] || {}; aw.getRow(rr + k).height = 18;
+        input(aw.getCell(rr + k, 3), a.body || ""); input(aw.getCell(rr + k, 4), dateOf(a.date), dateDv, "dd/mm/yyyy"); }
+      for (var c = 1; c <= 4; c++) { var cell = aw.getCell(r2, c); cell.border = Object.assign({}, cell.border || BOX, { bottom: MED }); }
+      rr = r2 + 1;
+    });
     await protect(wb);
     return new Blob([await wb.xlsx.writeBuffer()], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
   }
