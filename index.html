@@ -2621,11 +2621,11 @@ function signinLimitBox(st) {
 }
 // who signs in how: one panel per kind of account, each with its own little moving picture
 const SI_ROLES = [
-  { k: "member", t: "CWG members and contact persons", ic: "pinset",
-    steps: [["Get registered", "Your CWG lead adds your email to your territory. A work email is fine."],
-      ["Get your CWG's PIN", "Your CWG lead gives it to you. Everyone in your CWG uses the same one."],
-      ["Sign in", "Type your email and the CWG's PIN. You can then edit your own territory: its profile, its contact persons and its CD Strategy."]],
-    forgot: "Ask your CWG lead for the PIN. If it still doesn't work, ask them to check your email is registered for your territory." },
+  { k: "member", t: "CWG members, contact persons and APSG members", ic: "pinset",
+    steps: [["Get registered", "Your CWG lead adds your email to your territory. APSG members: an ASLP admin adds your email to the APSG page. A work email is fine."],
+      ["Get your shared PIN", "Your CWG lead gives you your CWG's PIN. APSG members get the APSG's PIN from an ASLP admin. Everyone in the group uses the same one."],
+      ["Sign in", "Type your email and that PIN. CWG members and contact persons can then edit their own territory: its profile, contact persons and CD Strategy. APSG members can edit the APSG page and post APSG updates."]],
+    forgot: "Ask your CWG lead for the CWG's PIN, or an ASLP admin for the APSG's PIN. If it still doesn't work, ask them to check your email is registered." },
   { k: "lead", t: "CWG leads", ic: "people",
     steps: [["Set up your own PIN", "An ASLP admin adds your email. Select <em>First time? Set up your PIN</em>, choose a PIN and send it for approval."],
       ["Sign in once it's approved", "Use your email and your own PIN, not the CWG's."],
@@ -2671,7 +2671,8 @@ const WICON = {
   reg: `<svg viewBox="0 0 48 48" class="wi wi-reg"><rect x="5" y="9" width="34" height="27" rx="4"/><circle cx="15" cy="20" r="4"/><path d="M9 30c1-4 3.3-6 6-6s5 2 6 6"/><path class="ln l1" d="M25 18h9"/><path class="ln l2" d="M25 24h7"/><g class="bd"><circle cx="38" cy="36" r="7"/><path d="M34.5 36l2.4 2.4 4.4-4.6"/></g></svg>`,
   key: `<svg viewBox="0 0 48 48" class="wi wi-key"><g class="ky"><circle cx="16" cy="24" r="8"/><path d="M24 24h18M36 24v6M41 24v5"/></g></svg>` };
 // what kind of account this is: decides the welcome, the PIN tab and its wording
-const acctKind = v => v.ro ? "viewer" : v.is_full_admin ? "admin" : (v.lead_cwgs || []).length ? "lead" : (v.can_edit || []).length || v.cds_access ? "member" : "other";
+const acctKind = v => v.ro ? "viewer" : v.is_full_admin ? "admin" : (v.lead_cwgs || []).length ? "lead" : v.shared_pin || (v.can_edit || []).length || v.cds_access ? "member" : "other";
+const pinGroupNames = v => (v.pin_groups || []).map(k => ((data.groups || []).find(g => g.key === k) || { short: k.toUpperCase() }).short);
 const myTerrs = v => (v.can_edit || []).map(terrName).filter(Boolean);
 function welcomeRo(v, tabs, roles, go) {
   // view-only: see everything, and try every part in a test run (nothing is saved)
@@ -2695,7 +2696,7 @@ function welcomeHtml(v, tabs, roSteps, roRoles) {
   const roles = v.ro ? ["View only"] : [v.is_full_admin && "Admin", ...(v.zone_coord || []).map(z => `${z} coordinator`), (v.lead_cwgs || []).length && `${v.lead_cwgs.join(" and ")} CWG lead`,
     v.can_approve && !v.is_full_admin && "ASC member", (v.post_groups || []).includes("apsg") && !v.can_approve && "APSG member",
     acctKind(v) !== "member" && (v.submit_cwgs || []).length && `${v.submit_cwgs.join(" and ")} CWG member`,
-    acctKind(v) === "member" && `${[...new Set((v.can_edit || []).map(id => (terrs().find(t => t.id === id) || {}).cwg).filter(Boolean))].join(" and ")} CWG member or contact person`.trim(),
+    acctKind(v) === "member" && myTerrs(v).length && `${[...new Set((v.can_edit || []).map(id => (terrs().find(t => t.id === id) || {}).cwg).filter(Boolean))].join(" and ")} CWG member or contact person`.trim(),
     ...(acctKind(v) === "member" ? myTerrs(v) : [])].filter(Boolean);
   const kind = acctKind(v), cwgsTxt = (v.lead_cwgs || []).join(" and ");
   if (v.ro && !roSteps) return welcomeRo(v, tabs, roles, go);
@@ -2705,7 +2706,7 @@ function welcomeHtml(v, tabs, roSteps, roRoles) {
     if (has("cc-members") || has("cc-terr")) steps.push(["reg", "Register who can sign in", `Add each CWG member's email under <b>CWG members</b>, and each territory's contact persons (up to 2) in its profile, ticking <b>CWG member</b> for those who are. Only registered emails can use the CWG's PIN, and only for their own territory.`, go(has("cc-members") ? "cc-members" : "cc-terr")]);
   }
   if ((v.post_cwgs || []).length || (v.post_groups || []).length) steps.push(["write", "Post an update",
-    `Open <b>Updates</b>, choose <b>Post an update</b>, then write it or upload a PDF or PowerPoint. You can post for ${[...(v.post_cwgs || []).map(c => c), ...(v.post_groups || []).map(k => (grpOf(k) || {}).short || k.toUpperCase())].join(", ")}. It goes live when you publish.`, go("cc-updates")]);
+    `Open <b>Updates</b>, choose <b>Post an update</b>, then write it or upload a PDF or PowerPoint. You can post for ${[...(v.post_cwgs || []).map(c => c), ...(v.post_groups || []).map(k => (grpOf(k) || {}).short || k.toUpperCase())].join(", ")}. It goes live when you publish${!(v.post_cwgs || []).length ? `, in the ${(v.post_groups || []).map(k => (grpOf(k) || {}).short || k.toUpperCase()).join(" and ")} part of <b>Programmatic Updates</b>` : ""}.`, go("cc-updates")]);
   if ((v.submit_cwgs || []).length) steps.push(["send", "Send in an update",
     `Open <b>Updates</b> and post for ${v.submit_cwgs.join(" and ")}. An ASC member or admin checks it first, then it appears on the website.`, go("cc-updates")]);
   if (v.can_approve) steps.push(["approve", "Approve updates", `Updates sent in by CWG members show in <b>Updates</b> as <b>Waiting for approval</b>. Open one to check it, then select <b>Approve</b>.`, go("cc-updates")]);
@@ -2728,14 +2729,14 @@ function welcomeHtml(v, tabs, roSteps, roRoles) {
     : pinApprover(v) ? ["lock", "PIN requests and resets", `When an admin, CWG lead or view-only account sets up a PIN, approve it in <b>PINs</b>. If one of them forgets theirs, reset it there and they set up a new one. You can change your own PIN there too.`, go("cc-pin")]
     : ["lock", "Your own PIN", `You sign in with your email and your own PIN${kind === "lead" ? ", not the CWG's" : ""}. Change it under <b>${kind === "lead" || kind === "viewer" ? "PINs" : "My PIN"}</b> any time. Forgot it? Ask an ASLP admin to reset it, then set up a new one.`, go("cc-pin")]);
   // CWG members and contact persons: only their own territory (profile and CD Strategy), nothing else
-  if (kind === "member") steps = steps.filter(x => x[0] === "pin" || x[0] === "chart");
+  if (kind === "member") steps = steps.filter(x => ["pin", "chart", "group", "write"].includes(x[0]));
   const fn = firstName(v);
   return `<section class="console-card wel" id="cc-welcome">
     <div class="wel-hero"><div class="wel-lll" aria-hidden="true"><span>Listen.</span><span>Learn.</span><span>Lead.</span></div>
       <h2 class="wel-hi">Hi${fn ? `, ${esc(fn)}` : ""}.</h2><p class="wel-sub">${{ admin: "You look after the whole site. Here's what your access lets you do.",
         lead: `You look after ${esc(cwgsTxt)}: its territories, its members and its PIN. Here's how.`,
         viewer: "You can see everything an admin sees, but nothing can be changed from this account. Here's where to look.",
-        member: `You're signed in with your CWG's PIN${myTerrs(v).length ? ` for <b>${esc(myTerrs(v).join(" and "))}</b>` : ""}. Here's what you can update.` }[kind] || "Feel free to roam around the site. Here's how to get around with your access."}</p>
+        member: `You're signed in with ${[myTerrs(v).length && `your CWG's PIN for <b>${esc(myTerrs(v).join(" and "))}</b>`, pinGroupNames(v).length && `the <b>${esc(pinGroupNames(v).join(" and "))}</b>'s PIN`].filter(Boolean).join(" and ") || "your CWG's PIN"}. Here's what you can update.` }[kind] || "Feel free to roam around the site. Here's how to get around with your access."}</p>
       ${roles.length ? `<div class="wel-roles">${roles.map(r => `<span>${esc(r)}</span>`).join("")}</div>` : ""}</div>
     <h3 class="h3 wel-h">How to navigate the site with your access</h3>
     <div class="wel-try"><div><b>New here? Take a test run.</b><span>${v.ro ? "Each guide below walks you through the real screens as if you could make changes, so you can experience the site the way editors use it. Nothing you do during a test run is saved or published." : "Each guide below walks you through the real screens, one step at a time. Nothing you do during a test run is saved or published, so you can practise freely."}</span></div>
@@ -2864,7 +2865,7 @@ function pageConsole(a, b) {
   const terrIds = v.can_edit || [], cwgs = v.can_cwgs || [];
   const groups = v.can_groups || [];
   const who = v.ro ? "View only" : v.is_full_admin ? "Admin" : [(v.lead_cwgs || []).length && `${v.lead_cwgs.join(" and ")} CWG lead`, v.can_approve && "ASC member", (v.post_groups || []).includes("apsg") && !v.can_approve && "APSG member",
-    acctKind(v) !== "member" && (v.submit_cwgs || []).length && `${v.submit_cwgs.join(" and ")} CWG member`, acctKind(v) === "member" && "CWG member or contact person"].filter(Boolean).join(" · ") || "Signed in";
+    acctKind(v) !== "member" && (v.submit_cwgs || []).length && `${v.submit_cwgs.join(" and ")} CWG member`, acctKind(v) === "member" && myTerrs(v).length && "CWG member or contact person"].filter(Boolean).join(" · ") || "Signed in";
   const tab = a === "strategies" ? "strategies" : "website";
   const head = `${crumbs([["Home", "#/"], ["Console"]])}<div class="wrap" style="padding-top:var(--g4)">
     <div class="console-head"><div><h1 class="h1">Console</h1><p class="small" style="margin-top:6px">${esc(who)} · ${esc(v.email)}</p></div><button type="button" class="btn sm" id="si-out">Sign out</button></div>
@@ -2884,7 +2885,7 @@ function pageConsole(a, b) {
   pendingMaps.push(() => mountConsole());
   // CWG members and contact persons (signed in with the CWG's PIN) get only their own territory: no updates, PINs, access or other settings
   const memberOnly = acctKind(v) === "member";
-  const canUpd = !memberOnly && ((v.post_cwgs || []).length || (v.submit_cwgs || []).length || Object.keys(PGROUPS).some(canGroupPost));
+  const canUpd = memberOnly ? Object.keys(PGROUPS).some(canGroupPost) : ((v.post_cwgs || []).length || (v.submit_cwgs || []).length || Object.keys(PGROUPS).some(canGroupPost));
   const secs = [["cc-welcome", "Welcome"], canUpd && ["cc-updates", "Updates"], toggleIds.length && ["cc-units", "Regions and countries"], cwgs.length && ["cc-members", "CWG members"], (terrIds.length || unitIds.length) && ["cc-terr", "Territory profiles"], groups.length && ["cc-groups", "ASLP Groups"], v.is_full_admin && ["cc-pages", "Pages and newsletter"], v.is_full_admin && ["cc-access", "Access"], !memberOnly && ["cc-pin", pinApprover(v) || v.ro || acctKind(v) === "lead" ? "PINs" : acctKind(v) === "member" ? "How you sign in" : "My PIN"]].filter(Boolean);
   return head + `<div class="wrap page-body">
     ${secs.length > 1 ? `<nav class="con-sub" role="tablist" aria-label="Console sections">${secs.map(([id, l]) => `<button type="button" role="tab" data-jump="${id}">${l}</button>`).join("")}</nav>` : ""}
@@ -2912,6 +2913,9 @@ function pageConsole(a, b) {
       ${v.is_full_admin || v.ro || (v.lead_cwgs || []).length ? `<h2 class="h2">CWG PINs</h2>
       <p class="small">Each CWG has one PIN. CWG members and territory contact persons sign in with their registered email and their CWG's PIN, and can then edit only their own territory: its profile and its CD Strategy. ${v.is_full_admin ? "Admins can set any CWG's PIN; CWG leads set their own CWG's." : "Set your CWG's PIN here and share it with your CWG members and contact persons, for example in your group chat."} Changing it stops the old PIN from working straight away.</p>
       <div id="cwg-pins">${loader("Loading…")}</div>` : ""}
+      ${v.is_full_admin || v.ro ? `<h2 class="h2" style="margin-top:var(--g5)">APSG PIN</h2>
+      <p class="small">APSG members with an email on the APSG page sign in with it and this PIN. They can then edit only the APSG page and post APSG updates. Only admins set it.</p>
+      <div id="grp-pins">${loader("Loading…")}</div>` : ""}
       ${pinApprover(v) ? `<h2 class="h2" style="margin-top:var(--g5)">PIN requests</h2>
       <p class="small">Admins, CWG leads and view-only accounts choose their own PIN on the sign-in page; it waits here until an admin approves it. Approve only if you know the request is really from them, for example after a quick message.</p>
       <div id="pin-reqs">${loader("Loading requests…")}</div>
@@ -2930,8 +2934,11 @@ function pageConsole(a, b) {
 }
 // ---- console: ASLP group details and members ----
 const GRP_COLS = [["groupRole", "Role in this group", "e.g. Chair, SASIA 1 CWG lead"], ["rank", "Rank (officers only)", "Empty if not an officer"], ["name", "Name"], ["role", "Job title or appointment", "e.g. Chief Secretary, Programme Manager"], ["office", "Office", "e.g. Bangladesh Territory, Salvation Army Switzerland"]];
+const PIN_GROUPS = ["apsg"];   // groups whose members sign in with the group's PIN
+const grpCols = key => PIN_GROUPS.includes(key) ? [...GRP_COLS, ["email", "Email (signs in with it)", "name@salvationarmy.org"]] : GRP_COLS;
 function groupEditor(key) {
   const box = $("grp-editor"), g = (data.groups || []).find(x => x.key === key); if (!box || !g) return;
+  const GRP_COLS_K = grpCols(key);
   const admin = !!V().is_full_admin, tor = groupTor(key);
   box.innerHTML = `<div class="ed-grid">
       ${admin ? `<label class="full"><span>Full name</span><input id="g-name" value="${esc(g.name || "")}"></label>` : ""}
@@ -2942,10 +2949,11 @@ function groupEditor(key) {
     </div>
     <h3 class="h3" style="margin-top:var(--g5)">Members</h3>
     <p class="small">Listed on the ${esc(g.short)} page in this order. Use the arrows to move someone up or down. "Role in this group" is what they do in the ${esc(g.short)}, for example Chair. "Job title or appointment" and "Office" are their own work: an officer's appointment and territory, or an employee's job title and office. Leave Rank empty for anyone who isn't an officer. Being listed doesn't give anyone access to this console.</p>
-    <div id="gm-box"><div class="ed-rows">${((g.members || []).length ? g.members : [{}]).map(m => fieldRow(GRP_COLS, m, [])).join("")}</div>
+    ${PIN_GROUPS.includes(key) ? `<p class="small">Add each member's email (work email is fine). Members with an email sign in with it and the ${esc(g.short)}'s PIN${V().is_full_admin ? " (set it under PINs)" : ""}, and can then edit only this page and post ${esc(g.short)} updates. Emails aren't shown on the website.</p>` : ""}
+    <div id="gm-box"><div class="ed-rows">${((g.members || []).length ? g.members : [{}]).map(m => fieldRow(GRP_COLS_K, m, [])).join("")}</div>
       <div class="ed-actions"><button type="button" class="btn sm ed-add">Add a member</button></div></div>
     <div class="ed-actions sticky"><button type="button" class="btn fill" id="g-save">Save the ${esc(g.short)}</button><a class="textlink" href="#/group/${esc(key)}">View the page</a><span class="ed-msg" id="g-msg" role="status"></span></div>`;
-  wireRows($("gm-box"), GRP_COLS, []);
+  wireRows($("gm-box"), GRP_COLS_K, []);
   makeDraftable(box, `grp:${key}`, () => groupEditor(key));
   $("g-save").addEventListener("click", () => saveWith("g-save", "g-msg", async () => {
     const r = await db.rpc("aslp_save_group", { p_key: key, p_group: { ...(admin ? { name: $("g-name").value.trim() } : {}), description: $("g-desc").value.trim(), members: readRows($("gm-box")) } });
@@ -3144,7 +3152,7 @@ function updatesConsole(sel) {
 }
 function updateEditor(u, redraw) {
   const box = $("up-editor"); if (!box || !u) return;
-  const cwgs = [...(V().post_cwgs || []), ...(V().submit_cwgs || [])], grps = Object.keys(PGROUPS).filter(canGroupPost);
+  const cwgs = acctKind(V()) === "member" ? [] : [...(V().post_cwgs || []), ...(V().submit_cwgs || [])], grps = Object.keys(PGROUPS).filter(canGroupPost);
   const fixSrc = v => !v ? "" : v.includes("|") ? v : "cwg|" + v;   // older drafts kept just the CWG name
   const srcs = [...cwgs.map(c => "cwg|" + c), ...grps.map(k => "group|" + k)];
   const st = { id: u.id || null, src: fixSrc(u.src) || (u.cwg ? (isGrp(u) ? "group|" : "cwg|") + u.cwg : "") || srcs[0], kind: u.kind || "text", file: u.file || null, pages: u.pages || [], slides: u.slides || [], photos: [...(u.photos || [])], busy: false,
@@ -3723,7 +3731,7 @@ async function pinConsole() {
     if (!res.ok) { m.className = "ed-msg err"; m.textContent = res.message; return; }
     $("mp-a").value = $("mp-b").value = ""; m.className = "ed-msg ok"; m.textContent = "PIN changed. Use it next time you sign in.";
   });
-  cwgPins($("cwg-pins")); pinPeople($("pin-people"));
+  cwgPins($("cwg-pins")); groupPins($("grp-pins")); pinPeople($("pin-people"));
   const box = $("pin-reqs"); if (!box) return;
   const draw = async () => {
     const { data: rs, error } = await db.rpc("aslp_pin_requests_list");
@@ -3760,6 +3768,25 @@ async function cwgPins(box) {
     f.querySelector("button").disabled = false;
     if (e2) { m.className = "ed-msg err"; m.textContent = e2.message; return; }
     i.value = ""; m.className = "ed-msg ok"; m.textContent = "Saved. Share it with your CWG members and contact persons."; setTimeout(() => cwgPins(box), 2500);
+  }));
+}
+// admins: the APSG's PIN (its members sign in with their email and this PIN)
+async function groupPins(box) {
+  if (!box) return;
+  const { data: xs, error } = await db.rpc("aslp_group_pin_list");
+  if (error) { box.innerHTML = `<p class="small">Couldn't load the group PINs. ${esc(error.message || "")}</p>`; return; }
+  const when = d => new Date(d).toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" });
+  box.innerHTML = (Array.isArray(xs) ? xs : []).map(x => `<div class="cwgpin"><div><b>${esc(x.short)}</b><small>${x.set ? `PIN set ${esc(when(x.set_at))}${x.set_by ? ` by ${esc(x.set_by)}` : ""}` : "No PIN yet: its members can't sign in"} · ${x.people} member${x.people === 1 ? "" : "s"} with an email</small></div>
+    <form class="cwgpin-f" data-grp="${esc(x.key)}" autocomplete="off"><input type="password" inputmode="numeric" autocomplete="new-password" placeholder="${x.set ? "New PIN" : "Choose a PIN"} (6–12 numbers)" aria-label="${esc(x.short)} PIN">
+      <button class="btn fill sm">${x.set ? "Change" : "Set"} PIN</button><span class="ed-msg" role="status"></span></form></div>`).join("") || `<p class="small">No groups use a PIN.</p>`;
+  box.querySelectorAll(".cwgpin-f").forEach(f => f.addEventListener("submit", async e => {
+    e.preventDefault(); const i = f.querySelector("input"), m = f.querySelector(".ed-msg"), pin = i.value.trim();
+    if (!/^\d{6,12}$/.test(pin)) { m.className = "ed-msg err"; m.textContent = "Use 6 to 12 numbers."; return; }
+    f.querySelector("button").disabled = true; m.className = "ed-msg"; m.textContent = "Saving…";
+    const { error: e2 } = await db.rpc("aslp_set_group_pin", { p_key: f.dataset.grp, p_pin: pin });
+    f.querySelector("button").disabled = false;
+    if (e2) { m.className = "ed-msg err"; m.textContent = e2.message; return; }
+    i.value = ""; m.className = "ed-msg ok"; m.textContent = "Saved. Share it with the APSG members."; setTimeout(() => groupPins(box), 2500);
   }));
 }
 // admins: reset the PIN of an admin, CWG lead or view-only account

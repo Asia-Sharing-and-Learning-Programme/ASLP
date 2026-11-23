@@ -49,7 +49,7 @@
 
   // who signs in with which PIN (CD Strategies and the Calendar; the main site shows its own fuller guide)
   var WHO = '<div class="pin-who"><p>Which PIN do I use?</p>' +
-    '<div><svg viewBox="0 0 48 48" aria-hidden="true"><rect x="4" y="14" width="28" height="20" rx="5"/><g class="pd"><circle cx="11" cy="24" r="2.4"/><circle cx="18" cy="24" r="2.4"/><circle cx="25" cy="24" r="2.4"/></g><path class="pw" d="M37 18.5c2 3.3 2 7.7 0 11M41.5 14.5c3.6 5.8 3.6 13.2 0 19"/></svg><span><b>CWG members and contact persons</b>Your CWG’s PIN, from your CWG lead. It opens your own territory.</span></div>' +
+    '<div><svg viewBox="0 0 48 48" aria-hidden="true"><rect x="4" y="14" width="28" height="20" rx="5"/><g class="pd"><circle cx="11" cy="24" r="2.4"/><circle cx="18" cy="24" r="2.4"/><circle cx="25" cy="24" r="2.4"/></g><path class="pw" d="M37 18.5c2 3.3 2 7.7 0 11M41.5 14.5c3.6 5.8 3.6 13.2 0 19"/></svg><span><b>CWG members, contact persons and APSG members</b>Your CWG’s PIN from your CWG lead (opens your territory), or the APSG’s PIN from an ASLP admin (opens the APSG page).</span></div>' +
     '<div><svg viewBox="0 0 48 48" aria-hidden="true"><g class="pp"><circle cx="17" cy="17" r="6"/><path d="M6 38c0-7 5-11 11-11s11 4 11 11"/></g><g class="pp pp2"><circle cx="33" cy="19" r="5"/><path d="M26 38c1-6 4-9 8-9s8 3 8 9"/></g></svg><span><b>CWG leads</b>Your own PIN. Then set your CWG’s PIN in the console and share it.</span></div>' +
     '<div><svg viewBox="0 0 48 48" aria-hidden="true"><g class="pk"><circle cx="14" cy="24" r="8"/><path d="M22 24h20M36 24v6M41 24v5"/></g></svg><span><b>Admins and view-only accounts</b>Your own PIN, approved by an ASLP admin.</span></div></div>';
   function mount(box, db, opts) {
@@ -63,7 +63,7 @@
 
     function signInView(msg, cls) {
       box.innerHTML = '<form class="pin" novalidate>' + emailField() +
-        '<label for="pin-pin">Your PIN or your CWG’s PIN</label><input type="password" id="pin-pin" autocomplete="current-password" placeholder="PIN">' +
+        '<label for="pin-pin">Your PIN, or your CWG’s or APSG’s PIN</label><input type="password" id="pin-pin" autocomplete="current-password" placeholder="PIN">' +
         '<div class="pin-go"><button type="submit" class="pin-btn" id="pin-in">Sign in</button><button type="button" class="pin-link" id="pin-first">First time? Set up your PIN</button><button type="button" class="pin-link" id="pin-forgot">Forgot your PIN?</button></div>' +
         '<div class="pin-msg ' + (cls || '') + '" role="status" id="pin-msg">' + (msg || '') + '</div>' + (opts.guide ? WHO : '') + '</form>';
       wire({ 'pin-first': function () { setView(); }, 'pin-forgot': function () { forgotView(); } });
@@ -82,7 +82,7 @@
         if (d.reason === 'locked') return say('Too many wrong PINs. Please wait 30 minutes and try again, or ask your CWG lead for the CWG’s PIN.', 'err');
         var s = {}; try { s = (await db.rpc('aslp_pin_status', { p_email: email })).data || {}; } catch (e) {}
         if (s.registered === false && !d.member) say(NOT_REG, 'err');
-        else if (d.member) say('That isn’t your CWG’s PIN. Please check it with your CWG lead.', 'err');
+        else if (d.member) say('That isn’t the right PIN. Please check your CWG’s PIN with your CWG lead, or the APSG’s PIN with an ASLP admin.', 'err');
         else if (!s.has_pin && s.request === 'pending') say('Your PIN is waiting for approval by an admin. You can sign in once it’s approved.', 'err');
         else if (!s.has_pin && s.request === 'declined') say('Your PIN request wasn’t approved. Please contact the ASLP team.', 'err');
         else if (!s.has_pin) say('You don’t have a PIN yet. Choose <b>First time? Set up your PIN</b>.', 'err', true);
@@ -92,7 +92,7 @@
     }
     function setView() {
       box.innerHTML = '<form class="pin" novalidate><p class="pin-k">First time: set up your PIN</p>' +
-        '<p class="pin-note"><b>CWG members and contact persons</b> don’t need their own PIN: sign in with your registered email and the PIN your CWG lead gave you.</p>' +
+        '<p class="pin-note"><b>CWG members, contact persons and APSG members</b> don’t need their own PIN: sign in with your registered email and your CWG’s or APSG’s PIN.</p>' +
         '<p class="pin-note"><b>Admins, CWG leads and view-only accounts:</b> choose your PIN here. An admin approves it, then you sign in with your email and this PIN.</p>' + emailField() +
         '<div class="pin-row"><div><label for="pin-a">Choose a PIN</label><input type="password" id="pin-a" autocomplete="new-password" placeholder="At least 6 characters"></div>' +
         '<div><label for="pin-b">Type it again</label><input type="password" id="pin-b" autocomplete="new-password"></div></div>' +
@@ -107,7 +107,7 @@
         var btn = box.querySelector('#pin-send'); btn.disabled = true; say('Sending…');
         var r = await fn(db, 'aslp-signin', { action: 'pin_request', email: email, pin: a }); btn.disabled = false;
         var d = (r && r.data) || {};
-        if (r.error || !d.ok) return say(d.reason === 'member' ? 'You’re registered as a CWG member or contact person: sign in with your email and your CWG’s PIN (ask your CWG lead for it).' :
+        if (r.error || !d.ok) return say(d.reason === 'member' ? 'You’re registered as a CWG member, contact person or APSG member: sign in with your email and your CWG’s or APSG’s PIN (your CWG lead or an ASLP admin gives it to you).' :
           d.reason === 'not_registered' ? NOT_REG : d.reason === 'too_many' ? 'You’ve asked several times today. Please contact the ASLP team.' : 'That didn’t work. Please try again.', 'err');
         remember();
         signInView('<b>Sent for approval.</b> An admin will see it in their console. Once it’s approved, sign in here with your email and new PIN.', 'ok');
