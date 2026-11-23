@@ -33,7 +33,7 @@
   var okGmail = function (e) { return /^[^@\s]+@(gmail|googlemail)\.com$/.test(e); };
   var weak = function (a) { return /^(\d)\1+$/.test(a) || /^(012345|123456|234567|345678|456789|654321|password|qwerty)/i.test(a); };
   var REMEMBER = 'aslp-pin-email';
-  var NOT_REG = 'This email doesn’t have sign-in access. Please contact your CWG lead or the ASLP team.';
+  var NOT_REG = 'This email doesn’t have sign-in access. Only admins, CWG leads and view-only accounts can sign in, each with their Gmail. Please contact the ASLP team.';
   var fn = function (db, name, body) { return db.functions.invoke(name, { body: body }).then(function (r) { return r; }, function (e) { return { error: e }; }); };
   async function fnErr(r) { var m = (r && r.data && r.data.error) || ''; try { if (!m && r && r.error && r.error.context) m = (await r.error.context.json()).error; } catch (e) {} return m; }
 
@@ -61,7 +61,7 @@
     var email = opts.email || ''; try { email = email || localStorage.getItem(REMEMBER) || ''; } catch (e) {}
     var remember = function () { try { localStorage.setItem(REMEMBER, email); } catch (e) {} };
     var grab = function () { var i = box.querySelector('#pin-email'); if (i) email = norm(i.value) || email; };
-    var emailField = function () { return '<label for="pin-email">Your registered email</label><input type="email" id="pin-email" autocomplete="username" value="' + esc(email) + '" placeholder="name@salvationarmy.org">'; };
+    var emailField = function () { return '<label for="pin-email">Your Gmail</label><input type="email" id="pin-email" autocomplete="username" value="' + esc(email) + '" placeholder="yourname@gmail.com">'; };
     function wire(ids) { for (var k in ids) { var b = box.querySelector('#' + k); if (b) b.onclick = (function (f) { return function () { grab(); f(); }; })(ids[k]); } }
     function say(t, cls, html) { var m = box.querySelector('#pin-msg'); if (!m) return; m.className = 'pin-msg ' + (cls || ''); if (html) m.innerHTML = t; else m.textContent = t; }
 
@@ -112,13 +112,13 @@
     }
     function forgotView() {
       box.innerHTML = '<form class="pin" novalidate><p class="pin-k">Forgot your PIN?</p>' + emailField() +
-        '<p class="pin-note">We’ll email a link to the Gmail you added. Open it and choose a new PIN. No Gmail added yet? We’ll help you add one.</p>' +
-        '<div class="pin-go"><button type="submit" class="pin-btn" id="pin-reset">Send a reset link to my Gmail</button><button type="button" class="pin-link" id="pin-back">Back to sign in</button></div>' +
+        '<p class="pin-note">We’ll email a link to your Gmail. Open it and choose a new PIN.</p>' +
+        '<div class="pin-go"><button type="submit" class="pin-btn" id="pin-reset">Send a reset link to my Gmail</button><button type="button" class="pin-link" id="pin-lcode">Can\u2019t get into your Gmail? Get a one-time code</button><button type="button" class="pin-link" id="pin-back">Back to sign in</button></div>' +
         '<div class="pin-msg" role="status" id="pin-msg"></div></form>';
-      wire({ 'pin-back': function () { signInView(); } });
+      wire({ 'pin-back': function () { signInView(); }, 'pin-lcode': function () { if (!okEmail(email)) return say('Please enter your Gmail first.', 'err'); leadCodeView(); } });
       box.querySelector('form').onsubmit = async function (ev) {
         ev.preventDefault(); grab();
-        if (!okEmail(email)) return say('Please enter your registered email.', 'err');
+        if (!okEmail(email)) return say('Please enter your Gmail.', 'err');
         var btn = box.querySelector('#pin-reset'); btn.disabled = true; say('Checking…'); remember();
         var r = await fn(db, 'aslp-signin', { action: 'reset_send', email: email, redirect: location.origin + location.pathname });
         btn.disabled = false; var d = (r && r.data) || {};
@@ -162,7 +162,7 @@
     }
     // no Gmail wanted: a one-time code goes to the person's CWG lead and the admins, who pass it on (valid 1 hour)
     function leadCodeView() {
-      box.innerHTML = '<form class="pin" novalidate><p class="pin-k">Forgot your PIN, without a Gmail</p><h3>Get a one-time code from your CWG lead</h3>' +
+      box.innerHTML = '<form class="pin" novalidate><p class="pin-k">Forgot your PIN: one-time code</p><h3>Get a one-time code from your CWG lead</h3>' +
         '<p class="pin-note">We\u2019ll email a one-time code to your CWG lead and the ASLP admins (for admins and CWG leads: the admins). Contact one of them to get it. The code works for 1 hour. With it, you choose a new PIN here.</p>' +
         '<div class="pin-go"><button type="submit" class="pin-btn" id="pin-lc">Send the code to my CWG lead</button><button type="button" class="pin-link" id="pin-have">I already have a code</button><button type="button" class="pin-link" id="pin-back">Back to sign in</button></div>' +
         '<div class="pin-msg" role="status" id="pin-msg"></div></form>';
@@ -178,7 +178,7 @@
       };
     }
     function codeResetView(note) {
-      box.innerHTML = '<form class="pin" novalidate><p class="pin-k">Forgot your PIN, without a Gmail</p>' + (note ? '<p class="pin-note" style="margin-bottom:6px">' + note + '</p>' : '') + emailField() +
+      box.innerHTML = '<form class="pin" novalidate><p class="pin-k">Forgot your PIN: one-time code</p>' + (note ? '<p class="pin-note" style="margin-bottom:6px">' + note + '</p>' : '') + emailField() +
         '<label for="pin-oc">One-time code from your CWG lead or an admin</label><input type="text" id="pin-oc" inputmode="numeric" autocomplete="one-time-code" placeholder="6 digits">' +
         '<div class="pin-row"><div><label for="pin-a">New PIN</label><input type="password" id="pin-a" autocomplete="new-password" placeholder="At least 6 characters"></div><div><label for="pin-b">Type it again</label><input type="password" id="pin-b" autocomplete="new-password"></div></div>' +
         '<div class="pin-go"><button type="submit" class="pin-btn" id="pin-oset">Set my new PIN</button><button type="button" class="pin-link" id="pin-again">Ask for a code</button><button type="button" class="pin-link" id="pin-back">Back to sign in</button></div>' +
@@ -187,7 +187,7 @@
       box.querySelector('form').onsubmit = async function (ev) {
         ev.preventDefault(); grab();
         var c = box.querySelector('#pin-oc').value.replace(/\s+/g, ''), a = box.querySelector('#pin-a').value, b2 = box.querySelector('#pin-b').value;
-        if (!okEmail(email)) return say('Please enter your registered email.', 'err');
+        if (!okEmail(email)) return say('Please enter your Gmail.', 'err');
         if (!/^\d{6}$/.test(c)) return say('Please type the 6-digit code.', 'err');
         var bad = pinCheck(a, b2); if (bad) return say(bad, 'err');
         var btn = box.querySelector('#pin-oset'); btn.disabled = true; say('Checking\u2026');
@@ -260,12 +260,12 @@
       var ov0 = dialog(), d0 = ov0.firstChild;
       pinStep(d0, db, 'Reset your PIN', 'Choose your new PIN', true, function (ok) {
         if (!ok) { ov0.remove(); return; }
-        finish(d0, ov0, ['Your new PIN is saved. Use it with your registered email next time.']);
+        finish(d0, ov0, ['Your new PIN is saved. Use it with your Gmail next time.']);
       });
       return;
     }
     var later = false; try { later = !!sessionStorage.getItem('aslp-alt-later'); } catch (e) {}
-    var needPin = !s.has_pin, needAlt = !s.answered && !s.via_alt;
+    var needPin = !s.has_pin, needAlt = false;   // everyone signs in with a Gmail now
     if (later || (!needPin && !needAlt)) return;
     var ov = dialog(), dlg = ov.firstChild, lines = [];
     var stepAlt = function () {

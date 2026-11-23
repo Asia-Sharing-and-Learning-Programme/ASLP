@@ -572,7 +572,7 @@
   .chip-btn.on { background: var(--ink); color: var(--paper); border-color: var(--ink); }
   .ed-rows { display: grid; gap: var(--g2); margin-top: var(--g3); }
   .ed-row { display: grid; grid-template-columns: .7fr 1.1fr 1.3fr 1.3fr 1fr auto auto; gap: var(--g2); align-items: end; background: var(--paper); border-radius: 14px; padding: var(--g2); }
-  #con-box .ed-row { grid-template-columns: .7fr 1.1fr 1.4fr 1.4fr auto auto; }
+  #con-box .ed-row { grid-template-columns: .7fr 1.2fr 1.6fr auto auto; }
   #gm-box .ed-row { grid-template-columns: 1fr .8fr 1.1fr 1.3fr; }
   #mem-editor .ed-row { grid-template-columns: .7fr 1.1fr 1.3fr 1.3fr 1.3fr; }
   #mem-editor .ed-row > label:nth-child(6) { grid-column: span 2; }
@@ -1797,7 +1797,7 @@ function pageCwg(cs) {
     <section class="cwg-hero">${a ? tintMap(a.map, a.ratio, "map-bg") : ""}${cwgDecor(c)}<div class="wrap">
       <div>${a ? `<h1><img class="lv" src="${a.v}" alt="${esc(c)} Cluster Working Group"></h1>` : `<h1 class="h1">${esc(c)}</h1>`}</div>
       <div class="side">
-        ${l ? `<div class="lead-card"><div class="who">CWG lead</div>${contactHtml({ name: l.name, role: [l.role, l.territory && terrName(l.territory)].filter(Boolean).join(", "), email: l.email })}</div>` : ""}</div>
+        ${l ? `<div class="lead-card"><div class="who">CWG lead</div>${contactHtml({ name: l.name, role: [l.role, l.territory && terrName(l.territory)].filter(Boolean).join(", "), email: "" })}</div>` : ""}</div>
     </div></section>
     <div class="wrap page-body" style="padding-top:var(--g7)">
       <p class="lede" style="margin-bottom:var(--g6)">${esc(c)} is one of four <a class="textlink" href="#/cwgs">Cluster Working Groups</a>. Its members meet online through the year and in person every two years to share what works, build their teams' skills and shape their territories' Community Development Strategies.</p>
@@ -1850,11 +1850,11 @@ function pageTerritory(id) {
       </div>
       <aside>
         ${canTerr(t.id) ? `<a class="btn fill" style="margin-bottom:var(--g3)" href="#/console/territory/${esc(t.id)}">Edit this territory's profile</a>` : ""}
-        <div class="aside-box"><h2 class="h3">Contact persons</h2>${terrContacts(t).length ? `<div>${terrContacts(t).map(contactHtml).join("")}</div>` : `<p class="empty">Contacts will be listed here. Until then, reach the territory through its CWG lead.</p>`}</div>
+        <div class="aside-box"><h2 class="h3">Contact persons</h2>${terrContacts(t).length ? `<div>${terrContacts(t).map(c => contactHtml({ ...c, email: "" })).join("")}</div>` : `<p class="empty">Contacts will be listed here. Until then, reach the territory through its CWG lead.</p>`}</div>
         <div class="aside-box"><h2 class="h3">CD Strategy</h2><div class="stack" style="--gap:var(--g1)"><div>${statusChip(t)}</div>${t.strategyPeriod ? `<div class="small">Strategy period ${esc(t.strategyPeriod)}</div>` : ""}
           ${t.focal ? `<div class="small">CD focal person: <b style="color:var(--ink)">${esc(t.focal.name)}</b>${t.focal.role ? `, ${esc(t.focal.role)}` : ""}</div>` : ""}
           <div style="margin-top:var(--g2)"><a class="textlink" href="${CDS_URL}#territory-${esc(t.id)}">See CD Strategy details</a></div></div></div>
-        ${l ? `<div class="aside-box"><h2 class="h3">${esc(c)} CWG lead</h2><div>${contactHtml({ name: l.name, role: [l.role, terrName(l.territory)].filter(Boolean).join(", "), email: l.email })}
+        ${l ? `<div class="aside-box"><h2 class="h3">${esc(c)} CWG lead</h2><div>${contactHtml({ name: l.name, role: [l.role, terrName(l.territory)].filter(Boolean).join(", "), email: "" })}
           <div style="margin-top:var(--g2)"><a class="textlink" href="#/cwg/${cwgSlug(c)}">Other territories in ${esc(c)}</a></div></div></div>` : ""}
       </aside>
     </div></div>`;
@@ -1901,12 +1901,12 @@ function pageUnit(u) {
       </div>
       <aside>
         ${canUnit(u.id) ? `<a class="btn fill" style="margin-bottom:var(--g3)" href="#/console/territory/${esc(u.id)}">Edit this profile</a>` : ""}
-        <div class="aside-box"><h2 class="h3">Contact persons</h2>${unitContacts(u).length ? `<div>${unitContacts(u).map(contactHtml).join("")}</div>` : `<p class="empty">Contacts will be listed here. Until then, reach ${esc(u.name)} through the ${esc(shortName(t.name))} territory or the ${esc(c)} CWG lead.</p>`}</div>
+        <div class="aside-box"><h2 class="h3">Contact persons</h2>${unitContacts(u).length ? `<div>${unitContacts(u).map(c => contactHtml({ ...c, email: "" })).join("")}</div>` : `<p class="empty">Contacts will be listed here. Until then, reach ${esc(u.name)} through the ${esc(shortName(t.name))} territory or the ${esc(c)} CWG lead.</p>`}</div>
         <div class="aside-box"><h2 class="h3">${esc(OFFICIAL_NAME[t.id] || t.name)}</h2><div class="stack" style="--gap:var(--g1)">
           <p class="small" style="margin:0">${esc(u.name)} follows the territory's Community Development Strategy.</p><div>${statusChip(t)}</div>
           <a class="textlink" href="#/territory/${esc(t.id)}">The territory's profile</a>
           ${siblings.length ? `<div class="small" style="margin-top:var(--g2)">Also in the territory: ${siblings.map(s => `<a class="textlink" href="#/territory/${esc(s.id)}">${esc(s.name)}</a>`).join(", ")}</div>` : ""}</div></div>
-        ${l ? `<div class="aside-box"><h2 class="h3">${esc(c)} CWG lead</h2><div>${contactHtml({ name: l.name, role: [l.role, terrName(l.territory)].filter(Boolean).join(", "), email: l.email })}</div></div>` : ""}
+        ${l ? `<div class="aside-box"><h2 class="h3">${esc(c)} CWG lead</h2><div>${contactHtml({ name: l.name, role: [l.role, terrName(l.territory)].filter(Boolean).join(", "), email: "" })}</div></div>` : ""}
       </aside>
     </div></div>`;
 }
@@ -1958,7 +1958,7 @@ function unitsToggles() {
     done(i ? `${name} is now ${i.checked ? "activated on" : "hidden from"} the website.` : `${name} now belongs to ${sel.value}.`); };
 }
 // contact persons see who the contacts are; only admins and the CWG's leads change them
-const roContacts = cs => `<div class="ro-cons">${(cs || []).length ? (cs || []).map(c => `<div><b>${esc([c.rank, c.name].filter(Boolean).join(" "))}</b>${c.role ? ` · ${esc(c.role)}` : ""}${c.email ? ` · ${esc(c.email)}` : ""}</div>`).join("") : `<p class="small">No contact persons yet.</p>`}<p class="small">Only admins and the CWG's leads change the contact persons.</p></div>`;
+const roContacts = cs => `<div class="ro-cons">${(cs || []).length ? (cs || []).map(c => `<div><b>${esc([c.rank, c.name].filter(Boolean).join(" "))}</b>${c.role ? ` · ${esc(c.role)}` : ""}</div>`).join("") : `<p class="small">No contact persons yet.</p>`}<p class="small">Only admins and the CWG's leads change the contact persons.</p></div>`;
 function unitEditor(id) {
   const box = $("terr-editor"), u = anyUnitById(id); if (!box || !u) return;
   const canConU = canToggleUnit(id) || canCwg(u.cwg);
@@ -1971,7 +1971,7 @@ function unitEditor(id) {
       <label><span>Technical support they can offer others</span><textarea id="p-tech" rows="4">${esc(p.techSupport || "")}</textarea></label>
     </div>
     <h3 class="h3" style="margin-top:var(--g5)">Contact persons</h3>
-    ${canConU ? `<p class="small">Contact persons with an email can sign in and edit this profile. CWG members linked to ${esc(u.name)} also show as contacts on the website.</p>
+    ${canConU ? `<p class="small">Names and roles only: the website doesn't show contact persons' emails or phone numbers. CWG members linked to ${esc(u.name)} also show as contacts.</p>
     <div id="con-box"><div class="ed-rows">${((u.contacts || []).length ? u.contacts : [{}]).map(c => fieldRow(CON_COLS, c, [])).join("")}</div>
       <div class="ed-actions"><button type="button" class="btn sm ed-add">Add a contact</button></div></div>` : roContacts(u.contacts)}
     <div class="ed-actions sticky"><button type="button" class="btn fill" id="terr-save">Save ${esc(u.name)}</button><a class="textlink" href="#/territory/${esc(u.id)}">View the page</a><span class="ed-msg" id="terr-msg" role="status"></span></div>`;
@@ -2465,9 +2465,9 @@ function consoleSignin() {
   return `<div class="console-card si-card"><div class="si-main"><h2 class="h2">Sign in</h2>
     <p class="small">Sign in with your email and PIN. It's the same sign-in for this website, the Calendar and CD Strategies: sign in once and you're signed in on all three.</p>
     <div id="pin-box" class="si-pin"></div>
-    <details class="si-alt"${signinEmail ? " open" : ""}><summary>Or email me a sign-in code instead (fastest with Gmail)</summary>
+    <details class="si-alt"${signinEmail ? " open" : ""}><summary>Or email me a sign-in code instead</summary>
     <form id="si-form" class="si-form" autocomplete="on"><label for="si-email">Your email</label>
-      <div class="copy-row"><input type="email" id="si-email" required autocomplete="email" value="${esc(signinEmail)}" placeholder="name@salvationarmy.org"><button class="btn fill sm" id="si-go">Email me a sign-in code</button></div></form>
+      <div class="copy-row"><input type="email" id="si-email" required autocomplete="email" value="${esc(signinEmail)}" placeholder="yourname@gmail.com"><button class="btn fill sm" id="si-go">Email me a sign-in code</button></div></form>
     <div id="si-limit">${signinLimitBox(null)}</div>
     <div id="si-code" ${signinEmail ? "" : "hidden"}><label for="si-token">Code from the email</label>
       <div class="copy-row"><input type="text" id="si-token" inputmode="numeric" autocomplete="one-time-code" placeholder="123456"><button class="btn fill sm" id="si-verify">Sign in</button></div>
@@ -2477,12 +2477,11 @@ function consoleSignin() {
     <aside class="si-guide" aria-label="How to get set up">
       <p class="si-gk">New here?</p><h3>How to get set up</h3>
       <ol>
-        <li><b>Check you're registered.</b><span>Your CWG lead or an ASLP admin adds your email. Not sure? Ask them.</span></li>
-        <li><b>Sign in the first time, one of two ways.</b><span><em>With a PIN:</em> select <b>First time? Set up your PIN</b>. Your CWG lead or an admin approves it, then sign in with your email and PIN.</span><span><em>With an email code:</em> open <b>Or email me a sign-in code</b> below. It can be slow in work Outlook.</span></li>
-        <li><b>Finish setting up.</b><span>Once you're in, the site asks you to choose a PIN (if you haven't) and, if you like, to add your Gmail. Gmail gets sign-in emails fast and lets you reset a forgotten PIN yourself.</span></li>
-        <li><b>Next time.</b><span>Just your email and PIN, on any of the three sites.</span></li>
+        <li><b>Check you're registered.</b><span>Admins, CWG leads and view-only accounts can sign in, each with their Gmail. An ASLP admin adds you. Not sure? Ask them.</span></li>
+        <li><b>Sign in the first time, one of two ways.</b><span><em>With a PIN:</em> select <b>First time? Set up your PIN</b>. Your CWG lead or an admin approves it, then sign in with your Gmail and PIN.</span><span><em>With an email code:</em> open <b>Or email me a sign-in code</b> below. The code arrives in your Gmail.</span></li>
+        <li><b>Next time.</b><span>Just your Gmail and PIN, on any of the three sites. If you signed in with a code, the site asks you to choose a PIN first.</span></li>
       </ol>
-      <div class="si-forgot"><b>Forgot your PIN?</b><span>Select <b>Forgot your PIN?</b>. If you added a Gmail, a reset link goes there. If not, you can add your Gmail (your CWG lead or an admin approves it, then the link goes there), or get a one-time code: it's emailed to your CWG lead and the admins, works for 1 hour, and lets you choose a new PIN.</span></div>
+      <div class="si-forgot"><b>Forgot your PIN?</b><span>Select <b>Forgot your PIN?</b>. A reset link goes to your Gmail: open it and choose a new PIN. Can't get into your Gmail? Ask for a one-time code instead: it's emailed to your CWG lead and the admins, works for 1 hour, and lets you choose a new PIN.</span></div>
     </aside></div>`;
 }
 // ---- console welcome: a greeting and, in plain steps, what this person's access lets them do ----
@@ -2630,8 +2629,8 @@ const TOURS = {
     { el: "#terr-save", wait: "click", delay: 900, title: "Save", text: "Select <b>Save</b>. In this test run nothing is saved." },
     { title: "Done", text: "In a real run the profile updates on the website straight away. Open the territory's page from the menu to check how it looks." } ],
   people: () => [
-    { tab: "cc-members", el: "#mem-editor", title: "Your CWG's members", text: "Each row is one member: their rank, name, role, email and the territory they're from." },
-    { el: () => findEl("#mem-editor .ed-add"), wait: "click", title: "Add a member", text: "Select <b>Add a member</b> to add a new row, then fill it in. Members with an email can sign in." },
+    { tab: "cc-members", el: "#mem-editor", title: "Your CWG's members", text: "Each row is one member: their rank, name, role and the territory they're from. The website doesn't keep members' emails or phone numbers." },
+    { el: () => findEl("#mem-editor .ed-add"), wait: "click", title: "Add a member", text: "Select <b>Add a member</b> to add a new row, then fill it in." },
     { el: "#mem-save", wait: "click", delay: 900, title: "Save", text: "Select <b>Save</b>. In this test run nothing is saved." },
     { title: "Done", text: "In a real run the CWG page shows the new members, grouped by territory." } ],
   toggle: () => [
@@ -2642,7 +2641,7 @@ const TOURS = {
   group: () => [
     { tab: "cc-groups", el: "#g-pick", title: "Pick the group", text: "Choose the group page you're editing." },
     { el: "#g-desc", title: "About the group", text: "Describe what the group does, in plain words." },
-    { el: "#gm-box", title: "Who sits on it", text: "List the members, with their role in the group. Members with an email can be recognised by the site." },
+    { el: "#gm-box", title: "Who sits on it", text: "List the members, with their role in the group." },
     { el: "#g-save", wait: "click", delay: 900, title: "Save", text: "Select <b>Save</b>. In this test run nothing is saved." },
     { title: "Done", text: "In a real run the group's page updates straight away." } ],
   // the Calendar and CD Strategies have their own test runs, on their real pages; these steps hand over to them
@@ -2656,9 +2655,8 @@ const TOURS = {
     { el: "#nw-box", title: "Newsletter", text: "Add newsletter issues. The newest one opens as a flip-through book on the Newsletter page." },
     { el: "#pg-save", wait: "click", delay: 900, title: "Save", text: "Select <b>Save</b>. In this test run nothing is saved." } ],
   key: () => [
-    { tab: "cc-access", el: "#ac-lead", title: "Switch access on or off", text: "Each switch turns editing on or off for a whole role, such as CWG leads or contact persons." },
-    { el: () => findEl(".xa-rows"), title: "Admins and viewers", text: "All admins are listed here with their name and email, up to 6. Below them are up to 5 view-only accounts that can see everything but change nothing. Change a row, or clear it to remove someone, then save." },
-    { el: "#ac-zc-SPEA", title: "Zone coordinators", text: "Type the email of a zone coordinator. They get the same access as the CWG leads of their zone." },
+    { tab: "cc-access", el: "#ac-lead", title: "Switch access on or off", text: "This switch turns editing on or off for all CWG leads." },
+    { el: () => findEl(".xa-rows"), title: "Admins and viewers", text: "All admins are listed here with their name and Gmail, up to 6. Below them are up to 4 view-only accounts that can see everything but change nothing, then one CWG lead per CWG. Only Gmail addresses are accepted. Change a row, or clear it to remove someone, then save." },
     { el: ".ge-table", title: "Who edits each group page", text: "Tick who can edit each ASLP Group page, besides admins." },
     { el: "#ac-save", wait: "click", delay: 900, title: "Save access", text: "Select <b>Save access</b>. In this test run nothing is saved." } ] };
 function pageConsole(a, b) {
@@ -2673,7 +2671,7 @@ function pageConsole(a, b) {
     <div class="console-head"><div><h1 class="h1">Console</h1><p class="small" style="margin-top:6px">${esc(who)} · ${esc(v.email)}</p></div><button type="button" class="btn sm" id="si-out">Sign out</button></div>
     ${v.ro ? `<div class="ro-bar"><b>View only</b><span>You can see everything an admin sees: every tab, update, profile and setting. Nothing can be changed from this account.</span></div>` : ""}
     <div class="ctabs" role="tablist"><a role="tab" aria-selected="${tab === "website"}" class="${tab === "website" ? "on" : ""}" href="#/console">Website details</a>${v.cds_access ? `<a role="tab" aria-selected="${tab === "strategies"}" class="${tab === "strategies" ? "on" : ""}" href="#/console/strategies">CD Strategies</a>` : ""}</div></div>`;
-  if (tab === "strategies" && !v.cds_access) return head + `<div class="wrap page-body"><div class="console-card"><p>This account doesn't use the CD Strategies console. Territories' CD focal persons, CWG leads and admins update the CD Strategies.</p></div></div>`;
+  if (tab === "strategies" && !v.cds_access) return head + `<div class="wrap page-body"><div class="console-card"><p>This account doesn't use the CD Strategies console. CWG leads and admins update the CD Strategies.</p></div></div>`;
   if (tab === "strategies") return head + `<div class="wrap page-body"><div class="console-card"><h2 class="h2">CD Strategies console</h2>
     <p>Update each territory's CD Strategy status and details, focal persons and approvals on the CD Strategies website. You're already signed in there with this account.</p>
     <p class="small">The territory's name, CWG, headquarters, countries, offices, status, strategy period and focal person are kept there and shown on this website automatically.</p>
@@ -2697,7 +2695,7 @@ function pageConsole(a, b) {
       <p class="small">Tick a region, division or country to activate its profile on the website, and choose which CWG it belongs to. This can be a different CWG from its territory's. Unticked ones don't appear on the website. CWG leads can change the ones in their own CWG or their CWG's territories.</p>
       <div id="units-editor"></div></section>` : ""}
     ${cwgs.length ? `<section class="console-card" id="cc-members"><div class="row-head"><h2 class="h2">CWG members</h2></div>
-      <p class="small">Add each CWG member's rank (if an officer), name, appointment or role and email. "Alternative email (Gmail)" fills in by itself when a member adds their own Gmail for sign-in emails. Members linked to a territory are listed on that territory's page and can sign in to edit its profile.</p>
+      <p class="small">Add each CWG member's rank (if an officer), name and appointment or role. Members linked to a territory are listed on that territory's page. The website doesn't keep members' emails or phone numbers, and members don't sign in.</p>
       ${cwgs.length > 1 ? `<div class="cw-pick" role="tablist">${cwgs.map(c => `<button type="button" role="tab" class="chip-btn${c === (selC || cwgs[0]) ? " on" : ""}" data-cw="${esc(c)}">${esc(c)}</button>`).join("")}</div>` : ""}
       <div id="mem-editor"></div></section>` : ""}
     ${terrIds.length || unitIds.length ? `<section class="console-card" id="cc-terr"><div class="row-head"><h2 class="h2">Territory profiles</h2>
@@ -2715,8 +2713,6 @@ function pageConsole(a, b) {
       <div id="pin-reqs">${loader("Loading requests…")}</div>
       <h2 class="h2" style="margin-top:var(--g5)">Your PIN</h2>` : `<h2 class="h2">Your PIN</h2>`}
       <p class="small">You sign in with your email and PIN on this website, the Calendar and CD Strategies. Change it here any time. You're signed in, so no approval is needed.</p>
-      <h3 class="h3" style="margin-top:var(--g3)">Your Gmail for sign-in emails</h3>
-      <div id="alt-box" style="max-width:560px" data-ro-zone></div>
       <h3 class="h3" style="margin-top:var(--g4)">Change your PIN</h3>
       <form id="my-pin" class="ed-grid" autocomplete="off" style="max-width:560px">
         <label><span>New PIN</span><input type="password" id="mp-a" autocomplete="new-password" data-ro-ok placeholder="At least 6 characters"></label>
@@ -2726,7 +2722,7 @@ function pageConsole(a, b) {
   </div>`;
 }
 // ---- console: ASLP group details and members ----
-const GRP_COLS = [["groupRole", "Role in this group", "e.g. Chair, SASIA 1 CWG lead"], ["rank", "Rank (officers only)", "Empty if not an officer"], ["name", "Name"], ["role", "Job title or appointment", "e.g. Chief Secretary, Programme Manager"], ["office", "Office", "e.g. Bangladesh Territory, Salvation Army Switzerland"], ["email", "Email"], ["alt", "Alternative email (Gmail)"]];
+const GRP_COLS = [["groupRole", "Role in this group", "e.g. Chair, SASIA 1 CWG lead"], ["rank", "Rank (officers only)", "Empty if not an officer"], ["name", "Name"], ["role", "Job title or appointment", "e.g. Chief Secretary, Programme Manager"], ["office", "Office", "e.g. Bangladesh Territory, Salvation Army Switzerland"]];
 function groupEditor(key) {
   const box = $("grp-editor"), g = (data.groups || []).find(x => x.key === key); if (!box || !g) return;
   const admin = !!V().is_full_admin, tor = groupTor(key);
@@ -2738,12 +2734,11 @@ function groupEditor(key) {
       <label class="full"><span>Mandate <span class="ed-hint">One point per line. The page says "${esc(tor ? tor.lead : "")}" before them.</span></span><textarea id="g-mandate" rows="6">${esc(tor.mandate.join("\n"))}</textarea></label>` : ""}
     </div>
     <h3 class="h3" style="margin-top:var(--g5)">Members</h3>
-    <p class="small">Listed on the ${esc(g.short)} page in this order. Use the arrows to move someone up or down. "Role in this group" is what they do in the ${esc(g.short)}, for example Chair. "Alternative email (Gmail)" fills in by itself when a member adds their own Gmail for sign-in emails. "Job title or appointment" and "Office" are their own work: an officer's appointment and territory, or an employee's job title and office. Leave Rank empty for anyone who isn't an officer. Being listed doesn't give anyone access to this console.</p>
+    <p class="small">Listed on the ${esc(g.short)} page in this order. Use the arrows to move someone up or down. "Role in this group" is what they do in the ${esc(g.short)}, for example Chair. "Job title or appointment" and "Office" are their own work: an officer's appointment and territory, or an employee's job title and office. Leave Rank empty for anyone who isn't an officer. Being listed doesn't give anyone access to this console.</p>
     <div id="gm-box"><div class="ed-rows">${((g.members || []).length ? g.members : [{}]).map(m => fieldRow(GRP_COLS, m, [])).join("")}</div>
       <div class="ed-actions"><button type="button" class="btn sm ed-add">Add a member</button></div></div>
     <div class="ed-actions sticky"><button type="button" class="btn fill" id="g-save">Save the ${esc(g.short)}</button><a class="textlink" href="#/group/${esc(key)}">View the page</a><span class="ed-msg" id="g-msg" role="status"></span></div>`;
   wireRows($("gm-box"), GRP_COLS, []);
-  fillAlts($("gm-box"));
   makeDraftable(box, `grp:${key}`, () => groupEditor(key));
   $("g-save").addEventListener("click", () => saveWith("g-save", "g-msg", async () => {
     const r = await db.rpc("aslp_save_group", { p_key: key, p_group: { ...(admin ? { name: $("g-name").value.trim() } : {}), description: $("g-desc").value.trim(), members: readRows($("gm-box")) } });
@@ -3135,6 +3130,7 @@ function pagesEditor() {
     return db.rpc("aslp_save_content", { p_key: "newsletter", p_title: "Newsletter issues", p_body: JSON.stringify(rows) });
   }, "Newsletter shelf saved."));
 }
+const GMAIL = /^[^@\s]+@gmail\.com$/i;
 // ---- console (admins): who can edit what. Access goes to roles, so it passes to whoever holds the role next ----
 async function accessEditor() {
   const box = $("access-editor"); if (!box) return;
@@ -3143,25 +3139,22 @@ async function accessEditor() {
   const st = a.settings || {}, ge = st.group_editors || {}, on = k => st[k] !== false;
   const xa = (k, i) => k === "admin" ? (a.mainAdmins || []).map(x => typeof x === "string" ? { email: x } : x)[i - 1] || {} : (a.extra || []).find(x => x.kind === k && x.slot === i) || {};
   const xaRow = (k, i, l) => `<div class="xa-row"><span class="xa-n">${l} ${i}</span><label><span>Name</span><input type="text" data-xa="${k}" data-xf="name" value="${esc(xa(k, i).name || "")}" placeholder="Name" autocomplete="off"></label>
-    <label><span>Email</span><input type="email" data-xa="${k}" data-xf="email" value="${esc(xa(k, i).email || "")}" placeholder="Empty slot" autocomplete="off"></label></div>`;
-  const roleOpts = [["coordinators", "ASLP Coordinators"], ["all_leads", "All CWG leads"], ...(a.leads || []).map(l => [`lead:${l.cwg}`, `${l.cwg} CWG lead${l.name ? ` (now ${l.name})` : ""}`])];
-  box.innerHTML = `<p class="small">Access goes with a role, not a person. When someone new becomes a CWG lead, a territory's CD focal person or a CWG member, they get the same access as the person before them. Admins can always edit everything.</p>
+    <label><span>Gmail</span><input type="email" data-xa="${k}" data-xf="email" value="${esc(xa(k, i).email || "")}" placeholder="Empty slot (Gmail only)" autocomplete="off"></label></div>`;
+  const CWGS = [...new Set([...(data.territories || []).map(t => t.cwg), ...(a.leads || []).map(l => l.cwg)].filter(Boolean))].sort();
+  const lead = c => (a.leads || []).find(l => l.cwg === c) || {};
+  const roleOpts = [["all_leads", "All CWG leads"], ...(a.leads || []).map(l => [`lead:${l.cwg}`, `${l.cwg} CWG lead${l.name ? ` (now ${l.name})` : ""}`])];
+  box.innerHTML = `<p class="small">Only admins, CWG leads and view-only accounts can sign in. Everyone signs in with a Gmail address: other emails aren't accepted. The website doesn't keep anyone else's email or phone number.</p>
     <label class="toggle"><input type="checkbox" id="ac-lead" ${on("lead_web") ? "checked" : ""}><div><b>CWG leads edit their CWG on this website</b><span>Their CWG's members, and the profiles and contacts of its territories.</span></div></label>
-    <label class="toggle"><input type="checkbox" id="ac-member" ${on("member_web") ? "checked" : ""}><div><b>Contact persons edit their territory's profile</b><span>People listed as a territory's (or region's) contact persons, with an email, can sign in and edit that profile only. Admins and CWG leads choose the contact persons. CWG members not listed as contacts can't edit profiles.</span></div></label>
-    <label class="toggle"><input type="checkbox" id="ac-focal" ${on("focal_cds") ? "checked" : ""}><div><b>CD focal persons update their territory's CD Strategy</b><span>The person named as focal person in the CD Strategies (${a.focalCount || 0} territories). CWG leads and admins keep their access either way.</span></div></label>
     ${V().ro ? "" : `<h3 class="h3" style="margin-top:var(--g4)">Admins</h3>
-    <p class="small">Admins can see and change everything on this website, the Calendar and CD Strategies. They sign in with their email like everyone else, and the site greets them by name. Up to 6 admins. To remove one, clear their row. You can't remove yourself.</p>
+    <p class="small">Admins can see and change everything on this website, the Calendar and CD Strategies. They sign in with their Gmail like everyone else, and the site greets them by name. Up to 6 admins. To remove one, clear their row. You can't remove yourself.</p>
     <div class="xa-rows">${[1, 2, 3, 4, 5, 6].map(i => xaRow("admin", i, "Admin")).join("")}</div>
     <h3 class="h3" style="margin-top:var(--g4)">View-only accounts</h3>
-    <p class="small">A viewer can sign in and see everything an admin sees, on this website, the Calendar and CD Strategies, except who the admins and viewers are. They can't change, post, approve or delete anything.</p>
-    <div class="xa-rows">${[1, 2, 3, 4, 5].map(i => xaRow("viewer", i, "Viewer")).join("")}</div>
-    <h3 class="h3" style="margin-top:var(--g4)">CWG leads' alternative emails</h3>
-    <p class="small">Each CWG lead can have one alternative email, for example their Gmail. It can also sign in as the lead, and it's where PIN approval requests from their CWG are emailed (to the main email if there's no alternative). Admins' approval requests go to the admins above.</p>
-    <div class="xa-rows">${(a.leads || []).map(l => `<div class="xa-row"><span class="xa-n">${esc(l.cwg)}</span><label><span>Lead</span><input type="text" value="${esc(l.name ? `${l.name} · ${l.email}` : l.email)}" readonly tabindex="-1"></label>
-      <label><span>Alternative email</span><input type="email" data-lead-alt="${esc(l.cwg)}" data-was="${esc(l.alt || "")}" value="${esc(l.alt || "")}" placeholder="None" autocomplete="off"></label></div>`).join("") || `<p class="small">No CWG leads yet.</p>`}</div>`}
-    <h3 class="h3" style="margin-top:var(--g4)">Zone coordinators</h3>
-    <p class="small">A zone coordinator has the same access as the CWG leads of every CWG in their zone: posting CWG updates, territory and region profiles, CWG members, the zone's CD Strategies, and the calendar for those CWGs. Leave empty until there's someone in the role. Separate several emails with commas.</p>
-    <div class="ed-grid">${["SPEA", "SASIA"].map(z => `<label><span>${z} coordinator</span><input type="text" id="ac-zc-${z}" value="${esc(((st.zone_coordinators || {})[z] || []).join(", "))}" placeholder="No ${z} coordinator yet" autocomplete="off"></label>`).join("")}</div>
+    <p class="small">Up to 4. A viewer can sign in and see everything an admin sees, on this website, the Calendar and CD Strategies, except who the admins and viewers are. They can't change, post, approve or delete anything.</p>
+    <div class="xa-rows">${[1, 2, 3, 4].map(i => xaRow("viewer", i, "Viewer")).join("")}</div>
+    <h3 class="h3" style="margin-top:var(--g4)">CWG leads</h3>
+    <p class="small">One lead per CWG, with their name and Gmail. They can sign in straight away and manage their CWG. PIN requests from their CWG go to them; admins' go to the admins above. To remove a lead, clear the Gmail.</p>
+    <div class="xa-rows">${CWGS.map(c => `<div class="xa-row" data-lead-row="${esc(c)}"><span class="xa-n">${esc(c)}</span><label><span>Name</span><input type="text" data-lf="name" value="${esc(lead(c).name || "")}" placeholder="Name" autocomplete="off"></label>
+      <label><span>Gmail</span><input type="email" data-lf="email" data-was="${esc(lead(c).email || "")}" value="${esc(lead(c).email || "")}" placeholder="No lead yet (Gmail only)" autocomplete="off"></label></div>`).join("")}</div>`}
     <h3 class="h3" style="margin-top:var(--g4)">Who can edit each ASLP Group page</h3>
     <p class="small">Besides admins. Group members listed on a page don't get access.</p>
     <table class="ge-table"><thead><tr><th>Group</th><th>Can edit its page and members</th></tr></thead><tbody>
@@ -3170,7 +3163,6 @@ async function accessEditor() {
     <div class="ed-actions"><button type="button" class="btn fill" id="ac-save">Save access</button><span class="ed-msg" id="ac-msg" role="status"></span></div>`;
   $("ac-save").addEventListener("click", () => saveWith("ac-save", "ac-msg", () => {
     const groupsSel = {}; (data.groups || []).forEach(g => { groupsSel[g.key] = [...box.querySelectorAll(`[data-ge="${g.key}"]:checked`)].map(x => x.value); });
-    const zc = z => $(`ac-zc-${z}`).value.split(/[,;\s]+/).map(x => x.trim()).filter(Boolean);
     const xrows = k => [...box.querySelectorAll(`.xa-row`)].map(r => ({ name: (r.querySelector(`[data-xa="${k}"][data-xf=name]`) || {}).value, email: (r.querySelector(`[data-xa="${k}"][data-xf=email]`) || {}).value }))
       .filter(r => r.email !== undefined).map(r => ({ name: (r.name || "").trim(), email: (r.email || "").trim().toLowerCase() })).filter(r => r.email || r.name);
     const nameless = [...xrows("admin"), ...xrows("viewer")].find(r => !r.email);
@@ -3178,16 +3170,16 @@ async function accessEditor() {
     const dup = [...xrows("admin"), ...xrows("viewer")].map(r => r.email).find((e, i, all) => all.indexOf(e) !== i);
     if (dup) return Promise.resolve({ error: { message: `${dup} is listed twice. Each email can be an admin or a viewer, not both.` } });
     if (nameless) return Promise.resolve({ error: { message: `Add an email for ${nameless.name}, or clear the name.` } });
-    const bad = [...zc("SPEA"), ...zc("SASIA"), ...xrows("admin").map(r => r.email), ...xrows("viewer").map(r => r.email)].find(x => !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(x));
-    if (bad) return Promise.resolve({ error: { message: `This email doesn't look right: ${bad}` } });
-    const altCh = [...box.querySelectorAll("[data-lead-alt]")].filter(x => x.value.trim().toLowerCase() !== x.dataset.was);
-    const badAlt = altCh.map(x => x.value.trim()).find(x => x && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(x));
-    if (badAlt) return Promise.resolve({ error: { message: `This email doesn't look right: ${badAlt}` } });
+    const leads = [...box.querySelectorAll("[data-lead-row]")].map(r => ({ cwg: r.dataset.leadRow, name: r.querySelector('[data-lf="name"]').value.trim(), email: r.querySelector('[data-lf="email"]').value.trim().toLowerCase() }));
+    const leadNameless = leads.find(l => l.name && !l.email);
+    if (leadNameless) return Promise.resolve({ error: { message: `Add a Gmail for the ${leadNameless.cwg} CWG lead, or clear the name.` } });
+    const bad = [...xrows("admin").map(r => r.email), ...xrows("viewer").map(r => r.email), ...leads.map(l => l.email).filter(Boolean)].find(x => !GMAIL.test(x));
+    if (bad) return Promise.resolve({ error: { message: `Please use a Gmail address (ending in @gmail.com): ${bad}` } });
     return (async () => {
-      for (const x of altCh) { const r = await db.rpc("aslp_set_lead_alt", { p_cwg: x.dataset.leadAlt, p_email: x.value.trim().toLowerCase() }); if (r.error) return r; x.dataset.was = x.value.trim().toLowerCase(); }
-      return db.rpc("aslp_set_access", { p_settings: { lead_web: $("ac-lead").checked, member_web: $("ac-member").checked, focal_cds: $("ac-focal").checked, group_editors: groupsSel, zone_coordinators: { SPEA: zc("SPEA"), SASIA: zc("SASIA") },
+      if (!V().ro) { const r = await db.rpc("aslp_set_leads", { p_leads: leads }); if (r.error) return r; }
+      return db.rpc("aslp_set_access", { p_settings: { lead_web: $("ac-lead").checked, member_web: false, focal_cds: false, group_editors: groupsSel,
       ...(V().ro ? {} : { admins: xrows("admin"), viewers: xrows("viewer") }) } }); })();
-  }, "Access saved. It applies straight away. New admins and viewers can sign in with their email now."));
+  }, "Access saved. It applies straight away. New admins, CWG leads and viewers can sign in with their Gmail now."));
 }
 // the countries, regions and divisions inside a territory, using The Salvation Army's own terms
 const TERR_UNITS = {
@@ -3224,17 +3216,8 @@ const fieldRow = (cols, vals, terrOpts) => `<div class="ed-row">${cols.map(([k, 
   : `<label><span>${l}</span><input data-k="${k}" type="${k === "email" ? "email" : "text"}" value="${esc(vals[k] || "")}" placeholder="${esc(ph || "")}"></label>`).join("")}
   <div class="ed-move"><button type="button" class="ed-up" aria-label="Move up" title="Move up">↑</button><button type="button" class="ed-down" aria-label="Move down" title="Move down">↓</button></div>
   <button type="button" class="ed-del" aria-label="Remove">Remove</button></div>`;
-const MEM_COLS = [["rank", "Rank (officers)", "e.g. Captain"], ["name", "Name"], ["role", "Appointment / role"], ["email", "Email"], ["alt", "Alternative email (Gmail)"], ["territory", "Territory"]];
-// each member's own Gmail for sign-in emails: filled in automatically once they add it, never typed here
-async function fillAlts(box) {
-  if (!box) return; const rows = [...box.querySelectorAll(".ed-row")];
-  const emails = rows.map(r => ((r.querySelector('[data-k="email"]') || {}).value || "").trim().toLowerCase()).filter(Boolean);
-  let map = {}; if (emails.length) { const { data } = await db.rpc("aslp_member_alts", { p_emails: emails }); map = data || {}; }
-  const put = r => { const e = ((r.querySelector('[data-k="email"]') || {}).value || "").trim().toLowerCase(), a = r.querySelector("[data-alt-of]"); if (a) a.value = map[e] || ""; };
-  rows.forEach(put);
-  if (!box.dataset.altWired) { box.dataset.altWired = "1"; box.addEventListener("change", e => { if (e.target.matches('[data-k="email"]')) { const r = e.target.closest(".ed-row"); if (r) { const em = e.target.value.trim().toLowerCase(); if (em && !(em in map)) db.rpc("aslp_member_alts", { p_emails: [em] }).then(({ data }) => { Object.assign(map, data || {}); put(r); }); else put(r); } } }); }
-}
-const CON_COLS = [["rank", "Rank (officers)", "e.g. Major"], ["name", "Name"], ["role", "Appointment / role"], ["email", "Email"]];
+const MEM_COLS = [["rank", "Rank (officers)", "e.g. Captain"], ["name", "Name"], ["role", "Appointment / role"], ["territory", "Territory"]];
+const CON_COLS = [["rank", "Rank (officers)", "e.g. Major"], ["name", "Name"], ["role", "Appointment / role"]];
 const readRows = box => [...box.querySelectorAll(".ed-row")].map(r => Object.fromEntries([...r.querySelectorAll("[data-k]")].flatMap(i => {
     const v = i.value.trim(); if (i.dataset.k !== "territory") return [[i.dataset.k, v]];
     const [t, ...u] = v.split("|"); return [["territory", t || ""], ["unit", u.join("|")]]; }))).filter(o => Object.values(o).some(Boolean));
@@ -3254,7 +3237,6 @@ function memEditor(c) {
     <div class="ed-actions"><button type="button" class="btn sm ed-add">Add a member</button><button type="button" class="btn fill sm" id="mem-save">Save ${esc(c)} members</button><span class="ed-msg" id="mem-msg" role="status"></span></div>`;
   wireRows(box, MEM_COLS, opts);
   makeDraftable(box, `mem:${c}`, () => memEditor(c));
-  fillAlts(box);
   $("mem-save").addEventListener("click", () => saveWith("mem-save", "mem-msg", () => db.rpc("aslp_set_cwg_members", { p_cwg: c, p_items: readRows(box) }), `${c} members saved.`));
 }
 function terrEditor(id) {
@@ -3276,7 +3258,7 @@ function terrEditor(id) {
       <label><span>Technical support they can offer other territories</span><textarea id="p-tech" rows="4">${esc(p.techSupport || "")}</textarea></label>
     </div>
     <h3 class="h3" style="margin-top:var(--g5)">Contact persons</h3>
-    ${canCon ? `<p class="small">Contact persons with an email can sign in and edit this profile. CWG members linked to this territory also show as contacts on the website.</p>
+    ${canCon ? `<p class="small">Names and roles only: the website doesn't show contact persons' emails or phone numbers. CWG members linked to this territory also show as contacts.</p>
     <div id="con-box"><div class="ed-rows">${((t.contacts || []).length ? t.contacts : [{}]).map(c => fieldRow(CON_COLS, c, [])).join("")}</div>
       <div class="ed-actions"><button type="button" class="btn sm ed-add">Add a contact</button></div></div>` : roContacts(t.contacts)}
     <div class="ed-actions sticky"><button type="button" class="btn fill" id="terr-save">Save ${esc(shortName(t.name))}</button><a class="textlink" href="#/territory/${esc(t.id)}">View the page</a><span class="ed-msg" id="terr-msg" role="status"></span></div>`;
@@ -3352,7 +3334,6 @@ async function refresh() { const { data: d, error } = await db.rpc("get_aslp_sit
 // ---- PINs: approving requests (CWG leads for their CWG, admins for anyone) and changing your own ----
 const pinApprover = v => !!((v.is_full_admin && !v.ro) || (v.lead_cwgs || []).length);
 async function pinConsole() {
-  if ($("alt-box") && window.ASLPPin) ASLPPin.altManager($("alt-box"), db);
   const f = $("my-pin");
   if (f) f.addEventListener("submit", async e => {
     e.preventDefault(); const a = $("mp-a").value, b = $("mp-b").value, m = $("mp-msg");
@@ -3431,10 +3412,10 @@ function mountConsole() {
 function signinDemo(box) {
   if (!box) return;
   const RM = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
-  const EM = "jo.tan@salvationarmy.org", GM = "jotan@gmail.com", DOTS = "••••••";
+  const EM = "jotan@gmail.com", DOTS = "••••••";
   const ENV = `<svg viewBox="0 0 26 22" aria-hidden="true"><rect x="1" y="3" width="24" height="17" rx="3" fill="#f5c400" stroke="#000" stroke-width="1.5"/><path d="M2 5l11 8 11-8" fill="none" stroke="#000" stroke-width="1.5"/></svg>`;
   const field = (id, label, ph, val) => `<span class="sd-l">${label}</span><div class="sd-in${val ? "" : " ph"}" data-f="${id}">${val || ph}</div>`;
-  const signin = (em) => field("em", "Your registered email", "name@salvationarmy.org", em) + field("pin", "Your PIN", "Your PIN", "") +
+  const signin = (em) => field("em", "Your Gmail", "yourname@gmail.com", em) + field("pin", "Your PIN", "Your PIN", "") +
     `<div class="sd-go"><span class="sd-btn" data-t="in">Sign in</span><span class="sd-lnk" data-t="first">First time? Set up your PIN</span><span class="sd-lnk" data-t="forgot">Forgot your PIN?</span></div>`;
   const flow = (msg, tick) => `<div class="sd-flow"><div class="sd-who"><div class="sd-av me">JT</div>You</div>
     <div class="sd-path"><span class="sd-env" data-t="env">${ENV}</span></div>
@@ -3442,36 +3423,33 @@ function signinDemo(box) {
   // each step: caption, screen, then actions: ["type", field, text] ["click", target] ["wait", ms] ["send"] ["show", target]
   const FLOWS = {
     first: [
-      { cap: "Type your registered email, then select First time? Set up your PIN.", html: signin(""),
+      { cap: "Type your Gmail, then select First time? Set up your PIN.", html: signin(""),
         act: [["type", "em", EM], ["click", "first"]] },
-      { cap: "Choose a PIN, type it again, and send it for approval.", html: `<div class="sd-k">First time: set up your PIN</div>` + field("em", "Your registered email", "", EM) +
+      { cap: "Choose a PIN, type it again, and send it for approval.", html: `<div class="sd-k">First time: set up your PIN</div>` + field("em", "Your Gmail", "", EM) +
         `<div class="sd-row"><div>${field("a", "Choose a PIN", "At least 6 characters", "")}</div><div>${field("b", "Type it again", "", "")}</div></div><div class="sd-go"><span class="sd-btn" data-t="send">Send for approval</span><span class="sd-lnk">Back to sign in</span></div>`,
         act: [["type", "a", DOTS], ["type", "b", DOTS], ["click", "send"]] },
       { cap: "Your CWG lead or an admin gets an email and approves your PIN.", html: `<div class="sd-h">Waiting for approval</div><div class="sd-note">You can close the page. Nothing else to do until it's approved.</div>` + flow("Approved ✓"),
         act: [["send"], ["show", "tick"], ["show", "bub"], ["wait", 900]] },
-      { cap: "Once it's approved, sign in with your email and PIN.", html: signin(EM),
+      { cap: "Once it's approved, sign in with your Gmail and PIN.", html: signin(EM),
         act: [["type", "pin", DOTS], ["click", "in"]] },
-      { cap: "Optional: add your Gmail. Sign-in emails arrive there fast, and you can reset a forgotten PIN yourself.", html: `<div class="sd-k">Finish setting up</div><div class="sd-h">Want sign-in emails in your Gmail?</div>` + field("g", "Your Gmail", "yourname@gmail.com", "") +
-        `<div class="sd-go"><span class="sd-btn" data-t="save">Save my Gmail</span><span class="sd-lnk">Not now</span></div>`,
-        act: [["type", "g", GM], ["click", "save"]] },
-      { cap: "You're in. Next time: just your email and PIN, on any of the three sites.", html: `<div class="sd-done"><i>✓</i>Signed in on this website, the Calendar and CD Strategies</div>`, act: [["wait", 1800]] },
+      { cap: "You're in. Next time: just your Gmail and PIN, on any of the three sites.", html: `<div class="sd-done"><i>✓</i>Signed in on this website, the Calendar and CD Strategies</div>`, act: [["wait", 1800]] },
     ],
     forgot: [
-      { cap: "Type your registered email, then select Forgot your PIN?", html: signin(""),
+      { cap: "Type your Gmail, then select Forgot your PIN?", html: signin(""),
         act: [["type", "em", EM], ["click", "forgot"]] },
-      { cap: "If you added a Gmail: send a reset link to it.", html: `<span class="sd-chip">With a Gmail</span><div class="sd-k">Forgot your PIN?</div>` + field("em", "Your registered email", "", EM) +
-        `<div class="sd-note">We'll email a link to the Gmail you added. Open it and choose a new PIN.</div><div class="sd-go"><span class="sd-btn" data-t="reset">Send a reset link to my Gmail</span><span class="sd-lnk">Back to sign in</span></div>`,
+      { cap: "Send a reset link to your Gmail.", html: `<span class="sd-chip">Reset link</span><div class="sd-k">Forgot your PIN?</div>` + field("em", "Your Gmail", "", EM) +
+        `<div class="sd-note">We'll email a link to your Gmail. Open it and choose a new PIN.</div><div class="sd-go"><span class="sd-btn" data-t="reset">Send a reset link to my Gmail</span><span class="sd-lnk">Back to sign in</span></div>`,
         act: [["click", "reset"]] },
-      { cap: "Open the email in your Gmail and select the link.", html: `<span class="sd-chip">With a Gmail</span><div class="sd-h">Your Gmail inbox</div><div class="sd-mail">
+      { cap: "Open the email in your Gmail and select the link.", html: `<span class="sd-chip">Reset link</span><div class="sd-h">Your Gmail inbox</div><div class="sd-mail">
         <div class="sd-mrow new" data-t="mail"><span>ASLP website</span><span>Your sign-in link: open it to choose a new PIN</span></div>
         <div class="sd-mrow"><span>Newsletter</span><span>This week's updates</span></div><div class="sd-mrow"><span>Calendar</span><span>Reminder: CWG meeting</span></div></div>`,
         act: [["wait", 400], ["click", "mail"]] },
-      { cap: "Choose your new PIN. You're signed in.", html: `<span class="sd-chip">With a Gmail</span><div class="sd-k">Choose a new PIN</div>` +
+      { cap: "Choose your new PIN. You're signed in.", html: `<span class="sd-chip">Reset link</span><div class="sd-k">Choose a new PIN</div>` +
         `<div class="sd-row"><div>${field("a", "New PIN", "At least 6 characters", "")}</div><div>${field("b", "Type it again", "", "")}</div></div><div class="sd-go"><span class="sd-btn" data-t="save">Save my new PIN</span></div>`,
         act: [["type", "a", DOTS], ["type", "b", DOTS], ["click", "save"]] },
-      { cap: "No Gmail? Ask for a one-time code. It goes to your CWG lead and the admins, who pass it on to you.", html: `<span class="sd-chip">Without a Gmail</span><div class="sd-go" style="margin-top:4px"><span class="sd-btn" data-t="lc">Send the code to my CWG lead</span><span class="sd-lnk">I already have a code</span></div>` + flow("Your code: 482 913"),
+      { cap: "Can't get into your Gmail? Ask for a one-time code. It goes to your CWG lead and the admins, who pass it on to you.", html: `<span class="sd-chip">One-time code</span><div class="sd-go" style="margin-top:4px"><span class="sd-btn" data-t="lc">Send the code to my CWG lead</span><span class="sd-lnk">I already have a code</span></div>` + flow("Your code: 482 913"),
         act: [["click", "lc"], ["send"], ["show", "bub"], ["wait", 900]] },
-      { cap: "Type the code and a new PIN within 1 hour. You're signed in.", html: `<span class="sd-chip">Without a Gmail</span>` + field("oc", "One-time code from your CWG lead or an admin", "6 digits", "") +
+      { cap: "Type the code and a new PIN within 1 hour. You're signed in.", html: `<span class="sd-chip">One-time code</span>` + field("oc", "One-time code from your CWG lead or an admin", "6 digits", "") +
         `<div class="sd-row"><div>${field("a", "New PIN", "At least 6 characters", "")}</div><div>${field("b", "Type it again", "", "")}</div></div><div class="sd-go"><span class="sd-btn" data-t="set">Set my new PIN</span></div>`,
         act: [["type", "oc", "482913"], ["type", "a", DOTS], ["type", "b", DOTS], ["click", "set"]] },
     ],
