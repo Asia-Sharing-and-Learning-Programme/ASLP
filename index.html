@@ -1427,11 +1427,10 @@ const canCwg = c => (V().can_cwgs || []).includes(c);
 // headquarters and countries live in the CD Strategies record: admins and the CWG lead can change them from either website
 const canShared = t => !!(V().email && (V().is_full_admin || (V().lead_cwgs || []).includes(t.cwg)));
 const membersOf = c => (data.cwgMembers || []).filter(m => m.cwg === c);
-// a territory's contacts: those entered for the website plus its CWG member(s), without repeats
+// a territory's contact persons (up to 2). Its CWG members are added to them automatically by the database while a slot is free;
+// those on the CWG say so after their role
 function terrContacts(t) {
-  const out = [...(t.contacts || [])], seen = new Set(out.map(c => (c.email || c.name || "").toLowerCase()));
-  (data.cwgMembers || []).filter(m => m.territory === t.id).forEach(m => { const k = (m.email || m.name || "").toLowerCase(); if (!seen.has(k)) { seen.add(k); out.push({ ...m, role: [m.role, `${m.cwg} CWG member`].filter(Boolean).join(", ") }); } });
-  return out;
+  return (t.contacts || []).slice(0, 2).map(c => c.isMember && t.cwg ? { ...c, role: [c.role, `${t.cwg} CWG member`].filter(Boolean).join(", ") } : c);
 }
 const shortName = n => String(n || "").replace(/\s+(Territory|Region)$/i, "");
 const crumbs = list => `<nav class="crumbs wrap" aria-label="Breadcrumb">${list.map(([t, h], i) => (i ? `<span class="sep">/</span>` : "") + (h ? `<a href="${h}">${esc(t)}</a>` : `<span>${esc(t)}</span>`)).join("")}</nav>`;
@@ -2952,7 +2951,7 @@ function pageConsole(a, b) {
       <p class="small">Tick a region, division or country to activate its profile on the website, and choose which CWG it belongs to. This can be a different CWG from its territory's. Unticked ones don't appear on the website. CWG leads can change the ones in their own CWG or their CWG's territories.</p>
       <div id="units-editor"></div></section>` : ""}
     ${cwgs.length ? `<section class="console-card" id="cc-members"><div class="row-head"><h2 class="h2">CWG members</h2></div>
-      <p class="small">Add each CWG member's rank (if an officer), name and appointment or role. Add their email too (work email is fine): members linked to a territory sign in with it and your CWG's PIN (set it under PINs) to edit that territory's profile and CD Strategy. Members are listed on their territory's page; emails aren't shown publicly.</p>
+      <p class="small">Add each CWG member's rank (if an officer), name and appointment or role. Members linked to a territory also become its contact persons automatically, while it has fewer than 2. Add their email too (work email is fine): members linked to a territory sign in with it and your CWG's PIN (set it under PINs) to edit that territory's profile and CD Strategy. Members are listed on their territory's page; emails aren't shown publicly.</p>
       ${cwgs.length > 1 ? `<div class="cw-pick" role="tablist">${cwgs.map(c => `<button type="button" role="tab" class="chip-btn${c === (selC || cwgs[0]) ? " on" : ""}" data-cw="${esc(c)}">${esc(c)}</button>`).join("")}</div>` : ""}
       <div id="mem-editor"></div></section>` : ""}
     ${terrIds.length || unitIds.length ? `<section class="console-card" id="cc-terr"><div class="row-head"><h2 class="h2">Territory profiles</h2>
@@ -3693,7 +3692,7 @@ function terrEditor(id) {
       <div class="ed-field pf-pick"><span>Strengths <span class="ed-hint">up to 8, from the standard list</span></span><div id="p-str" class="tp"></div></div>
     </div>
     <h3 class="h3" style="margin-top:var(--g5)">Contact persons</h3>
-    ${canCon ? `<p class="small">1 or 2 people. Their email lets them sign in with the CWG's PIN and edit this territory. Tick <b>CWG member</b> for the one who is on the CWG (a contact person can also be from another department). The website doesn't show emails publicly.</p>
+    ${canCon ? `<p class="small">1 or 2 people. This territory's CWG members are added here automatically, ticked <b>CWG member</b>, while there's a free slot. You can also add someone from another department (leave <b>CWG member</b> unticked). Their email lets them sign in with the CWG's PIN and edit this territory. The website doesn't show emails publicly.</p>
     <div id="con-box" data-max="2"><div class="ed-rows">${((t.contacts || []).length ? t.contacts : [{}]).map(c => fieldRow(CON_COLS, c, [])).join("")}</div>
       <div class="ed-actions"><button type="button" class="btn sm ed-add">Add a contact</button></div></div>` : roContacts(t.contacts)}
     <h3 class="h3" style="margin-top:var(--g5)">Update history</h3><div id="t-hist" class="small">Loading…</div>
