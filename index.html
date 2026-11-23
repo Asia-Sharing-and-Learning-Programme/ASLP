@@ -1354,18 +1354,25 @@ function roNote() {
   t.innerHTML = `<b>View only.</b> Your account can see everything but can't change anything.`;
   requestAnimationFrame(() => t.classList.add("in")); clearTimeout(t._h); t._h = setTimeout(() => t.classList.remove("in"), 2600);
 }
+// view-only accounts: everything is locked, except during a test run (practice mode, where nothing is saved),
+// so they can try every part of the console the way editors use it
+const practicing = () => document.body.classList.contains("practicing");
 function roLock() {
-  const on = !!(V().ro && inCon()); if (document.body.classList.contains("view-only") !== on) document.body.classList.toggle("view-only", on);
-  if (!on) return;
+  const on = !!(V().ro && inCon() && !practicing()); if (document.body.classList.contains("view-only") !== on) document.body.classList.toggle("view-only", on);
+  if (!on) {
+    document.querySelectorAll("[data-ro-locked]").forEach(el => { const k = el.dataset.roLocked; delete el.dataset.roLocked;
+      if (k === "ce") el.contentEditable = "true"; else if (k === "ro") el.readOnly = false; else if (k === "dis") el.disabled = false; });
+    return;
+  }
   document.querySelectorAll("#view input, #view textarea, #view select, #view [contenteditable]").forEach(el => {
-    if (el.matches(RO_OK) || el.dataset.roLocked || el.closest("#alt-box, #my-pin")) return; el.dataset.roLocked = "1";
-    if (el.isContentEditable) el.contentEditable = "false";
-    else if (el.tagName === "TEXTAREA" || (el.tagName === "INPUT" && /^(text|email|url|date|search|number|tel|)$/.test(el.type))) el.readOnly = true;
-    else el.disabled = true;
+    if (el.matches(RO_OK) || el.dataset.roLocked || el.closest("#alt-box, #my-pin")) return;
+    if (el.isContentEditable) { el.dataset.roLocked = "ce"; el.contentEditable = "false"; }
+    else if (el.tagName === "TEXTAREA" || (el.tagName === "INPUT" && /^(text|email|url|date|search|number|tel|password|)$/.test(el.type))) { el.dataset.roLocked = el.readOnly ? "pre" : "ro"; el.readOnly = true; }
+    else { el.dataset.roLocked = el.disabled ? "pre" : "dis"; el.disabled = true; }
   });
 }
 document.addEventListener("click", e => {
-  if (!V().ro) return;
+  if (!V().ro || practicing()) return;
   const el = e.target.closest("button, input, select, textarea, label, [role=button], [data-uap-page]"); if (!el || !roZone(el)) return;
   if (el.matches(RO_OK) || (el.tagName === "LABEL" && !el.querySelector("input[type=file]") && !el.control)) return;
   if (window.ASLPTour && ASLPTour.isTarget(el)) return;   // test runs are in practice mode: nothing is saved
@@ -1376,7 +1383,7 @@ document.addEventListener("click", e => {
   if (!V().ro || !e.target.closest || !roZone(e.target) || e.target.matches(RO_OK)) return;
   if (k === "keydown" && !/^(Backspace|Delete|Enter)$|^.$/.test(e.key)) return;
   if (k === "keydown" && e.key === "Enter" && !e.target.matches("input, textarea")) return;
-  if (window.ASLPTour && ASLPTour.active()) return;
+  if (practicing() || (window.ASLPTour && ASLPTour.active())) return;
   e.preventDefault(); e.stopImmediatePropagation();
 }, true));
 new MutationObserver(() => roLock()).observe(document.documentElement, { childList: true, subtree: true });
@@ -2657,16 +2664,20 @@ const WICON = {
 const acctKind = v => v.ro ? "viewer" : v.is_full_admin ? "admin" : (v.lead_cwgs || []).length ? "lead" : (v.can_edit || []).length || v.cds_access ? "member" : "other";
 const myTerrs = v => (v.can_edit || []).map(terrName).filter(Boolean);
 function welcomeRo(v, tabs, roles, go) {
-  const has = id => tabs.some(t => t[0] === id), steps = [["explore", "Look around", "Use the menu at the top to visit every page. Your console shows everything an admin sees, but nothing can be changed from this account.", `<a class="btn sm" href="#/">Home</a>`]];
-  if (has("cc-updates")) steps.push(["write", "Read every update", "Open <b>Updates</b> to see every update, including those <b>Waiting for approval</b>, and who sent them in. Select <b>Edit</b> to see an update's details.", go("cc-updates")]);
-  if (has("cc-terr")) steps.push(["pin", "Look through profiles", "Open <b>Territory profiles</b> and pick a territory or region to see its profile and contact persons.", go("cc-terr")]);
-  if (has("cc-members")) steps.push(["people", "See CWG members", "Open <b>CWG members</b> to see each CWG's members and the territory each is from.", go("cc-members")]);
-  if (has("cc-units")) steps.push(["toggle", "See regions and countries", "Open <b>Regions and countries</b> to see which have a profile on the website, and their CWG.", go("cc-units")]);
-  if (has("cc-groups")) steps.push(["group", "See group pages", "Open <b>ASLP Groups</b> to see each group's description and members.", go("cc-groups")]);
-  if (has("cc-pages")) steps.push(["page", "See pages and the newsletter", "Open <b>Pages and newsletter</b> to see the About text, home page introduction and newsletter issues.", go("cc-pages")]);
-  if (has("cc-access")) steps.push(["key", "See who can do what", "Open <b>Access</b> to see which roles can edit, the zone coordinators and who edits each page.", go("cc-access")]);
-  steps.push(["cal", "See the Calendar", "On the <b>Calendar</b> you see every entry with its full details. You're already signed in there.", `<a class="btn sm" href="/Calendar-2027-2028/">Open</a>`]);
-  steps.push(["chart", "See CD Strategies", "On <b>CD Strategies</b> you see every territory's details, contacts and history, as admins do.", `<a class="btn sm" href="/cd-strategy/">Open</a>`]);
+  // view-only: see everything, and try every part in a test run (nothing is saved)
+  const has = id => tabs.some(t => t[0] === id), T = " Select <b>Try it</b> to experience it the way editors do.", steps = [["explore", "Look around", "Use the menu at the top to visit every page. Your console shows everything an admin sees, but nothing can be changed from this account." + T, `<a class="btn sm" href="#/">Home</a>`]];
+  if (has("cc-updates")) {
+    steps.push(["write", "Updates: posting", "Open <b>Updates</b> to see every update, including those <b>Waiting for approval</b>, and who sent them in." + " Select <b>Try it</b> to post a practice update the way a CWG lead does.", go("cc-updates")]);
+    steps.push(["approve", "Updates: approving", "Updates that CWG members send in wait for an ASC member or admin to approve them." + " Select <b>Try it</b> to approve a sample one.", go("cc-updates")]); }
+  steps.push(["pinset", "CWG PINs", "Each CWG has one PIN that its members and contact persons sign in with. Open <b>PINs</b> to see which CWGs have one." + " Select <b>Try it</b> to set one the way a CWG lead does.", go("cc-pin")]);
+  if (has("cc-terr")) steps.push(["pin", "Territory profiles", "Open <b>Territory profiles</b> and pick a territory or region to see its profile and contact persons." + " Select <b>Try it</b> to fill one in.", go("cc-terr")]);
+  if (has("cc-members")) steps.push(["people", "CWG members", "Open <b>CWG members</b> to see each CWG's members, their emails and the territory each is from." + " Select <b>Try it</b> to add a member.", go("cc-members")]);
+  if (has("cc-units")) steps.push(["toggle", "Regions and countries", "Open <b>Regions and countries</b> to see which have a profile on the website, and their CWG." + T, go("cc-units")]);
+  if (has("cc-groups")) steps.push(["group", "ASLP Groups", "Open <b>ASLP Groups</b> to see each group's description and members." + T, go("cc-groups")]);
+  if (has("cc-pages")) steps.push(["page", "Pages and the newsletter", "Open <b>Pages and newsletter</b> to see the About text, home page introduction and newsletter issues." + T, go("cc-pages")]);
+  if (has("cc-access")) steps.push(["key", "Who can do what", "Open <b>Access</b> to see which roles can edit, the zone coordinators and who edits each page." + T, go("cc-access")]);
+  steps.push(["cal", "The Calendar", "On the <b>Calendar</b> you see every entry with its full details. You're already signed in there." + T, `<a class="btn sm" href="/Calendar-2027-2028/">Open</a>`]);
+  steps.push(["chart", "CD Strategies", "On <b>CD Strategies</b> you see every territory's details, contacts and history, as admins do." + T, `<a class="btn sm" href="/cd-strategy/">Open</a>`]);
   return welcomeHtml(v, tabs, steps, roles);
 }
 function welcomeHtml(v, tabs, roSteps, roRoles) {
@@ -2705,7 +2716,7 @@ function welcomeHtml(v, tabs, roSteps, roRoles) {
   steps.push(kind === "member"
     ? ["lock", "How you sign in", `With your email and your CWG's PIN. If your CWG lead changes the PIN, they'll give you the new one. Can't sign in? Ask your CWG lead to check your email is registered for your territory.`, ""]
     : pinApprover(v) ? ["lock", "PIN requests and resets", `When an admin, CWG lead or view-only account sets up a PIN, approve it in <b>PINs</b>. If one of them forgets theirs, reset it there and they set up a new one. You can change your own PIN there too.`, go("cc-pin")]
-    : ["lock", "Your own PIN", `You sign in with your email and your own PIN${kind === "lead" ? ", not the CWG's" : ""}. Change it under <b>${kind === "lead" ? "PINs" : "My PIN"}</b> any time. Forgot it? Ask an ASLP admin to reset it, then set up a new one.`, go("cc-pin")]);
+    : ["lock", "Your own PIN", `You sign in with your email and your own PIN${kind === "lead" ? ", not the CWG's" : ""}. Change it under <b>${kind === "lead" || kind === "viewer" ? "PINs" : "My PIN"}</b> any time. Forgot it? Ask an ASLP admin to reset it, then set up a new one.`, go("cc-pin")]);
   const fn = firstName(v);
   return `<section class="console-card wel" id="cc-welcome">
     <div class="wel-hero"><div class="wel-lll" aria-hidden="true"><span>Listen.</span><span>Learn.</span><span>Lead.</span></div>
@@ -2715,9 +2726,9 @@ function welcomeHtml(v, tabs, roSteps, roRoles) {
         member: `You're signed in with your CWG's PIN${myTerrs(v).length ? ` for <b>${esc(myTerrs(v).join(" and "))}</b>` : ""}. Here's what you can update.` }[kind] || "Feel free to roam around the site. Here's how to get around with your access."}</p>
       ${roles.length ? `<div class="wel-roles">${roles.map(r => `<span>${esc(r)}</span>`).join("")}</div>` : ""}</div>
     <h3 class="h3 wel-h">How to navigate the site with your access</h3>
-    <div class="wel-try"><div><b>New here? Take a test run.</b><span>${v.ro ? "A short guide to the console and the menu, on the real screens." : "Each guide below walks you through the real screens, one step at a time. Nothing you do during a test run is saved or published, so you can practise freely."}</span></div>
-      <button type="button" class="btn fill" data-tour="all">${v.ro ? "Start the test run" : "Start the full test run"}</button></div>
-    <ol class="wel-steps">${steps.map(([ic, t, d, a], i) => `<li style="--i:${i}"><div class="wel-ic">${WICON[ic]}</div><div class="wel-tx"><b>${esc(t)}</b><p>${d}</p></div><div class="wel-acts">${TOURS[ic] && (!v.ro || ["explore", "cal", "chart"].includes(ic)) ? `<button type="button" class="btn fill sm" data-tour="${ic}">Try it</button>` : ""}${a}</div></li>`).join("")}</ol>
+    <div class="wel-try"><div><b>New here? Take a test run.</b><span>${v.ro ? "Each guide below walks you through the real screens as if you could make changes, so you can experience the site the way editors use it. Nothing you do during a test run is saved or published." : "Each guide below walks you through the real screens, one step at a time. Nothing you do during a test run is saved or published, so you can practise freely."}</span></div>
+      <button type="button" class="btn fill" data-tour="all">Start the full test run</button></div>
+    <ol class="wel-steps">${steps.map(([ic, t, d, a], i) => `<li style="--i:${i}"><div class="wel-ic">${WICON[ic]}</div><div class="wel-tx"><b>${esc(t)}</b><p>${d}</p></div><div class="wel-acts">${TOURS[ic] ? `<button type="button" class="btn fill sm" data-tour="${ic}">Try it</button>` : ""}${a}</div></li>`).join("")}</ol>
     ${steps.length === 1 ? `<p class="small" style="margin-top:var(--g3)">Your account doesn't edit anything on this website yet. If you think it should, ask your CWG lead or the ASLP team.</p>` : ""}</section>`;
 }
 // ---- guided test runs: walk people through the real console, in practice mode where nothing is saved ----
@@ -2732,12 +2743,12 @@ function practiceOn() {
   db.functions.invoke = () => Promise.resolve({ data: { error: "Files aren't uploaded during a test run." }, error: null });
   db.storage.from = () => ({ upload: async () => ({ error: { message: "Files aren't uploaded during a test run." } }), remove: async () => ({}), getPublicUrl: () => ({ data: { publicUrl: "" } }) });
   putDraft = () => {};
-  document.body.classList.add("practicing");
+  document.body.classList.add("practicing"); roLock();
 }
 function practiceOff() {
   if (!PRACTICE.on) return; PRACTICE.on = false;
   db.rpc = PRACTICE.rpc; db.functions.invoke = PRACTICE.inv; db.storage.from = PRACTICE.from; putDraft = PRACTICE.put;
-  document.body.classList.remove("practicing");
+  document.body.classList.remove("practicing"); roLock();
   if (PRACTICE.sample) { PRACTICE.sample = null; updates = (updates || []).filter(u => u.id !== "test-run"); }
 }
 const tourTab = id => { const b = document.querySelector(`.con-sub [data-jump="${id}"]`); if (b) b.click(); };
@@ -2832,7 +2843,7 @@ const TOURS = {
     { el: "#pg-save", wait: "click", delay: 900, title: "Save", text: "Select <b>Save</b>. In this test run nothing is saved." } ],
   key: () => [
     { tab: "cc-access", el: "#ac-lead", title: "Switch access on or off", text: "This switch turns editing on or off for all CWG leads." },
-    { el: () => findEl(".xa-rows"), title: "Admins and viewers", text: "All admins are listed here with their name and email, up to 6. Below them are up to 4 view-only accounts that can see everything but change nothing, then one CWG lead per CWG. Change a row, or clear it to remove someone, then save." },
+    { el: () => findEl(".xa-rows"), skipIfMissing: true, title: "Admins and viewers", text: "All admins are listed here with their name and email, up to 6. Below them are up to 4 view-only accounts that can see everything but change nothing, then one CWG lead per CWG. Change a row, or clear it to remove someone, then save." },
     { el: ".ge-table", title: "Who edits each group page", text: "Tick who can edit each ASLP Group page, besides admins." },
     { el: "#ac-save", wait: "click", delay: 900, title: "Save access", text: "Select <b>Save access</b>. In this test run nothing is saved." } ] };
 function pageConsole(a, b) {
@@ -2860,7 +2871,7 @@ function pageConsole(a, b) {
   const selC = a === "cwg" ? cwgs.find(c => cwgSlug(c) === b) : null;
   pendingMaps.push(() => mountConsole());
   const canUpd = (v.post_cwgs || []).length || (v.submit_cwgs || []).length || Object.keys(PGROUPS).some(canGroupPost);
-  const secs = [["cc-welcome", "Welcome"], canUpd && ["cc-updates", "Updates"], toggleIds.length && ["cc-units", "Regions and countries"], cwgs.length && ["cc-members", "CWG members"], (terrIds.length || unitIds.length) && ["cc-terr", "Territory profiles"], groups.length && ["cc-groups", "ASLP Groups"], v.is_full_admin && ["cc-pages", "Pages and newsletter"], v.is_full_admin && ["cc-access", "Access"], ["cc-pin", pinApprover(v) || acctKind(v) === "lead" ? "PINs" : acctKind(v) === "member" ? "How you sign in" : "My PIN"]].filter(Boolean);
+  const secs = [["cc-welcome", "Welcome"], canUpd && ["cc-updates", "Updates"], toggleIds.length && ["cc-units", "Regions and countries"], cwgs.length && ["cc-members", "CWG members"], (terrIds.length || unitIds.length) && ["cc-terr", "Territory profiles"], groups.length && ["cc-groups", "ASLP Groups"], v.is_full_admin && ["cc-pages", "Pages and newsletter"], v.is_full_admin && ["cc-access", "Access"], ["cc-pin", pinApprover(v) || v.ro || acctKind(v) === "lead" ? "PINs" : acctKind(v) === "member" ? "How you sign in" : "My PIN"]].filter(Boolean);
   return head + `<div class="wrap page-body">
     ${secs.length > 1 ? `<nav class="con-sub" role="tablist" aria-label="Console sections">${secs.map(([id, l]) => `<button type="button" role="tab" data-jump="${id}">${l}</button>`).join("")}</nav>` : ""}
     ${welcomeHtml(v, secs)}
@@ -2884,7 +2895,7 @@ function pageConsole(a, b) {
     ${v.is_full_admin ? `<section class="console-card" id="cc-pages"><h2 class="h2">Pages and newsletter</h2><div id="pages-editor"></div></section>
     <section class="console-card" id="cc-access"><h2 class="h2">Access</h2><div id="access-editor">${loader("Loading access settings…")}</div></section>` : ""}
     <section class="console-card" id="cc-pin">
-      ${(v.is_full_admin && !v.ro) || (v.lead_cwgs || []).length ? `<h2 class="h2">CWG PINs</h2>
+      ${v.is_full_admin || v.ro || (v.lead_cwgs || []).length ? `<h2 class="h2">CWG PINs</h2>
       <p class="small">Each CWG has one PIN. CWG members and territory contact persons sign in with their registered email and their CWG's PIN, and can then edit only their own territory: its profile and its CD Strategy. ${v.is_full_admin ? "Admins can set any CWG's PIN; CWG leads set their own CWG's." : "Set your CWG's PIN here and share it with your CWG members and contact persons, for example in your group chat."} Changing it stops the old PIN from working straight away.</p>
       <div id="cwg-pins">${loader("Loading…")}</div>` : ""}
       ${pinApprover(v) ? `<h2 class="h2" style="margin-top:var(--g5)">PIN requests</h2>
@@ -3724,7 +3735,7 @@ async function cwgPins(box) {
   if (error) { box.innerHTML = `<p class="small">Couldn't load the CWG PINs. ${esc(error.message || "")}</p>`; return; }
   const when = d => new Date(d).toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" });
   box.innerHTML = (Array.isArray(xs) ? xs : []).map(x => `<div class="cwgpin"><div><b>${esc(x.cwg)}</b><small>${x.set ? `PIN set ${esc(when(x.set_at))}${x.set_by ? ` by ${esc(x.set_by)}` : ""}` : "No PIN yet: its members and contact persons can't sign in"} · ${x.people} registered ${x.people === 1 ? "email" : "emails"}</small></div>
-    ${V().ro ? "" : `<form class="cwgpin-f" data-cwg="${esc(x.cwg)}" autocomplete="off"><input type="password" inputmode="numeric" autocomplete="new-password" placeholder="${x.set ? "New PIN" : "Choose a PIN"} (6–12 numbers)" aria-label="${esc(x.cwg)} PIN">
+    ${`<form class="cwgpin-f" data-cwg="${esc(x.cwg)}" autocomplete="off"><input type="password" inputmode="numeric" autocomplete="new-password" placeholder="${x.set ? "New PIN" : "Choose a PIN"} (6–12 numbers)" aria-label="${esc(x.cwg)} PIN">
       <button class="btn fill sm">${x.set ? "Change" : "Set"} PIN</button><span class="ed-msg" role="status"></span></form>`}</div>`).join("") || `<p class="small">No CWGs.</p>`;
   box.querySelectorAll(".cwgpin-f").forEach(f => f.addEventListener("submit", async e => {
     e.preventDefault(); const i = f.querySelector("input"), m = f.querySelector(".ed-msg"), pin = i.value.trim();
