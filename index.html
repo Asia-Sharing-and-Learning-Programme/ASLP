@@ -1332,7 +1332,12 @@ const isRegion = t => /\bregion$/i.test(String(t.name || "").trim());
 // ---- data ----
 let data = null, db = null;
 async function load() {
-  db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, { auth: { flowType: "implicit", persistSession: true, detectSessionInUrl: true, autoRefreshToken: true } });
+  // a request the browser drops on its way (Safari: "Load failed") is tried again, once, after a moment;
+  // only reads, so a change is never sent twice
+  const isRead = (url, init) => (init && init.method || "GET") === "GET" || /\/rpc\/(get_|aslp_get_|[a-z_]*_(list|status)$|aslp_list_|cal_whoami|ping)/.test(String(url));
+  const fetchRetry = async (url, init) => { try { return await fetch(url, init); }
+    catch (e) { if (!isRead(url, init) || (init && init.signal && init.signal.aborted)) throw e; await new Promise(r => setTimeout(r, 700)); return fetch(url, init); } };
+  db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, { global: { fetch: fetchRetry }, auth: { flowType: "implicit", persistSession: true, detectSessionInUrl: true, autoRefreshToken: true } });
   const { data: d, error } = await db.rpc("get_aslp_site");
   if (error) throw error;
   data = d;
@@ -3337,7 +3342,8 @@ const EMAIL_OK = /^[^@\s]+@[^@\s]+\.[^@\s]+$/i;
 async function accessEditor() {
   const box = $("access-editor"); if (!box) return;
   const { data: a, error } = await db.rpc("aslp_get_access");
-  if (error || !a) { box.innerHTML = `<p class="small">Couldn't load the access settings. ${esc((error && error.message) || "")}</p>`; return; }
+  if (error || !a) { box.innerHTML = `<p class="small">Couldn't load the access settings${/load failed|failed to fetch|network/i.test((error && error.message) || "") ? " because the connection dropped" : `. ${esc((error && error.message) || "")}`}. <button type="button" class="btn sm" id="ac-retry">Try again</button></p>`;
+    $("ac-retry").onclick = () => { box.innerHTML = loader("Loading access settings…"); accessEditor(); }; return; }
   const st = a.settings || {}, ge = st.group_editors || {}, on = k => st[k] !== false;
   const xa = (k, i) => k === "admin" ? (a.mainAdmins || []).map(x => typeof x === "string" ? { email: x } : x)[i - 1] || {} : (a.extra || []).find(x => x.kind === k && x.slot === i) || {};
   const xaRow = (k, i, l) => `<div class="xa-row"><span class="xa-n">${l} ${i}</span><label><span>Name</span><input type="text" data-xa="${k}" data-xf="name" value="${esc(xa(k, i).name || "")}" placeholder="Name" autocomplete="off"></label>
