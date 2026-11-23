@@ -362,6 +362,7 @@
   .office-list { list-style: none; padding: 0; margin: var(--g3) 0 0; display: grid; gap: 6px; font-size: 15px; }
   .office-list li { display: flex; gap: 10px; align-items: baseline; line-height: 1.45; }
   .office-list svg { flex: none; transform: translateY(2px); }
+  .pd-note { display: flex; gap: 12px; align-items: center; justify-content: space-between; flex-wrap: wrap; margin: var(--g4) 0 0; padding: 12px 16px; border-radius: 12px; background: color-mix(in srgb, #f5c400 22%, var(--paper)); border: 1.5px solid color-mix(in srgb, #f5c400 60%, var(--line)); font-size: 14px; }
   .con-grp + .con-grp { margin-top: var(--g3); padding-top: var(--g3); border-top: 1.5px solid var(--line); }
   .con-k { font-size: 13px; font-weight: 800; color: var(--ink-2); margin: 0 0 4px; display: flex; gap: 8px; align-items: baseline; flex-wrap: wrap; }
   .con-k a { color: inherit; } .con-k span { font-weight: 600; color: var(--ink-3); font-size: 12px; }
@@ -2174,12 +2175,13 @@ function unitsToggles() {
 }
 // contact persons see who the contacts are; only admins and the CWG's leads change them
 const roContacts = cs => `<div class="ro-cons">${(cs || []).length ? (cs || []).map(c => `<div><b>${esc([c.rank, c.name].filter(Boolean).join(" "))}</b>${c.role ? ` · ${esc(c.role)}` : ""}</div>`).join("") : `<p class="small">No contact persons yet.</p>`}<p class="small">Only admins and the CWG's leads change the contact persons.</p></div>`;
-function unitEditor(id) {
+function unitEditor(id, dr, noFetch) {
   const box = $("terr-editor"), u = anyUnitById(id); if (!box || !u) return;
   const canConU = canToggleUnit(id) || canCwg(u.cwg);
-  const p = u.profile || {}, t = terrs().find(x => x.id === u.parent) || {};
+  const cons = dr && Array.isArray(dr.contacts) ? dr.contacts : (u.contacts || []);
+  const p = dr ? draftProfile(dr) : (u.profile || {}), t = terrs().find(x => x.id === u.parent) || {};
   box.innerHTML = `<div class="synced"><div class="synced-h"><b>${esc(u.name)}</b><span class="small">${esc(u.kind === "Country" ? "Part of the" : `A ${u.kind.toLowerCase()} of the`)} ${esc(OFFICIAL_NAME[t.id] || t.name || "")} · ${esc(u.cwg)} CWG. It shares the territory's CD Strategy.</span></div></div>
-    <div class="ed-grid">
+    ${pdNote(dr)}<div class="ed-grid">
       <label class="pf-text"><span>Where they work</span><textarea id="p-work" rows="5">${esc(p.workAreas || "")}</textarea></label>
       <label class="pf-text"><span>Technical support they can offer others <span class="ed-hint">2 to 5, one per line</span></span><textarea id="p-tech" rows="5">${esc(p.techSupport || "")}</textarea></label>
       <div class="ed-field pf-pick"><span>Thematic areas <span class="ed-hint">pick as many as apply, up to 8</span></span><div id="p-them" class="tp"></div></div>
@@ -2187,16 +2189,22 @@ function unitEditor(id) {
     </div>
     <h3 class="h3" style="margin-top:var(--g5)">Contact persons</h3>
     ${canConU ? `<p class="small">Names and roles only: the website doesn't show contact persons' emails or phone numbers. CWG members linked to ${esc(u.name)} also show as contacts.</p>
-    <div id="con-box" class="unit-con"><div class="ed-rows">${((u.contacts || []).length ? u.contacts : [{}]).map(c => fieldRow(UNIT_CON_COLS, c, [])).join("")}</div>
+    <div id="con-box" class="unit-con"><div class="ed-rows">${(cons.length ? cons : [{}]).map(c => fieldRow(UNIT_CON_COLS, c, [])).join("")}</div>
       <div class="ed-actions"><button type="button" class="btn sm ed-add">Add a contact</button></div></div>` : roContacts(u.contacts)}
-    <div class="ed-actions sticky"><button type="button" class="btn fill" id="terr-save">Save ${esc(u.name)}</button><a class="textlink" href="#/territory/${esc(u.id)}">View the page</a><span class="ed-msg" id="terr-msg" role="status"></span></div>`;
+    <div class="ed-actions sticky"><button type="button" class="btn fill" id="terr-save">Publish ${esc(u.name)}</button><button type="button" class="btn" id="terr-draft">Save draft</button><a class="textlink" href="#/territory/${esc(u.id)}">View the page</a><span class="ed-msg" id="terr-msg" role="status"></span></div>`;
   const pT = tagPicker($("p-them"), [["Thematic areas", THEME_LIST]], themesOf(p), "a thematic area", THEME_MAX), pS = tagPicker($("p-str"), STRENGTH_GROUPS, strengthsOf(p), "a strength", STRENGTH_MAX);
   if (canConU) wireRows($("con-box"), UNIT_CON_COLS, []);
   wireTidy("p-work"); wireTidy("p-tech");
   makeDraftable(box, `unit:${id}`, () => unitEditor(id));
-  $("terr-save").addEventListener("click", () => saveWith("terr-save", "terr-msg", () => tpCheck(pT.value(), pS.value()) ? Promise.resolve({ error: { message: tpCheck(pT.value(), pS.value()) } }) : db.rpc("aslp_save_unit", { p_id: id,
-    p_profile: { workAreas: $("p-work").value.trim(), thematic: pT.value(), strengths: pS.value().join("\n"), techSupport: $("p-tech").value.trim() },
-    p_contacts: canConU ? readRows($("con-box")) : (u.contacts || []) }), `${u.name} saved.`));
+  wireProfileDraft("u:" + id, dr || (noFetch ? {} : null), (d, nf) => unitEditor(id, d, nf), () => ({ workAreas: $("p-work").value.trim(), techSupport: $("p-tech").value.trim(),
+    thematic: pT.value(), strengths: pS.value(), ...(canConU ? { contacts: readRows($("con-box")) } : {}) }), u.name);
+  $("terr-save").addEventListener("click", () => saveWith("terr-save", "terr-msg", async () => {
+    const bad = tpCheck(pT.value(), pS.value()); if (bad) return { error: { message: bad } };
+    const r = await db.rpc("aslp_save_unit", { p_id: id, p_profile: { workAreas: $("p-work").value.trim(), thematic: pT.value(), strengths: pS.value().join("\n"), techSupport: $("p-tech").value.trim() },
+      p_contacts: canConU ? readRows($("con-box")) : (u.contacts || []) });
+    if (!r.error) { await dropProfileDraft("u:" + id); const n = box.querySelector(".pd-note"); if (n) n.remove(); }
+    return r;
+  }, `${u.name} published on the website.`));
 }
 
 // ---- GROUPS ----
@@ -3684,10 +3692,31 @@ async function terrHistory(box, id) {
       <span>${esc((x.fields || []).join(", "))}</span><span class="small">${esc(x.who)} · ${esc(x.source)}${x.file ? ` (${esc(x.file)})` : ""}</span></li>`).join("")}</ol>`
     : `<p class="small">No updates recorded yet.</p>`;
 }
-function terrEditor(id) {
+// ---- profile drafts: saved for the territory (any of its editors can carry on), not on the website until published ----
+const draftProfile = dr => ({ workAreas: dr.workAreas || "", techSupport: dr.techSupport || "", thematic: dr.thematic || [], strengths: (dr.strengths || []).join("\n") });
+const pdNote = dr => dr ? `<div class="pd-note" role="status"><span><b>Draft</b> saved by ${esc(dr._by || "someone")}, ${esc(draftWhen(dr._at))}. It isn't on the website yet. Finish it, then select <b>Publish</b>.</span><button type="button" class="btn sm" data-pd-discard>Discard draft</button></div>` : "";
+function wireProfileDraft(target, dr, rerender, read, label) {
+  const box = $("terr-editor"); box.dataset.pd = target;
+  if (!dr) db.rpc("aslp_get_profile_draft", { p_target: target }).then(r => { const d = r && r.data;
+    if (d && d.body && box.isConnected && box.dataset.pd === target) rerender({ ...d.body, _by: d.saved_by, _at: d.saved_at }); }, () => {});
+  const dBtn = $("terr-draft"); if (dBtn) dBtn.addEventListener("click", async () => {
+    const m = $("terr-msg"); dBtn.disabled = true; m.className = "ed-msg"; m.textContent = "Saving the draft…";
+    const { error } = await db.rpc("aslp_save_profile_draft", { p_target: target, p_body: read() });
+    dBtn.disabled = false;
+    if (error) { m.className = "ed-msg err"; m.textContent = error.message || "Couldn't save the draft."; return; }
+    draftSaved(dBtn); m.className = "ed-msg ok"; m.textContent = `Draft saved. It isn't on the website yet; you or another editor of ${label} can finish it and publish it later.`;
+  });
+  box.querySelectorAll("[data-pd-discard]").forEach(b => b.addEventListener("click", async () => {
+    if (!confirm("Discard this draft? The published profile stays as it is.")) return;
+    await db.rpc("aslp_save_profile_draft", { p_target: target, p_body: null }); rerender(null, true);
+  }));
+}
+const dropProfileDraft = target => db.rpc("aslp_save_profile_draft", { p_target: target, p_body: null }).then(() => {}, () => {});
+function terrEditor(id, dr, noFetch) {
   const box = $("terr-editor"), t = terrs().find(x => x.id === id); if (!box || !t) return;
   const canCon = (V().can_contacts || []).includes(id);
-  const p = t.profile || {}, offices = (t.offices || []).map(o => o.name).filter(Boolean);
+  const cons = dr && Array.isArray(dr.contacts) ? dr.contacts : (t.contacts || []);
+  const p = dr ? draftProfile(dr) : (t.profile || {}), offices = (t.offices || []).map(o => o.name).filter(Boolean);
   const shared = canShared(t), hqL = `${isRegion(t) ? "Regional" : "Territorial"} Headquarters`;
   box.innerHTML = `<div class="synced"><div class="synced-h"><b>Shared with the CD Strategies website</b><span class="small">${shared ? "Kept in one place, so both websites always match. Changes you make here also show on the CD Strategies website and go into this territory's update history there." : "Kept in one place, so both websites always match. The CWG lead, the territory's CD focal person or an admin can change these."}</span></div>
       ${shared ? `<div class="ed-grid" style="margin-top:var(--g3)"><label><span>${hqL}</span><input id="s-hq" value="${esc(t.location || "")}" placeholder="e.g. Kuwait City, Kuwait"></label>
@@ -3696,7 +3725,7 @@ function terrEditor(id) {
       <dt>Countries</dt><dd>${esc((t.countries || []).join(", ") || "—")}</dd>`}<dt>Offices</dt><dd>${esc(offices.join("; ") || "—")}</dd>
       <dt>CD Strategy</dt><dd>${statusChip(t)}${t.strategyPeriod ? ` · ${esc(t.strategyPeriod)}` : ""}</dd><dt>CD focal person</dt><dd>${t.focal ? esc([t.focal.name, t.focal.role].filter(Boolean).join(", ")) : "—"}</dd></dl>
       <a class="textlink" href="${CDS_URL}#territory-${esc(t.id)}">${shared ? "Change the offices, status and focal person in the CD Strategies console" : "See it on the CD Strategies website"}</a></div>
-    <div class="ed-grid">
+    ${pdNote(dr)}<div class="ed-grid">
       <label class="pf-text"><span>Where they work</span><textarea id="p-work" rows="5" placeholder="Areas, communities and programmes the territory works in">${esc(p.workAreas || "")}</textarea></label>
       <label class="pf-text"><span>Technical support they can offer other territories <span class="ed-hint">2 to 5, one per line</span></span><textarea id="p-tech" rows="5">${esc(p.techSupport || "")}</textarea></label>
       <div class="ed-field pf-pick"><span>Thematic areas <span class="ed-hint">pick as many as apply, up to 8</span></span><div id="p-them" class="tp"></div></div>
@@ -3704,14 +3733,16 @@ function terrEditor(id) {
     </div>
     <h3 class="h3" style="margin-top:var(--g5)">Contact persons</h3>
     ${canCon ? `<p class="small">1 or 2 people. This territory's CWG members are added here automatically, ticked <b>CWG member</b>, while there's a free slot. You can also add someone from another department (leave <b>CWG member</b> unticked). Their email lets them sign in with the CWG's PIN and edit this territory. The website doesn't show emails publicly.</p>
-    <div id="con-box" data-max="2"><div class="ed-rows">${((t.contacts || []).length ? t.contacts : [{}]).map(c => fieldRow(CON_COLS, c, [])).join("")}</div>
+    <div id="con-box" data-max="2"><div class="ed-rows">${(cons.length ? cons : [{}]).map(c => fieldRow(CON_COLS, c, [])).join("")}</div>
       <div class="ed-actions"><button type="button" class="btn sm ed-add">Add a contact</button></div></div>` : roContacts(t.contacts)}
     <h3 class="h3" style="margin-top:var(--g5)">Update history</h3><div id="t-hist" class="small">Loading…</div>
-    <div class="ed-actions sticky"><button type="button" class="btn fill" id="terr-save">Save ${esc(shortName(t.name))}</button><a class="textlink" href="#/territory/${esc(t.id)}">View the page</a><span class="ed-msg" id="terr-msg" role="status"></span></div>`;
+    <div class="ed-actions sticky"><button type="button" class="btn fill" id="terr-save">Publish ${esc(shortName(t.name))}</button><button type="button" class="btn" id="terr-draft">Save draft</button><a class="textlink" href="#/territory/${esc(t.id)}">View the page</a><span class="ed-msg" id="terr-msg" role="status"></span></div>`;
   const pT = tagPicker($("p-them"), [["Thematic areas", THEME_LIST]], themesOf(p), "a thematic area", THEME_MAX), pS = tagPicker($("p-str"), STRENGTH_GROUPS, strengthsOf(p), "a strength", STRENGTH_MAX);
   if (canCon) wireRows($("con-box"), CON_COLS, []);
   terrHistory($("t-hist"), id); wireTidy("p-work"); wireTidy("p-tech");
   makeDraftable(box, `terr:${id}`, () => terrEditor(id));
+  wireProfileDraft(id, dr || (noFetch ? {} : null), (d, nf) => terrEditor(id, d, nf), () => ({ workAreas: $("p-work").value.trim(), techSupport: $("p-tech").value.trim(),
+    thematic: pT.value(), strengths: pS.value(), ...(canCon ? { contacts: readRows($("con-box")) } : {}) }), shortName(t.name));
   $("terr-save").addEventListener("click", () => saveWith("terr-save", "terr-msg", async () => {
     const tpBad = tpCheck(pT.value(), pS.value()); if (tpBad) return { error: { message: tpBad } };
     const nTs = tidyItems($("p-tech").value).length; if (nTs < 2 || nTs > 5) return { error: { message: `Please give 2 to 5 kinds of technical support, one per line (you have ${nTs}).` } };
@@ -3723,9 +3754,11 @@ function terrEditor(id) {
       if (Object.keys(det).length) { const r0 = await db.rpc("submit_details_update", { p_email: V().email, p_territory: id, p_details: det }); if (r0.error) return r0; }
     }
     const r1 = await db.rpc("aslp_save_profile", { p_territory: id, p_profile: { workAreas: $("p-work").value.trim(), thematic: pT.value(), strengths: pS.value().join("\n"), techSupport: $("p-tech").value.trim() } });
-    if (r1.error || !canCon) return r1;
-    return db.rpc("aslp_set_contacts", { p_territory: id, p_items: readRows($("con-box")) });
-  }, `${shortName(t.name)} saved.`).then(() => {
+    if (r1.error) return r1;
+    const r2 = canCon ? await db.rpc("aslp_set_contacts", { p_territory: id, p_items: readRows($("con-box")) }) : r1;
+    if (!r2.error) { await dropProfileDraft(id); const n = box.querySelector(".pd-note"); if (n) n.remove(); }
+    return r2;
+  }, `${shortName(t.name)} published on the website.`).then(() => {
     // show the contact persons as saved: the territory's CWG members are added automatically while a slot is free
     if (!canCon || !$("terr-msg").classList.contains("ok")) return;
     const t2 = (data.territories || []).find(x => x.id === id); if (!t2) return;
