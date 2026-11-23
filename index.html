@@ -2449,22 +2449,23 @@ async function groupPDF(key, btn) {
     };
     // fill the page: find the largest text that fits (in fine steps), then share what's left between the sections, so there's no empty space above the footer.
     // Readable text comes first: the diagram gets shorter before the text gets smaller, and a very full page drops the roles list rather than going below 84%.
-    const LIMIT = 266, MIN = .84;
-    const fits = async (sc, vs, lite) => (await build(sc, vs, 0, false, lite)).y <= LIMIT;
+    const LIMIT = 279, MIN = .84;
+    const fits = async (sc, vs, lite) => (await build(sc, vs, 0, true, lite)).y <= LIMIT;
     const maxSc = async (vs, lite) => { let lo = .6, hi = 1.6; if (!(await fits(lo, vs, lite))) return 0; if (await fits(hi, vs, lite)) return hi;
       for (let k = 0; k < 8; k++) { const m = (lo + hi) / 2; if (await fits(m, vs, lite)) lo = m; else hi = m; } return lo; };
+    // balance: the text as large as it can be, with a diagram no taller than it needs to be (a slightly shorter diagram is worth larger text)
     let pick = null;
     for (const lite of [false, true]) {
-      for (const vs of [1, .86, .72, .62]) { const sc = await maxSc(vs, lite); if (sc >= MIN || (lite && sc >= .7)) { pick = [sc, vs, lite]; break; } }
-      if (pick) break;
+      const opts = []; for (const vs of [1, .9, .8, .72]) opts.push([await maxSc(vs, lite), vs, lite]);
+      const best = Math.max(...opts.map(o => o[0]));
+      if (best >= MIN || (lite && best >= .7)) { pick = opts.find(o => o[0] >= best - .03); break; }
     }
     let out;
     if (pick) {
-      if (pick[1] === 1) { const big = await maxSc(1.2, pick[2]); if (big >= pick[0] - .02) pick = [big, 1.2, pick[2]]; }   // room to spare: a taller diagram as well
-      out = await build(pick[0], pick[1], 0, false, pick[2]);
+      out = await build(pick[0], pick[1], 0, true, pick[2]);
       const nSec = 3 + ((g.members || []).length > 5 || (key === "apsg" && (g.members || []).length) ? 1 : 0) + (DIAGRAMS[key] ? 2 : 0);
       const extra = (LIMIT - out.y) / nSec;
-      if (extra > 0.3) out = await build(pick[0], pick[1], extra, false, pick[2]);
+      if (extra > 0.3) out = await build(pick[0], pick[1], extra, true, pick[2]);
     } else {   // very long: drop the footer shapes and use the space down to the footer line
       for (let sc = .76; sc >= .6; sc -= .04) { out = await build(+sc.toFixed(2), .7, 0, true, true); if (out.y <= 281) break; }
     }
