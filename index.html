@@ -1012,11 +1012,10 @@
   .tp-chip.old { background: #fff6cc; color: #000; outline: 1.5px dashed #c9a227; }
   .tp-chip button { border: 0; background: rgba(255,255,255,.2); color: inherit; width: 22px; height: 22px; border-radius: 50%; cursor: pointer; font-size: 14px; line-height: 1; }
   .tp-chip.old button { background: rgba(0,0,0,.1); }
-  .tp-find { position: relative; }
-  .tp-list { position: absolute; left: 0; right: 0; top: calc(100% + 4px); z-index: 30; max-height: 320px; overflow: auto; background: var(--paper); border: 1px solid var(--line); border-radius: 14px; box-shadow: 0 14px 36px rgba(0,0,0,.14); padding: 6px; }
-  .tp-g { font-size: 12px; font-weight: 800; color: var(--ink-3); padding: 8px 10px 4px; }
-  .tp-opt { display: block; width: 100%; text-align: left; border: 0; background: none; font: inherit; font-size: 14.5px; padding: 7px 10px; border-radius: 8px; cursor: pointer; color: var(--ink); }
-  .tp-opt:hover, .tp-opt:focus { background: var(--paper-2); outline: none; }
+  .tp-add { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+  .tp-sel { flex: 1 1 320px; max-width: 560px; font: inherit; font-size: 15px; padding: 10px 12px; border: 1.5px solid var(--line); border-radius: 10px; background: var(--paper); color: var(--ink); cursor: pointer; }
+  .tp-sel:disabled { cursor: default; opacity: .7; }
+  .tp-count { font-size: 13.5px; font-weight: 700; color: var(--ink-3); } .tp-count.full { color: #b3261e; }
   /* ---------- grouped views (by thematic area / by strength) ---------- */
   .view-sw { display: inline-flex; gap: 4px; background: var(--paper-2); border-radius: 999px; padding: 4px; margin: var(--g5) 0 var(--g4); }
   .row-head .view-sw { margin: 0; }
@@ -1657,26 +1656,28 @@ const STRENGTH_GROUP = Object.fromEntries(STRENGTHS.flatMap(([g, xs]) => xs.map(
 const strengthsOf = p => String((p && p.strengths) || "").split("\n").map(x => x.trim()).filter(Boolean);
 
 // a searchable multi-pick from a standard list
+// a plain dropdown (grouped) to add items one after another, chips to remove them; 1 to 20 items
+const TP_MAX = 20;
 function tagPicker(box, groups, selected, label) {
-  const sel = [...selected]; const known = new Set(groups.flatMap(g => g[1]));
-  const draw = () => {
-    box.innerHTML = `<div class="tp-chips">${sel.length ? sel.map((x, i) => `<span class="tp-chip${known.has(x) ? "" : " old"}" title="${known.has(x) ? "" : "Not in the standard list: remove it and pick one from the list"}">${esc(x)}<button type="button" data-tp-rm="${i}" aria-label="Remove ${esc(x)}">×</button></span>`).join("") : `<span class="small">None picked yet.</span>`}</div>
-      <div class="tp-find"><input type="search" class="tp-q" placeholder="Search or browse the list to add ${esc(label)}" aria-label="Add ${esc(label)}" autocomplete="off"><div class="tp-list" hidden></div></div>`;
-    const q = box.querySelector(".tp-q"), list = box.querySelector(".tp-list");
-    const show = () => { const t = q.value.trim().toLowerCase();
-      const html = groups.map(([g, xs]) => { const m = xs.filter(x => !sel.includes(x) && (!t || x.toLowerCase().includes(t) || g.toLowerCase().includes(t)));
-        return m.length ? `<div class="tp-g">${esc(g)}</div>${m.map(x => `<button type="button" class="tp-opt" data-tp-add="${esc(x)}">${esc(x)}</button>`).join("")}` : ""; }).join("");
-      list.innerHTML = html || `<p class="small" style="padding:8px 10px">Nothing matches. Try another word.</p>`; list.hidden = false; };
-    q.onfocus = show; q.oninput = show;
-    q.onkeydown = e => { if (e.key === "Escape") { list.hidden = true; q.blur(); } if (e.key === "Enter") { e.preventDefault(); const f = list.querySelector("[data-tp-add]"); if (f) f.click(); } };
-    box.onclick = e => { const a = e.target.closest("[data-tp-add]"), r = e.target.closest("[data-tp-rm]");
-      if (a) { sel.push(a.dataset.tpAdd); draw(); box.querySelector(".tp-q").focus(); box.dispatchEvent(new Event("input", { bubbles: true })); }
-      if (r) { sel.splice(+r.dataset.tpRm, 1); draw(); box.dispatchEvent(new Event("input", { bubbles: true })); } };
+  const sel = [...new Set(selected)]; const known = new Set(groups.flatMap(g => g[1]));
+  const draw = focus => {
+    const full = sel.length >= TP_MAX;
+    box.innerHTML = `<div class="tp-chips">${sel.length ? sel.map((x, i) => `<span class="tp-chip${known.has(x) ? "" : " old"}" title="${known.has(x) ? "" : "Not in the standard list: remove it and pick one from the list"}">${esc(x)}<button type="button" data-tp-rm="${i}" aria-label="Remove ${esc(x)}">×</button></span>`).join("") : `<span class="small">None chosen yet. Pick at least one.</span>`}</div>
+      <div class="tp-add"><select class="tp-sel" aria-label="Add ${esc(label)}"${full ? " disabled" : ""}>
+        <option value="">${full ? `You've chosen ${TP_MAX}, the most allowed. Remove one to add another.` : `+ Add ${esc(label)}…`}</option>
+        ${groups.map(([g, xs]) => { const m = xs.filter(x => !sel.includes(x)); return m.length ? `<optgroup label="${esc(g)}">${m.map(x => `<option value="${esc(x)}">${esc(x)}</option>`).join("")}</optgroup>` : ""; }).join("")}
+      </select><span class="tp-count${full ? " full" : ""}">${sel.length} of ${TP_MAX}</span></div>`;
+    const s2 = box.querySelector(".tp-sel");
+    s2.onchange = () => { const v = s2.value; if (!v || sel.includes(v) || sel.length >= TP_MAX) return; sel.push(v); draw(true); box.dispatchEvent(new Event("input", { bubbles: true })); };
+    if (focus) s2.focus();
+    box.querySelectorAll("[data-tp-rm]").forEach(b => b.onclick = () => { sel.splice(+b.dataset.tpRm, 1); draw(true); box.dispatchEvent(new Event("input", { bubbles: true })); });
   };
-  draw();
-  document.addEventListener("click", e => { if (!box.isConnected) return; if (!box.contains(e.target)) { const l = box.querySelector(".tp-list"); if (l) l.hidden = true; } });
+  draw(false);
   return { value: () => sel.slice() };
 }
+// 1 to 20 thematic areas and strengths before saving a profile
+const tpCheck = (th, st) => !th.length ? "Please pick at least one thematic area." : th.length > TP_MAX ? `Please keep to ${TP_MAX} thematic areas or fewer (you have ${th.length}).`
+  : !st.length ? "Please pick at least one strength." : st.length > TP_MAX ? `Please keep to ${TP_MAX} strengths or fewer (you have ${st.length}).` : "";
 
 // territories and switched-on regions, for the grouped views
 const placesIn = cwgs => [...terrs().filter(t => cwgs.includes((t.cwg || "").trim())).map(t => ({ id: t.id, name: shortName(OFFICIAL_NAME[t.id] || t.name), cwg: (t.cwg || "").trim(), p: t.profile || {} })),
@@ -1915,10 +1916,10 @@ function unitEditor(id) {
     <div id="con-box"><div class="ed-rows">${((u.contacts || []).length ? u.contacts : [{}]).map(c => fieldRow(CON_COLS, c, [])).join("")}</div>
       <div class="ed-actions"><button type="button" class="btn sm ed-add">Add a contact</button></div></div>` : roContacts(u.contacts)}
     <div class="ed-actions sticky"><button type="button" class="btn fill" id="terr-save">Save ${esc(u.name)}</button><a class="textlink" href="#/territory/${esc(u.id)}">View the page</a><span class="ed-msg" id="terr-msg" role="status"></span></div>`;
-  const pT = tagPicker($("p-them"), THEMES, p.thematic || [], "thematic areas"), pS = tagPicker($("p-str"), STRENGTHS.map(([g, xs]) => [g, xs.map(x => x[0])]), strengthsOf(p), "strengths");
+  const pT = tagPicker($("p-them"), THEMES, p.thematic || [], "a thematic area"), pS = tagPicker($("p-str"), STRENGTHS.map(([g, xs]) => [g, xs.map(x => x[0])]), strengthsOf(p), "a strength");
   if (canConU) wireRows($("con-box"), CON_COLS, []);
   makeDraftable(box, `unit:${id}`, () => unitEditor(id));
-  $("terr-save").addEventListener("click", () => saveWith("terr-save", "terr-msg", () => db.rpc("aslp_save_unit", { p_id: id,
+  $("terr-save").addEventListener("click", () => saveWith("terr-save", "terr-msg", () => tpCheck(pT.value(), pS.value()) ? Promise.resolve({ error: { message: tpCheck(pT.value(), pS.value()) } }) : db.rpc("aslp_save_unit", { p_id: id,
     p_profile: { workAreas: $("p-work").value.trim(), thematic: pT.value(), strengths: pS.value().join("\n"), techSupport: $("p-tech").value.trim() },
     p_contacts: canConU ? readRows($("con-box")) : (u.contacts || []) }), `${u.name} saved.`));
 }
@@ -3230,10 +3231,11 @@ function terrEditor(id) {
     <div id="con-box"><div class="ed-rows">${((t.contacts || []).length ? t.contacts : [{}]).map(c => fieldRow(CON_COLS, c, [])).join("")}</div>
       <div class="ed-actions"><button type="button" class="btn sm ed-add">Add a contact</button></div></div>` : roContacts(t.contacts)}
     <div class="ed-actions sticky"><button type="button" class="btn fill" id="terr-save">Save ${esc(shortName(t.name))}</button><a class="textlink" href="#/territory/${esc(t.id)}">View the page</a><span class="ed-msg" id="terr-msg" role="status"></span></div>`;
-  const pT = tagPicker($("p-them"), THEMES, p.thematic || [], "thematic areas"), pS = tagPicker($("p-str"), STRENGTHS.map(([g, xs]) => [g, xs.map(x => x[0])]), strengthsOf(p), "strengths");
+  const pT = tagPicker($("p-them"), THEMES, p.thematic || [], "a thematic area"), pS = tagPicker($("p-str"), STRENGTHS.map(([g, xs]) => [g, xs.map(x => x[0])]), strengthsOf(p), "a strength");
   if (canCon) wireRows($("con-box"), CON_COLS, []);
   makeDraftable(box, `terr:${id}`, () => terrEditor(id));
   $("terr-save").addEventListener("click", () => saveWith("terr-save", "terr-msg", async () => {
+    const tpBad = tpCheck(pT.value(), pS.value()); if (tpBad) return { error: { message: tpBad } };
     if (shared) {   // shared fields go to the one record both websites use
       const hq = $("s-hq").value.trim(), ct = $("s-ctry").value.split(",").map(x => x.trim()).filter(Boolean), det = {};
       if (hq !== (t.location || "")) det.location = hq;
