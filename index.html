@@ -1273,14 +1273,15 @@
   .art .a-slot-demo { cursor: default; border-style: solid; border-width: 0; background: color-mix(in srgb, var(--cwg-a) 16%, #ececec); }
   .art .a-slot { position: relative; } .art .a-slot-x { position: absolute; top: 6px; right: 6px; width: 30px; height: 30px; border-radius: 50%; border: 0; background: #fff; color: #111; font-size: 18px; cursor: pointer; box-shadow: 0 1px 4px rgba(0,0,0,.25); }
   /* cover (Skill Up, Activity) */
-  .art .a-cover { position: relative; background: var(--cwg-a); color: #fff; padding: 6% 8% 12%; overflow: hidden; }
+  .art .a-cover { position: relative; background: var(--cwg-a); color: #fff; padding: 9% 8% 12%; overflow: hidden; }
+  .art .a-cover > .a-tri { position: absolute; top: 0; left: 0; right: 0; z-index: 2; }
   .art .a-dd { position: absolute; right: -12%; top: -14%; width: 78%; opacity: .2; filter: brightness(0) invert(1); pointer-events: none; }
   .art .a-top { position: relative; display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 11%; }
   .art .a-chip { background: #fff; border-radius: 12px; padding: 8px 12px; display: flex; align-items: center; } .art .a-chip img { height: clamp(20px, 4.6cqi, 38px); width: auto; } .art .a-chip .a-grp { font-size: 18px; }
   .art .a-badge { position: relative; display: inline-block; background: #f5c400; color: #111; font-weight: 900; font-size: 13px; padding: 5px 12px; border-radius: 999px; margin-bottom: 12px; }
   .art .a-cover .a-title { position: relative; color: #fff; font-size: clamp(28px, 6.4cqi, 54px); } .art .a-cover .a-title .a-ph { color: rgba(255,255,255,.7); }
   .art .a-cover .a-meta { position: relative; color: #fff; opacity: .92; margin: 0; }
-  .art .a-slot.lift { margin-top: -7%; position: relative; z-index: 1; } .art .a-cover + .a-main { padding-top: 0; }
+  .art .a-slot.lift { margin-top: -7%; position: relative; z-index: 1; } .art .a-cover + .a-main { padding-top: 5%; } .art .a-cover + .a-main:has(> .a-slot.lift) { padding-top: 0; } .art .a-cover:not(:has(+ .a-main > .a-slot.lift)) { padding-bottom: 7%; }
   /* Passport Stamp */
   .art.tp-p2p .a-main { position: relative; }
   .art .a-stamp { position: absolute; top: -2%; right: 7%; width: clamp(84px, 17cqi, 132px); aspect-ratio: 1; border: 3px solid var(--cwg-a); border-radius: 50%; transform: rotate(-12deg);
@@ -3571,7 +3572,7 @@ const artImgs = html => [...String(html || "").matchAll(/<img[^>]+src="([^"]+)"/
 // templates: [key, name, what it's for, photo spaces, starter headings, for groups (ASC/APSG) too]
 const ART_TPLS = [
   ["general", "General article", "Any news or update", ["hero", "g1", "g2"], [], true],
-  ["p2p", "Passport Stamp", "Peer-to-peer learning visits", ["a", "b", "g1", "g2", "g3"], ["Who visited whom, and why", "What we saw", "What we'll take home"], false],
+  ["p2p", "Passport Stamp", "Programme-to-programme (P2P) learning visits", ["a", "b", "g1", "g2", "g3"], ["Who visited whom, and why", "What we saw", "What we'll take home"], false],
   ["training", "Skill Up", "Development trainings and workshops", ["hero", "g1", "g2", "g3", "g4"], ["About the training", "What participants learnt", "What changes next"], false],
   ["meeting", "Round the Table", "CWG meetings", ["hero", "g1", "g2", "g3"], ["Who met", "What we discussed", "What we agreed"], false],
   ["field", "Boots on the Ground", "Field visits", ["hero", "s1", "s2"], ["Where we went", "What we saw", "What happens next"], false],
@@ -3596,11 +3597,11 @@ function artPage({ tpl, title, date, src, html, edit, demo, photos, gal }) {
   const body = `<div class="a-body"${edit ? ` id="art-body" contenteditable="true" spellcheck="true" aria-label="Article text" data-ph="Start writing here. Mark each part as a heading, text, bullets or a quote using the bar above."` : ""}>${html || ""}</div>`;
   const tri = `<div class="a-tri"><i></i><i></i><i></i></div>`;
   const head = `<header class="a-head"><img class="a-lock" src="brand/lockup-v1.webp" alt="Asia-Pacific Sharing & Learning Programme">${cwgLogo}</header>${tri}`;
-  const cover = badge => `<header class="a-cover"><img class="a-dd" src="${b.doodles}" alt="" aria-hidden="true"><div class="a-top"><span class="a-chip"><img src="brand/aslp-acronym.webp" alt="ASLP"></span><span class="a-chip">${cwgLogo}</span></div><span class="a-badge">${badge}</span>${h1}${meta}</header>`;
+  const cover = badge => `${head.replace(/<div class="a-tri">.*$/, "")}<header class="a-cover">${tri}<img class="a-dd" src="${b.doodles}" alt="" aria-hidden="true"><span class="a-badge">${badge}</span>${h1}${meta}</header>`;
   const foot = `<div class="a-foot"><span class="a-lll"><b>Listen.</b> <b>Learn.</b> <b>Lead.</b></span><span>${esc(b.name)} · Asia-Pacific Sharing &amp; Learning Programme</span></div>`;
   const inner = {
     general: () => `${head}<div class="a-main">${slot("hero", "hero")}${h1}${meta}${body}${row(["g1", "g2"], "duo")}</div>`,
-    p2p: () => `${head}<div class="a-main"><div class="a-stamp" aria-hidden="true"><span>Peer to peer</span><b>Learning visit</b><span>${esc(b.name)}</span></div><div class="a-kicker">Learning visit</div>${h1}${meta}${row(["a", "b"], "duo tall")}${body}${row(["g1", "g2", "g3"], "trio")}</div>`,
+    p2p: () => `${head}<div class="a-main"><div class="a-stamp" aria-hidden="true"><span>Programme to programme</span><b>P2P visit</b><span>${esc(b.name)}</span></div><div class="a-kicker">Programme-to-programme learning visit</div>${h1}${meta}${row(["a", "b"], "duo tall")}${body}${row(["g1", "g2", "g3"], "trio")}</div>`,
     training: () => `${cover("Training")}<div class="a-main">${slot("hero", "hero lift")}${body}${row(["g1", "g2", "g3", "g4"], "quad")}</div>`,
     meeting: () => `${head}<div class="a-main"><div class="a-kicker a-table"><i></i><i></i><i></i><i></i>CWG meeting</div>${h1}${meta}${slot("hero", "hero wide")}${body}${row(["g1", "g2", "g3"], "trio")}</div>`,
     field: () => `<div class="a-grid"><aside class="a-side">${b.v ? `<img class="a-cwgv" src="${b.v}" alt="${esc(b.full)}">` : `<span class="a-grp">${esc(b.name)}</span>`}<div class="a-k">From</div><div class="a-v">${esc(b.full || b.name)}</div>${date ? `<div class="a-k">Date</div><div class="a-v">${esc(fmtDate(date))}</div>` : ""}
