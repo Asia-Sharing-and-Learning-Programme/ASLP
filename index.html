@@ -1272,18 +1272,14 @@
   .art .a-head + .a-tri { margin: 0 8% 5%; }
   .art .a-kicker { display: flex; align-items: center; gap: 8px; color: var(--cwg-a); font-weight: 800; font-size: 13.5px; margin-bottom: 10px; }
   /* photo spaces */
-  .art .a-slot { margin: 0 0 1.2em; } .art .a-slot img { display: block; width: 100%; height: 100%; object-fit: cover; border-radius: 8px; }
+  .art .a-slot { margin: 0 0 1.2em; min-width: 0; --ar: 16 / 9; } .art .a-row > * { min-width: 0; }
+  .art .a-slot.x-wide { --ar: 21 / 9; } .art .a-slot.x-portrait { --ar: 3 / 4; } .art .a-slot.x-side { --ar: 4 / 3; margin: 14px 0 0; } .art .a-row .a-slot { --ar: 4 / 3; margin: 0; } .art .a-row.x-tall .a-slot { --ar: 3 / 4; }
+  .art .a-slot > img, .art .a-slot > .a-slot-add, .art .a-slot > .a-slot-demo, .art .a-slot > .a-slot-v { width: 100%; aspect-ratio: var(--ar); height: auto; } .art .a-slot > img, .art .a-slot > .a-slot-v { display: block; }
+  .art .a-slot img { width: 100%; height: 100%; object-fit: cover; border-radius: 8px; display: block; }
   .art .a-slot figcaption { font-size: 12.5px; color: #666; margin-top: 6px; line-height: 1.4; outline: none; }
   .art .a-slot figcaption:empty::before { content: attr(data-ph); color: #aaa; }
-  .art .a-slot.hero { aspect-ratio: 16 / 9; } .art .a-slot.hero.wide { aspect-ratio: 21 / 9; } .art .a-slot.portrait { aspect-ratio: 3 / 4; } .art .a-slot.side { aspect-ratio: 4 / 3; margin: 14px 0 0; }
-  .art.is-edit .a-slot.hero, .art.is-edit .a-slot.portrait, .art.is-edit .a-slot.side, .art.is-edit .a-row .a-slot { display: grid; grid-template-rows: minmax(0, 1fr) auto; }
-  .art .a-slot, .art .a-row > * { min-width: 0; } .art .a-slot img { max-width: 100%; } .art:not(.is-edit) .a-slot { display: block; } .art:not(.is-edit) .a-slot-v img { height: 100%; }
-  .art .a-row { display: grid; gap: 12px; margin: 1.2em 0; } .art .a-row .a-slot { margin: 0; aspect-ratio: 4 / 3; }
+  .art .a-row { display: grid; gap: 12px; margin: 1.2em 0; }
   .art .a-row.n2 { grid-template-columns: 1fr 1fr; } .art .a-row.n3 { grid-template-columns: repeat(3, 1fr); } .art .a-row.n4 { grid-template-columns: 1fr 1fr; }
-  .art .a-row.tall .a-slot { aspect-ratio: 3 / 4; }
-  .art .a-slot figcaption { min-height: 0; } .art:not(.is-edit) .a-slot { aspect-ratio: auto; } .art:not(.is-edit) .a-slot > button { aspect-ratio: 16 / 9; }
-  .art:not(.is-edit) .a-slot.wide > button { aspect-ratio: 21 / 9; } .art:not(.is-edit) .a-slot.portrait > button { aspect-ratio: 3 / 4; } .art:not(.is-edit) .a-slot.side > button, .art:not(.is-edit) .a-row .a-slot > button { aspect-ratio: 4 / 3; }
-  .art:not(.is-edit) .a-row.tall .a-slot > button { aspect-ratio: 3 / 4; }
   .art .a-slot-v { display: block; width: 100%; padding: 0; border: 0; background: none; cursor: zoom-in; }
   .art .a-slot-add, .art .a-slot-demo { display: grid; place-content: center; justify-items: center; gap: 4px; width: 100%; height: 100%; min-height: 60px; border: 2px dashed color-mix(in srgb, var(--cwg-a) 45%, #ccc); border-radius: 8px;
     background: color-mix(in srgb, var(--cwg-a) 7%, #f4f4f4); color: color-mix(in srgb, var(--cwg-a) 70%, #333); font: inherit; font-size: 13px; font-weight: 700; cursor: pointer; }
@@ -1299,7 +1295,7 @@
   .art .a-badge { position: relative; display: inline-block; background: #f5c400; color: #111; font-weight: 900; font-size: 13px; padding: 5px 12px; border-radius: 999px; margin-bottom: 12px; }
   .art .a-cover .a-title { position: relative; color: #fff; font-size: clamp(28px, 6.4cqi, 54px); } .art .a-cover .a-title .a-ph { color: rgba(255,255,255,.7); }
   .art .a-cover .a-meta { position: relative; color: #fff; opacity: .92; margin: 0; }
-  .art .a-slot.lift { margin-top: -7%; position: relative; z-index: 1; } .art .a-cover + .a-main { padding-top: 5%; } .art .a-cover + .a-main:has(> .a-slot.lift) { padding-top: 0; } .art .a-cover:not(:has(+ .a-main > .a-slot.lift)) { padding-bottom: 7%; }
+  .art .a-slot.x-lift { margin-top: -7%; position: relative; z-index: 1; } .art .a-cover + .a-main { padding-top: 5%; } .art .a-cover + .a-main:has(> .a-slot.x-lift) { padding-top: 0; } .art .a-cover:not(:has(+ .a-main > .a-slot.x-lift)) { padding-bottom: 7%; }
   /* Passport Stamp */
   .art.tp-p2p .a-main { position: relative; }
   .art .a-stamp { position: absolute; top: -2%; right: 7%; width: clamp(84px, 17cqi, 132px); aspect-ratio: 1; border: 3px solid var(--cwg-a); border-radius: 50%; transform: rotate(-12deg);
@@ -1321,9 +1317,30 @@
   .art.tp-story .a-body blockquote:first-child, .art.tp-story .a-body > h2:first-child + p + blockquote { font-size: 1.35em; }
   @container (max-width: 560px) { .art .a-grid { grid-template-columns: 1fr; } .art .a-side { padding: 7% 8%; } .art .a-map, .art .a-acr { display: none; } .art .a-cwgv { width: 50%; }
     .art .a-row.n3 { grid-template-columns: 1fr 1fr; } .art .a-story { grid-template-columns: 1fr; } .art .a-stamp { display: none; } .art.tp-p2p h1.a-title { padding-right: 0; } .art.tp-p2p .a-tf { width: 100%; } }
+  /* key facts box */
+  .art .a-facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px 18px; margin: 0 0 1.4em; padding: 14px 16px; border-radius: 10px; background: color-mix(in srgb, var(--cwg-a) 8%, #fff); border-left: 4px solid var(--cwg-a); }
+  .art .a-facts div { display: grid; gap: 2px; } .art .a-facts dt { font-size: 12px; font-weight: 800; color: var(--cwg-a); } .art .a-facts dt em { font-style: normal; font-weight: 600; color: #888; }
+  .art .a-facts dd { margin: 0; font-size: 14.5px; font-weight: 650; line-height: 1.35; color: #1a1a1a; }
+  .art .a-facts .a-in.a-fact { font-size: 14px; padding: 6px 9px; font-weight: 600; background: #fff; }
+  .art .a-side .a-facts { grid-template-columns: 1fr; padding: 10px 12px; margin: 14px 0 0; background: rgba(255,255,255,.7); }
+  .art .a-cover + .a-main > .a-facts:first-child { margin-top: 5%; }
+  /* guidance in the boxes */
+  .art .a-hint { margin: 0 0 2px; font-size: 13px; line-height: 1.45; color: #5d5d5d; } .art .a-hint b { color: #333; font-weight: 750; }
+  .art .a-ex { display: block; margin-top: 3px; padding: 6px 9px; border-radius: 6px; background: #f5f5f3; color: #666; font-style: italic; } .art .a-ex b { font-style: normal; }
+  .art .a-fh { font-size: 1.42em; font-weight: 800; line-height: 1.2; margin: 0; color: #111; }
+  .art .a-note { margin: 4px 0 0; font-size: 12.5px; color: #777; }
+  /* Sticky Notes (workshop) */
+  .art .a-notes i { width: 13px; height: 13px; border-radius: 2px; background: #f5c400; transform: rotate(-8deg); margin-right: -2px; box-shadow: 0 1px 2px rgba(0,0,0,.15); }
+  .art .a-notes i:nth-child(2) { background: color-mix(in srgb, var(--cwg-a) 55%, #fff); transform: rotate(6deg); } .art .a-notes i:nth-child(3) { background: #ff9a76; transform: rotate(-3deg); margin-right: 6px; }
+  /* posts */
+  .art.is-post { max-width: 700px; min-height: 0; }
+  .art .a-ann { display: flex; align-items: center; gap: 10px; color: var(--cwg-a); font-weight: 900; font-size: 15px; margin-bottom: 12px; }
+  .art .a-mega { width: 40px; height: 40px; border-radius: 50%; background: #f5c400; color: #111; display: grid; place-items: center; } .art .a-mega svg { width: 24px; height: 24px; }
+  .art.tp-announce .a-facts { background: color-mix(in srgb, #f5c400 22%, #fff); border-left-color: #f5c400; }
   /* article editor */
   .art-ed { display: grid; gap: var(--g4); }
   .art-tpls { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+  .art-tpls.two { grid-template-columns: repeat(2, minmax(0, 240px)); }
   @media (max-width: 760px) { .art-tpls { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
   .art-tpl { border: 2px solid var(--line); border-radius: 14px; padding: 10px; background: var(--paper); color: var(--ink); text-align: left; display: grid; gap: 3px; cursor: pointer; font: inherit; align-content: start; }
   .art-tpl:hover { border-color: var(--ink-3); } .art-tpl.on { border-color: var(--ink); box-shadow: 0 0 0 2px var(--ink) inset; }
@@ -3537,7 +3554,7 @@ function updatesConsole(sel) {
     const u = mine().find(x => x.id === del.dataset.ud); del.disabled = true; del.textContent = "Deleting…";
     const { error } = await db.rpc("aslp_delete_update", { p_id: u.id });
     if (error) { del.textContent = error.message || "Couldn't delete"; return; }
-    const ps = [u.file && u.file.url, ...(u.pages || []), ...(u.photos || []), ...(u.slides || []).flatMap(s => s.images || []), ...(u.sections || []).flatMap(s => s.images || []), ...artImgs(u.body), ...Object.values((u.kind === "article" && u.file && u.file.photos) || {}).map(p => p && p.src)].map(pathOf).filter(Boolean);
+    const ps = [u.file && u.file.url, ...(u.pages || []), ...(u.photos || []), ...(u.slides || []).flatMap(s => s.images || []), ...(u.sections || []).flatMap(s => s.images || []), ...artImgs(u.body), ...Object.values((u.file && u.file.photos) || {}).map(p => p && p.src)].map(pathOf).filter(Boolean);
     if (ps.length) UPB().remove(ps).catch(() => {});
     // the full file kept in the ASLP Google Drive goes too (and any leftovers no update uses)
     let driveNote = "";
@@ -3587,21 +3604,73 @@ function sanitizeArt(html) {
 }
 const artText = html => { const d = document.createElement("div"); d.innerHTML = String(html || "").replace(/<\/(p|h2|h3|li|blockquote|figcaption)>/g, "$& "); return d.textContent.replace(/\s+/g, " ").trim(); };
 const artImgs = html => [...String(html || "").matchAll(/<img[^>]+src="([^"]+)"/g)].map(m => m[1].replace(/&amp;/g, "&"));
-// templates: [key, name, what it's for, photo spaces, starter headings, for groups (ASC/APSG) too]
+// ---- update templates: every CWG uses the same sections for the same kind of activity; only the General article is free-form ----
+// facts: [key, label, example, required]; secs: [key, heading, what to write, example]
 const ART_TPLS = [
-  ["general", "General article", "Any news or update", ["hero", "g1", "g2"], [], true],
-  ["p2p", "Passport Stamp", "Programme-to-programme (P2P) learning visits", ["a", "b", "g1", "g2", "g3"], ["Who visited whom, and why", "What we saw", "What we'll take home"], false],
-  ["training", "Skill Up", "Development trainings and workshops", ["hero", "g1", "g2", "g3", "g4"], ["About the training", "What participants learnt", "What changes next"], false],
-  ["meeting", "Round the Table", "CWG meetings", ["hero", "g1", "g2", "g3"], ["Who met", "What we discussed", "What we agreed"], false],
-  ["field", "Boots on the Ground", "Field visits", ["hero", "s1", "s2"], ["Where we went", "What we saw", "What happens next"], false],
-  ["story", "In Their Words", "Focus stories and testimonies", ["portrait", "g1"], ["Their story", "What changed", "Looking ahead"], false],
-  ["activity", "Activity article", "An ASC or APSG activity", ["hero", "g1", "g2", "g3"], ["About the activity", "What happened", "What's next"], true]];
-const tplOf = k => ART_TPLS.find(t => t[0] === k) || ART_TPLS[0];
-const tplsFor = src => ART_TPLS.filter(t => String(src || "").startsWith("group|") ? t[5] : t[0] !== "activity");
-const tplKey = v => ({ 1: "general", 2: "training", 3: "general", 4: "field" })[v] || (ART_TPLS.some(t => t[0] === v) ? v : "general");
-function artPage({ tpl, title, date, src, html, edit, demo, photos, gal, form }) {
-  const T = tplOf(tplKey(tpl)), k = T[0], b = artBrand(src), P = photos || {}, tt = esc(title || "") || (edit ? `<span class="a-ph">Your title (type it in the Title box above)</span>` : "");
-  const filled = T[3].filter(x => P[x] && P[x].src);
+  { k: "general", kind: "article", name: "General article", for: "Free layout for any news or story", photos: ["hero", "g1", "g2"], free: true, groups: true,
+    intro: ["Introduction", "The opening paragraph: what happened, where and when, and who took part.", "Territories from across SPEA met in Singapore to share what is working in their community programmes."] },
+  { k: "p2p", kind: "article", name: "Passport Stamp", for: "Programme-to-programme (P2P) learning visits", photos: ["a", "b", "g1", "g2", "g3"], badge: "P2P learning visit",
+    facts: [["when", "When", "14–18 October 2026", 1], ["where", "Where", "Central Java, Indonesia", 1], ["who", "Visiting team", "4 officers and staff from the Philippines Territory"], ["host", "Host programme", "Indonesia Territory savings group programme"]],
+    intro: ["Introduction", "Who visited whom, when, and the purpose of the visit, in two or three sentences.", "In October, four officers from the Philippines spent five days with the Indonesia Territory's savings group programme in Central Java."],
+    secs: [["why", "Why we visited", "The question or need behind the visit.", "We wanted to see how savings groups keep meeting after project funding ends."],
+      ["saw", "What we saw", "The places, programmes and people you visited.", "- A savings group of 25 women that has met every week since 2019\n- How corps officers support the groups"],
+      ["learnt", "What we learnt", "The main lessons, in a few sentences or bullet points.", "Groups that choose their own leaders and rules last longer."],
+      ["home", "What we'll try at home", "What your territory will try or change because of the visit.", "- Start two savings groups in Mindanao in 2027\n- Share the group rules template with our CD team"]], quote: true },
+  { k: "training", kind: "article", name: "Skill Up", for: "Development trainings for officers and staff", photos: ["hero", "g1", "g2", "g3", "g4"], badge: "Training",
+    facts: [["when", "When", "3–5 March 2027", 1], ["where", "Where", "Manila, Philippines", 1], ["who", "Participants", "18 development officers from 7 territories"], ["led", "Facilitators", "SPEA 1 CWG lead and an external MEAL trainer"]],
+    intro: ["Introduction", "What the training was, who it was for and why it was held.", "Eighteen development officers from seven SPEA territories met in Manila for three days of MEAL training, to strengthen how we track change in our community programmes."],
+    secs: [["covered", "What the training covered", "The main topics or sessions.", "- Writing clear indicators\n- Collecting data with KoboToolbox\n- Turning data into stories of change"],
+      ["learnt", "What participants learnt", "The skills or ideas people took away.", "Most participants had never built a results framework before. By day three, each territory had drafted one for a current project."],
+      ["use", "How they will use it", "How participants will apply the training in their work.", "Each territory will test its new indicators in one project and share the results at the next CWG meeting."]], quote: true },
+  { k: "workshop", kind: "article", name: "Sticky Notes", for: "Workshops: planning, strategy and co-creation", photos: ["hero", "g1", "g2", "g3"], badge: "Workshop",
+    facts: [["when", "When", "20–21 January 2027", 1], ["where", "Where", "Dhaka, Bangladesh", 1], ["who", "Who took part", "Officers and staff from 6 territories, with 2 community representatives"]],
+    intro: ["Introduction", "What the workshop was about and who took part.", "SASIA 2 territories met in Dhaka for a two-day workshop to review their community development strategies together."],
+    secs: [["aim", "What we set out to do", "The workshop's purpose, or the questions it answered.", "Agree shared priorities for 2027 and check each territory's strategy against the Asia-Pacific CD framework."],
+      ["how", "How we worked", "The methods: group work, presentations, field visits.", "- Territory presentations\n- Small-group work on each priority\n- A visit to a community programme in Mirpur"],
+      ["made", "What we produced", "The outputs: plans, drafts, agreements or tools.", "- A draft action plan for each territory\n- A shared list of the support territories can offer one another"],
+      ["next", "Next steps", "What happens after the workshop, and who leads it.", "Territories finalise their action plans by 31 January. The CWG lead will collect them."]], quote: true },
+  { k: "meeting", kind: "article", name: "Round the Table", for: "CWG meetings, online or in person", photos: ["hero", "g1", "g2", "g3"], badge: "CWG meeting",
+    facts: [["when", "When", "12 February 2027", 1], ["where", "Where", "Online (Teams)", 1], ["who", "Who attended", "Representatives of all 6 SPEA 1 territories"]],
+    intro: ["Introduction", "The meeting in a sentence or two: which CWG met, when, and the main focus.", "SPEA 1 met online in February to plan this year's learning visits and share progress on community development strategies."],
+    secs: [["discussed", "What we discussed", "The main topics, and what territories shared.", "- Updates from each territory\n- Plans for 2027 learning visits\n- ASLP funding available for territories"],
+      ["agreed", "What we agreed", "Decisions made at the meeting.", "- Hong Kong and Macau will host a learning visit in May\n- Territories will send strategy updates by 30 March"],
+      ["actions", "Actions and who's responsible", "Who will do what, by when.", "- CWG lead: share the visit plan by 1 March\n- Each territory: name a contact person for the visit"]], quote: true },
+  { k: "field", kind: "article", name: "Boots on the Ground", for: "Field visits to communities and projects", photos: ["hero", "s1", "s2"], badge: "Field visit",
+    facts: [["when", "When", "9 September 2026", 1], ["where", "Community or project", "Mirpur-11 community clinic, Dhaka", 1], ["who", "Who went", "Bangladesh Territory CD team"]],
+    intro: ["Introduction", "Where you went, when, and why.", "In September, the Bangladesh CD team visited the Mirpur-11 clinic to see how the new self-help groups are running."],
+    secs: [["saw", "What we saw", "What is happening on the ground.", "Three self-help groups now meet every week at the clinic, and members keep their own savings records."],
+      ["heard", "What we heard from the community", "What people told you, in their words where you can.", "Members said the groups helped them pay school fees without borrowing."],
+      ["next", "What happens next", "Follow-up actions, and who is responsible.", "The team will train two more group leaders before December."]], quote: true },
+  { k: "story", kind: "article", name: "In Their Words", for: "Focus stories and testimonies", photos: ["portrait", "g1"], badge: "Focus story",
+    facts: [["who", "Whose story", "Rina, savings group leader (shared with her permission)"], ["where", "Where", "Mindanao, Philippines"]],
+    intro: ["Introduction", "Introduce the person and why their story matters. Ask permission first; for children, never use full names or exact locations.", "Rina leads a savings group of 20 women in a fishing village in Mindanao."],
+    secs: [["before", "Before", "Life before the programme, in a few sentences.", "Rina used to borrow from moneylenders whenever storms kept the boats in."],
+      ["changed", "What changed", "What the programme did, and what is different now.", "Through the savings group she built an emergency fund and started a small dried-fish business."],
+      ["ahead", "Looking ahead", "Their hopes and plans.", "She wants to help two more villages start their own groups."]], quote: true, quoteLabel: "In their own words" },
+  { k: "activity", kind: "article", name: "Activity article", for: "An ASC or APSG activity", photos: ["hero", "g1", "g2", "g3"], badge: "Activity", groups: true, only: "group",
+    facts: [["when", "When", "17–20 November 2026", 1], ["where", "Where", "Kuala Lumpur, Malaysia", 1], ["who", "Who took part", "ASC members and CWG leads"]],
+    intro: ["Introduction", "What the activity was and why it was held.", "The ASLP Steering Committee met in Kuala Lumpur in November for its annual review and planning."],
+    secs: [["happened", "What happened", "The main sessions or results.", "- Review of 2026 results\n- Approval of the 2027 activity plan"],
+      ["means", "What it means for territories", "Why this matters for territories and CWGs.", "Territories can now ask for funding for the six activities in the 2027 plan."],
+      ["next", "Next steps", "What follows, and who leads it.", "The 2027 plan will go to CWG leads by 15 December."]], quote: true },
+  { k: "regular", kind: "post", name: "Quick Note", for: "A short regular post", photos: ["g1", "g2"], groups: true,
+    intro: ["Your post", "One to three short paragraphs: what's new, and why it matters.", "This week the Myanmar Territory welcomed its new CD officer, who will lead the community health programme in Yangon."] },
+  { k: "announce", kind: "post", name: "Megaphone", for: "Announcements: events, calls and deadlines", photos: ["hero"], groups: true, badge: "Announcement",
+    facts: [["when", "Date and time", "15 January 2027, 2pm Manila time", 1], ["where", "Where", "Online (the link goes to people who register)"], ["who", "Who it's for", "CD officers in all SPEA territories"]],
+    intro: ["What's happening", "The announcement in one or two sentences.", "SPEA 1 is holding an online session on writing funding proposals for territory projects."],
+    secs: [["details", "Details", "What people need to know.", "The session covers planning a budget, writing objectives and using ASLP funding for territories."],
+      ["join", "How to take part", "How to register or respond, and any deadline.", "Register with your CWG lead by 10 January."],
+      ["contact", "Questions?", "Who to contact.", "Ask Fransiska, SPEA 2 CWG lead."]] }];
+const tplOf = k => ART_TPLS.find(t => t.k === k) || ART_TPLS[0];
+const tplsFor = (kind, src) => { const grp = String(src || "").startsWith("group|"), list = ART_TPLS.filter(t => t.kind === (kind === "text" ? "post" : "article") && (grp ? t.groups : t.only !== "group"));
+  return kind === "text" ? list : list; };
+const tplKey = v => ({ 1: "general", 2: "training", 3: "general", 4: "field" })[v] || (ART_TPLS.some(t => t.k === v) ? v : "general");
+const factsOf = (T, d) => (T.facts || []).map(([k, l]) => [l, String(((d && d.facts) || {})[k] || "").trim()]).filter(x => x[1]).map(([l, v]) => [l, esc(v)]);
+const factsBox = list => list.length ? `<dl class="a-facts">${list.map(([l, v]) => `<div><dt>${esc(l)}</dt><dd>${v}</dd></div>`).join("")}</dl>` : "";
+const MEGA = `<svg viewBox="0 0 48 48" aria-hidden="true"><path d="M6 20v8h6l18 10V10L12 20z" fill="currentColor"/><path d="M14 30l3 10h5l-2-8" fill="currentColor"/><path d="M36 17c3 4 3 10 0 14M40 12c6 7 6 17 0 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg>`;
+function artPage({ tpl, title, date, src, html, edit, demo, photos, gal, form, facts }) {
+  const T = tplOf(tplKey(tpl)), k = T.k, b = artBrand(src), P = photos || {}, tt = esc(title || "");
+  const filled = T.photos.filter(x => P[x] && P[x].src);
   const slot = (key, cls) => { const ph = P[key];
     if (edit) return `<figure class="a-slot ${cls}" data-slot="${key}">${ph && ph.src ? `<img src="${esc(ph.src)}" alt=""><button type="button" class="a-slot-x" data-slot-x="${key}" aria-label="Remove this photo">×</button>`
         : `<button type="button" class="a-slot-add" data-slot-add="${key}"><b>+</b>Add a photo</button>`}<figcaption contenteditable="true" data-cap="${key}" data-ph="Caption: who, what and where">${esc((ph && ph.cap) || "")}</figcaption></figure>`;
@@ -3612,22 +3681,25 @@ function artPage({ tpl, title, date, src, html, edit, demo, photos, gal, form })
   const cwgLogo = b.h ? `<img class="a-cwg" src="${b.h}" alt="${esc(b.full)}">` : `<span class="a-grp">${esc(b.name)}</span>`;
   const meta = `<div class="a-meta"><span>${esc(b.full || b.name)}</span>${date ? `<span>${esc(fmtDate(date))}</span>` : ""}</div>`;
   const h1 = edit ? `<div class="a-f a-tf"><span class="a-lab">Title</span><textarea class="a-title a-in" data-af="title" rows="1" placeholder="Write the title here" aria-label="Title">${esc(title || "")}</textarea></div>` : `<h1 class="a-title">${tt}</h1>`;
-  const body = edit ? form || "" : `<div class="a-body">${html || ""}</div>`;
+  const body = edit ? form || "" : `<div class="a-body">${html || ""}</div>`, fx = facts || "";
   const tri = `<div class="a-tri"><i></i><i></i><i></i></div>`;
   const head = `<header class="a-head"><img class="a-lock" src="brand/lockup-v1.webp" alt="Asia-Pacific Sharing & Learning Programme">${cwgLogo}</header>${tri}`;
   const cover = badge => `${head.replace(/<div class="a-tri">.*$/, "")}<header class="a-cover">${tri}<img class="a-dd" src="${b.doodles}" alt="" aria-hidden="true"><span class="a-badge">${badge}</span>${h1}${meta}</header>`;
   const foot = `<div class="a-foot"><span class="a-lll"><b>Listen.</b> <b>Learn.</b> <b>Lead.</b></span><span>${esc(b.name)} · Asia-Pacific Sharing &amp; Learning Programme</span></div>`;
   const inner = {
-    general: () => `${head}<div class="a-main">${slot("hero", "hero")}${h1}${meta}${body}${row(["g1", "g2"], "duo")}</div>`,
-    p2p: () => `${head}<div class="a-main"><div class="a-stamp" aria-hidden="true"><span>Programme to programme</span><b>P2P visit</b><span>${esc(b.name)}</span></div><div class="a-kicker">Programme-to-programme learning visit</div>${h1}${meta}${row(["a", "b"], "duo tall")}${body}${row(["g1", "g2", "g3"], "trio")}</div>`,
-    training: () => `${cover("Training")}<div class="a-main">${slot("hero", "hero lift")}${body}${row(["g1", "g2", "g3", "g4"], "quad")}</div>`,
-    meeting: () => `${head}<div class="a-main"><div class="a-kicker a-table"><i></i><i></i><i></i><i></i>CWG meeting</div>${h1}${meta}${slot("hero", "hero wide")}${body}${row(["g1", "g2", "g3"], "trio")}</div>`,
+    general: () => `${head}<div class="a-main">${slot("hero", "x-hero")}${h1}${meta}${body}${row(["g1", "g2"], "x-duo")}</div>`,
+    p2p: () => `${head}<div class="a-main"><div class="a-stamp" aria-hidden="true"><span>Programme to programme</span><b>P2P visit</b><span>${esc(b.name)}</span></div><div class="a-kicker">Programme-to-programme learning visit</div>${h1}${meta}${fx}${row(["a", "b"], "x-duo x-tall")}${body}${row(["g1", "g2", "g3"], "x-trio")}</div>`,
+    training: () => `${cover("Training")}<div class="a-main">${slot("hero", "x-hero x-lift")}${fx}${body}${row(["g1", "g2", "g3", "g4"], "x-quad")}</div>`,
+    workshop: () => `${head}<div class="a-main"><div class="a-kicker a-notes"><i></i><i></i><i></i>Workshop</div>${h1}${meta}${fx}${slot("hero", "x-hero x-wide")}${body}${row(["g1", "g2", "g3"], "x-trio")}</div>`,
+    meeting: () => `${head}<div class="a-main"><div class="a-kicker a-table"><i></i><i></i><i></i><i></i>CWG meeting</div>${h1}${meta}${fx}${slot("hero", "x-hero x-wide")}${body}${row(["g1", "g2", "g3"], "x-trio")}</div>`,
     field: () => `<div class="a-grid"><aside class="a-side">${b.v ? `<img class="a-cwgv" src="${b.v}" alt="${esc(b.full)}">` : `<span class="a-grp">${esc(b.name)}</span>`}<div class="a-k">From</div><div class="a-v">${esc(b.full || b.name)}</div>${date ? `<div class="a-k">Date</div><div class="a-v">${esc(fmtDate(date))}</div>` : ""}
-        ${slot("s1", "side")}${slot("s2", "side")}<img class="a-acr" src="brand/aslp-acronym.webp" alt="ASLP">${b.map ? `<img class="a-map" src="${b.map}" alt="" aria-hidden="true">` : ""}</aside>
-        <div class="a-main"><div class="a-kicker">From the field</div>${h1}${slot("hero", "hero")}${body}</div></div>`,
-    story: () => `${head}<div class="a-main"><div class="a-kicker">In their words</div><div class="a-story">${slot("portrait", "portrait")}<div>${h1}${meta}</div></div>${body}${slot("g1", "hero")}</div>`,
-    activity: () => `${cover("Activity")}<div class="a-main">${slot("hero", "hero lift")}${body}${row(["g1", "g2", "g3"], "trio")}</div>` }[k]();
-  return `<article class="art tp-${k}${edit || demo ? " is-edit" : ""}" style="${b.vars}">${inner}${foot}</article>`;
+        ${fx}${slot("s1", "x-side")}${slot("s2", "x-side")}<img class="a-acr" src="brand/aslp-acronym.webp" alt="ASLP">${b.map ? `<img class="a-map" src="${b.map}" alt="" aria-hidden="true">` : ""}</aside>
+        <div class="a-main"><div class="a-kicker">From the field</div>${h1}${slot("hero", "x-hero")}${body}</div></div>`,
+    story: () => `${head}<div class="a-main"><div class="a-kicker">In their words</div><div class="a-story">${slot("portrait", "x-portrait")}<div>${h1}${meta}${fx}</div></div>${body}${slot("g1", "x-hero")}</div>`,
+    activity: () => `${cover("Activity")}<div class="a-main">${slot("hero", "x-hero x-lift")}${fx}${body}${row(["g1", "g2", "g3"], "x-trio")}</div>`,
+    regular: () => `${head}<div class="a-main">${h1}${meta}${body}${row(["g1", "g2"], "x-duo")}</div>`,
+    announce: () => `${head}<div class="a-main"><div class="a-ann"><span class="a-mega">${MEGA}</span><span>Announcement</span></div>${h1}${meta}${fx}${slot("hero", "x-hero")}${body}</div>` }[k]();
+  return `<article class="art tp-${k}${T.kind === "post" ? " is-post" : ""}${edit || demo ? " is-edit" : ""}" style="${b.vars}">${inner}${foot}</article>`;
 }
 // ---- writing check: grammar and spelling (LanguageTool, British English) plus ASLP writing tips ----
 const KNOWN_ACR = new Set("ASLP ASLF CWG CWGS SPEA SASIA TSA ASC APSG SOG FCG NGO NGOS MEAL WASH DRR SHG SHGS AHT MSHTR CD ICD FCD SWI SDC DEZA HQ THQ RHQ DHQ UN CSR PDF ICT IT OK USA UK EU HIV AIDS TB COVID".split(" "));
@@ -3662,28 +3734,24 @@ function richMap(root) {
     if (last && blk !== last && text && !text.endsWith("\n\n")) text += "\n\n"; last = blk; segs.push({ node: n, start: text.length }); text += n.data; }
   return { text, segs };
 }
-// an article's parts (introduction, sections, quote) become the page; bullets are lines starting with "- "
-const ART_HINTS = { "Who visited whom, and why": "Which territories took part, where you went, and what you hoped to learn.", "What we saw": "The programmes, places and people you saw, and what stood out.",
-  "What we'll take home": "Ideas you will try in your own territory, and any follow-up agreed.", "About the training": "What the training covered, who led it and who took part.",
-  "What participants learnt": "The main skills and ideas people took away. A few bullet points work well.", "What changes next": "How participants will use what they learnt in their work.",
-  "Who met": "Which territories and people met, where and when.", "What we discussed": "The main topics and what each territory shared.", "What we agreed": "Decisions, actions and who will follow them up.",
-  "Where we went": "The community or project you visited, and why.", "What happens next": "Follow-up actions and who is responsible.",
-  "Their story": "Tell the person's story in your words: who they are and what their life was like.", "What changed": "What is different now, and how the programme helped.",
-  "Looking ahead": "Their hopes and plans, and what support they still need.", "About the activity": "What the activity was, where and when, and who took part.",
-  "What happened": "The main things that happened and what was achieved.", "What's next": "What follows, and how others can get involved." };
+// an update's parts (facts, introduction, sections, quote) become the page; bullets are lines starting with "- "
 function textToHtml(t) {
   const lk = x => esc(x).replace(/(https?:\/\/[^\s<]+[^\s<.,;:)])/g, '<a href="$1">$1</a>');
   return String(t || "").trim().split(/\n\s*\n/).map(p => { const ls = p.split("\n").map(l => l.trim()).filter(Boolean); let out = "", buf = [], ul = [];
     const flush = () => { if (buf.length) out += `<p>${buf.map(lk).join("<br>")}</p>`; if (ul.length) out += `<ul>${ul.map(x => `<li>${lk(x)}</li>`).join("")}</ul>`; buf = []; ul = []; };
     ls.forEach(l => { const m = l.match(/^[-•*]\s+(.*)$/); if (m) { if (buf.length) flush(); ul.push(m[1]); } else { if (ul.length) flush(); buf.push(l); } }); flush(); return out; }).join("");
 }
+const docSecs = (T, d) => T.free ? (d.sections || []).filter(x => (x.h || "").trim() || (x.t || "").trim()).map(x => [(x.h || "").trim(), x.t || ""])
+  : (T.secs || []).map(([k, h]) => [h, ((d.s || {})[k]) || ""]).filter(x => x[1].trim());
 function artDocHtml(d, tpl) {
-  d = d || {}; const secs = (d.sections || []).filter(x => (x.h || "").trim() || (x.t || "").trim());
+  d = d || {}; const T = tplOf(tplKey(tpl)), secs = docSecs(T, d);
   const q = (d.quote || "").trim().replace(/^["“”']+|["“”']+$/g, ""), quote = q ? `<blockquote>“${esc(q)}”${(d.by || "").trim() ? `<br>— ${esc(d.by.trim())}` : ""}</blockquote>` : "";
-  const sec = x => `${(x.h || "").trim() ? `<h2>${esc(x.h.trim())}</h2>` : ""}${textToHtml(x.t)}`;
-  const at = tpl === "story" || !secs.length ? 0 : 1;
-  return textToHtml(d.intro) + (at === 0 ? quote : "") + secs.map((x, i) => sec(x) + (at && i === 0 ? quote : "")).join("");
+  const at = T.k === "story" || !secs.length ? 0 : 1;
+  return textToHtml(d.intro) + (at === 0 ? quote : "") + secs.map(([h, t], i) => `${h ? `<h2>${esc(h)}</h2>` : ""}${textToHtml(t)}` + (at && i === 0 ? quote : "")).join("");
 }
+// plain text of a post, for the cards and for older pages
+const postText = (d, tpl) => { const T = tplOf(tplKey(tpl)); d = d || {};
+  return [factsOf(T, d).map(([l]) => `${l}: ${(d.facts || {})[(T.facts.find(f => f[1] === l) || [])[0]] || ""}`).join("\n"), (d.intro || "").trim(), ...docSecs(T, d).map(([h, t]) => `${h}\n${t.trim()}`)].filter(Boolean).join("\n\n"); };
 function htmlToDoc(html) {
   const d = { intro: "", sections: [], quote: "", by: "" }, el = document.createElement("div"); el.innerHTML = html || ""; let cur = null;
   const add = t => { if (!t) return; if (cur) cur.t += (cur.t ? "\n\n" : "") + t; else d.intro += (d.intro ? "\n\n" : "") + t; };
@@ -3694,6 +3762,15 @@ function htmlToDoc(html) {
     else if (tg !== "FIGURE") add(n.textContent.trim()); });
   return d;
 }
+// a saved doc fits whichever template it is opened in: matching section headings carry over
+function fitDoc(d, tpl) {
+  d = d ? JSON.parse(JSON.stringify(d)) : {}; const T = tplOf(tplKey(tpl));
+  d.facts = d.facts || {}; d.s = d.s || {}; d.sections = d.sections || []; d.intro = d.intro || ""; d.quote = d.quote || ""; d.by = d.by || "";
+  (T.secs || []).forEach(([k, h]) => { if (!d.s[k]) { const m = d.sections.find(x => (x.h || "").trim().toLowerCase() === h.toLowerCase()); if (m) d.s[k] = m.t; } });
+  if (T.free && !d.sections.length) { d.sections = Object.entries(d.s).filter(([, t]) => (t || "").trim()).map(([k, t]) => { const h = (ART_TPLS.flatMap(x => x.secs || []).find(x => x[0] === k) || [])[1] || ""; return { h, t }; });
+    if (!d.sections.length) d.sections = [{ h: "", t: "" }]; }
+  return d;
+}
 function updateEditor(u, redraw) {
   const box = $("up-editor"); if (!box || !u) return;
   const cwgs = acctKind(V()) === "member" ? [] : [...(V().post_cwgs || []), ...(V().submit_cwgs || [])], grps = Object.keys(PGROUPS).filter(canGroupPost);
@@ -3702,11 +3779,14 @@ function updateEditor(u, redraw) {
   const st = { id: u.id || null, src: fixSrc(u.src) || (u.cwg ? (isGrp(u) ? "group|" : "cwg|") + u.cwg : "") || srcs[0], kind: u.kind || "text", file: u.file || null, pages: u.pages || [], slides: u.slides || [], photos: [...(u.photos || [])], busy: false,
     sections: Array.isArray(u.sections) ? JSON.parse(JSON.stringify(u.sections)) : (u.kind === "pptx" && (u.slides || []).length ? slidesToSections(u.slides).sections : []),
     folder: (u.file && pathOf(u.file.url).replace(/\/[^/]+$/, "")) || "",
-    art: { tpl: tplKey(u.kind === "article" && u.file && u.file.template), doc: u.kind === "article" ? (u.file && u.file.doc ? JSON.parse(JSON.stringify(u.file.doc)) : htmlToDoc(sanitizeArt(u.body || ""))) : null, photos: JSON.parse(JSON.stringify((u.kind === "article" && u.file && u.file.photos) || {})) } };
+    art: (() => { const f = u.file || {}, comp = u.kind === "article" || (u.kind === "text" && f.type === "post");
+      return { tpl: comp ? tplKey(f.template) : u.kind === "text" ? "regular" : "general",
+        doc: comp && f.doc ? JSON.parse(JSON.stringify(f.doc)) : u.kind === "article" ? htmlToDoc(sanitizeArt(u.body || "")) : u.kind === "text" ? { intro: u.body || "" } : null,
+        photos: JSON.parse(JSON.stringify((comp && f.photos) || {})) }; })() };
   const srcSlugOf = v => { const [t, x] = v.split("|"); return t === "group" ? x : cwgSlug(x); };
   const folder = () => st.folder || (st.folder = `${srcSlugOf($("ue-cwg").value)}/${newId()}`);
   // everything uploaded while this editor is open, so Cancel can remove it; what the saved update already uses is kept
-  const urlsOf = x => [x.file && x.file.url, ...(x.pages || []), ...(x.photos || []), ...(x.slides || []).flatMap(s => s.images || []), ...(x.sections || []).flatMap(s => s.images || []), ...artImgs(x.body || ""), ...artImgs((x.art && x.art.html) || ""), ...Object.values((x.art && x.art.photos) || (x.kind === "article" && x.file && x.file.photos) || {}).map(p => p && p.src)];
+  const urlsOf = x => [x.file && x.file.url, ...(x.pages || []), ...(x.photos || []), ...(x.slides || []).flatMap(s => s.images || []), ...(x.sections || []).flatMap(s => s.images || []), ...artImgs(x.body || ""), ...artImgs((x.art && x.art.html) || ""), ...Object.values((x.art && x.art.photos) || (x.file && x.file.photos) || {}).map(p => p && p.src)];
   const keepPaths = new Set(u.id ? urlsOf(u).map(pathOf) : []), keepDrive = u.id && u.file && u.file.drive;
   const sess = { paths: [], drive: [] };
   const stopBtn = on => { const b = $("ue-stop"); if (b) b.hidden = !on; };
@@ -3748,12 +3828,12 @@ function updateEditor(u, redraw) {
   box.oninput = keep; box.onchange = keep;
   const drawKind = () => {
     box.querySelectorAll("[data-kind]").forEach(b => { b.classList.toggle("on", b.dataset.kind === st.kind); b.setAttribute("aria-checked", b.dataset.kind === st.kind); });
-    $("ue-body").closest("label").hidden = st.kind === "article"; $("ue-title").closest("label").hidden = st.kind === "article"; $("ue-photos").closest(".ed-field").hidden = st.kind === "article";
+    const comp = st.kind === "article" || st.kind === "text";
+    $("ue-body").closest("label").hidden = comp; $("ue-title").closest("label").hidden = comp; $("ue-photos").closest(".ed-field").hidden = comp && !st.photos.length;
     $("ue-body-l").innerHTML = st.kind === "text" ? `Your post <span class="ed-hint">A short update. Leave a blank line between paragraphs. Start a line with "-" to make a list. For a longer piece with headings and pictures, choose "Write an article".</span>` : st.kind === "pdf" ? `Short introduction <span class="ed-hint">optional, shown above the pages</span>` : `Introduction <span class="ed-hint">the opening paragraph of the article</span>`;
     $("ue-body").rows = st.kind === "text" ? 10 : st.kind === "pptx" ? 4 : 3;
     const f = $("ue-file");
-    if (st.kind === "text") { f.innerHTML = ""; return; }
-    if (st.kind === "article") { drawArticle(); return; }
+    if (comp) { drawArticle(); return; }
     const has = st.file && st.file.type === st.kind;
     f.innerHTML = `<div class="drop" id="ue-drop">${has ? `<b>${esc(st.file.name)}</b><span class="small">${st.kind === "pdf" ? `${st.pages.length} pages ready` : `${st.slides.length} slides ready`}</span>` : `<b>Drop your ${st.kind === "pdf" ? "PDF" : "PowerPoint (.pptx)"} here</b><span class="small">${st.kind === "pdf" ? "The website shows each page for you." : "The website turns the slides into a short article, with sections you can then edit."}</span>`}
         <label class="btn sm" style="cursor:pointer">${has ? "Choose a different file" : "Choose a file"}<input type="file" id="ue-f-in" accept="${st.kind === "pdf" ? ".pdf,application/pdf" : ".pptx,.ppt"}" hidden></label><div id="ue-prog"></div></div>
@@ -3768,53 +3848,58 @@ function updateEditor(u, redraw) {
     d.ondragover = e => { e.preventDefault(); d.classList.add("over"); }; d.ondragleave = () => d.classList.remove("over");
     d.ondrop = e => { e.preventDefault(); d.classList.remove("over"); takeFile(e.dataTransfer.files[0]); };
   };
-  // ---- article: template picker and the page, with a box for every part ----
-  const ART_SAMPLE = artDocHtml({ intro: "Territories from across the region met to share what is working in their community programmes and to plan the year ahead.",
-    sections: [{ h: "What we learnt", t: "Teams compared how they listen to communities before a project starts, and how savings groups keep going after funding ends." }, { h: "What's next", t: "- Three territories will visit each other\n- A shared MEAL toolkit" }],
-    quote: "We left with ideas we can use next week.", by: "" });
-  const artEmpty = d => !d || (!(d.intro || "").trim() && !(d.quote || "").trim() && !(d.sections || []).some(x => (x.t || "").trim()));
-  const starterDoc = k => ({ intro: "", sections: tplOf(k)[4].map(h => ({ h, t: "" })), quote: "", by: "" });
+  // ---- posts and articles: pick a template, then fill in its boxes on the page ----
   const grow = el => { if (el && el.tagName === "TEXTAREA") { el.style.height = "auto"; el.style.height = el.scrollHeight + 2 + "px"; } };
   const artProps = () => ({ title: $("ue-title").value.trim(), date: $("ue-date").value, src: $("ue-cwg").value });
   const fitThumbs = () => box.querySelectorAll(".art-thumb").forEach(t => { const w = t.clientWidth; if (w) t.style.setProperty("--s", (w / 820).toFixed(4)); });
-  function formHtml() {
-    const d = st.art.doc, n = d.sections.length, hint = x => ART_HINTS[x.h] || "Write this section here. Leave a blank line between paragraphs. Start a line with “- ” for a bullet point.";
-    return `<div class="a-body a-form">
-      <div class="a-f"><span class="a-lab">Introduction</span><textarea class="a-in a-p" data-af="intro" rows="3" placeholder="The opening paragraph: what happened, where and when, and who took part.">${esc(d.intro || "")}</textarea></div>
-      ${d.sections.map((x, i) => `<div class="a-f a-sec" data-si="${i}"><div class="a-sec-bar"><span class="a-lab">Section ${i + 1}</span><span class="a-sec-btns">
-          <button type="button" data-sm="-1" ${i ? "" : "disabled"} aria-label="Move section up">↑</button><button type="button" data-sm="1" ${i < n - 1 ? "" : "disabled"} aria-label="Move section down">↓</button><button type="button" data-sdel>Remove</button></span></div>
-        <input class="a-in a-h2" data-af="h" value="${esc(x.h || "")}" placeholder="Section heading, for example What we saw" aria-label="Section ${i + 1} heading">
-        <textarea class="a-in a-p" data-af="t" rows="3" placeholder="${esc(hint(x))}" aria-label="Section ${i + 1} text">${esc(x.t || "")}</textarea></div>`).join("")}
-      <button type="button" class="a-add" data-sadd2>+ Add a section</button>
-      <div class="a-f"><span class="a-lab">Quote <em>optional</em></span><textarea class="a-in a-q" data-af="quote" rows="2" placeholder="A few words from someone who took part, without quotation marks">${esc(d.quote || "")}</textarea>
-        <input class="a-in a-by" data-af="by" value="${esc(d.by || "")}" placeholder="Who said it, for example Maria, savings group member, Mindanao" aria-label="Who said the quote"></div></div>`;
+  const exHtml = x => esc(x).replace(/\n/g, "<br>");
+  const guide = (what, ex) => `<p class="a-hint"><b>What to write:</b> ${esc(what)}${ex ? ` <span class="a-ex"><b>Example:</b> ${exHtml(ex)}</span>` : ""}</p>`;
+  const sampleDoc = T => ({ facts: Object.fromEntries((T.facts || []).map(f => [f[0], f[2]])), intro: T.intro[2], s: Object.fromEntries((T.secs || []).map(x => [x[0], x[3]])),
+    sections: [{ h: "What we learnt", t: "Teams compared how they listen to communities before a project starts." }], quote: T.quote ? "We left with ideas we can use next week." : "", by: "" });
+  function formHtml(T) {
+    const d = st.art.doc, ph = "Write here, or paste your text";
+    const intro = `<div class="a-f"><span class="a-lab">${esc(T.intro[0])}</span>${guide(T.intro[1], T.intro[2])}<textarea class="a-in a-p" data-af="intro" rows="3" placeholder="${ph}">${esc(d.intro || "")}</textarea></div>`;
+    const quote = T.quote || T.free ? `<div class="a-f"><span class="a-lab">${esc(T.quoteLabel || "Quote")} <em>optional</em></span>${guide("A few words from someone who took part, and who said it.", "We saw how groups keep going on their own. — Rina, savings group leader")}
+        <textarea class="a-in a-q" data-af="quote" rows="2" placeholder="The quote, without quotation marks">${esc(d.quote || "")}</textarea><input class="a-in a-by" data-af="by" value="${esc(d.by || "")}" placeholder="Who said it" aria-label="Who said the quote"></div>` : "";
+    if (T.free) { const n = d.sections.length;
+      return `<div class="a-body a-form">${intro}
+        ${d.sections.map((x, i) => `<div class="a-f a-sec" data-si="${i}"><div class="a-sec-bar"><span class="a-lab">Section ${i + 1}</span><span class="a-sec-btns">
+            <button type="button" data-sm="-1" ${i ? "" : "disabled"} aria-label="Move section up">↑</button><button type="button" data-sm="1" ${i < n - 1 ? "" : "disabled"} aria-label="Move section down">↓</button><button type="button" data-sdel>Remove</button></span></div>
+          <input class="a-in a-h2" data-af="h" value="${esc(x.h || "")}" placeholder="Section heading" aria-label="Section ${i + 1} heading">
+          <textarea class="a-in a-p" data-af="t" rows="3" placeholder="Write this section. Leave a blank line between paragraphs; start a line with “- ” for a bullet point." aria-label="Section ${i + 1} text">${esc(x.t || "")}</textarea></div>`).join("")}
+        <button type="button" class="a-add" data-sadd2>+ Add a section</button>${quote}</div>`; }
+    return `<div class="a-body a-form">${intro}
+      ${(T.secs || []).map(([k, h, what, ex]) => `<div class="a-f a-sec"><h2 class="a-fh">${esc(h)}</h2>${guide(what, ex)}<textarea class="a-in a-p" data-af="sec" data-k="${k}" rows="3" placeholder="${ph}" aria-label="${esc(h)}">${esc((d.s || {})[k] || "")}</textarea></div>`).join("")}
+      ${quote}<p class="a-note">Every ${esc(st.art.tplName)} uses these same sections, so updates from all CWGs read the same way. Leave a section empty if it doesn't apply; it won't show.</p></div>`;
   }
+  const factsForm = T => (T.facts || []).length ? `<dl class="a-facts is-form">${T.facts.map(([k, l, ex, req]) => `<div><dt>${esc(l)}${req ? "" : ` <em>optional</em>`}</dt><dd><input class="a-in a-fact" data-af="fact" data-k="${k}" value="${esc(((st.art.doc.facts || {})[k]) || "")}" placeholder="e.g. ${esc(ex)}" aria-label="${esc(l)}"></dd></div>`).join("")}</dl>` : "";
   function drawArticle() {
-    const P = artProps(), list = tplsFor(P.src);
-    if (!list.some(t => t[0] === st.art.tpl)) st.art.tpl = list[0][0];
+    const P = artProps(), list = tplsFor(st.kind, P.src);
+    if (!list.some(t => t.k === st.art.tpl)) st.art.tpl = list[0].k;
+    const T = tplOf(st.art.tpl); st.art.tplName = T.name;
     if (!st.art.photos) st.art.photos = {};
-    if (!st.art.doc) st.art.doc = { intro: "", sections: [], quote: "", by: "" };
-    if (artEmpty(st.art.doc) && !st.art.doc.sections.some(x => (x.h || "").trim() && !tplOf(st.art.tpl)[4].includes(x.h))) st.art.doc = { ...starterDoc(st.art.tpl), intro: st.art.doc.intro || "" };
+    st.art.doc = fitDoc(st.art.doc, st.art.tpl);
+    const isPost = st.kind === "text";
     $("ue-file").innerHTML = `<div class="art-ed">
-      <div class="ed-field"><span>Template <span class="ed-hint">Pick the one that fits what you're writing about. Each has the ASLP and ${esc(artBrand(P.src).name)} branding and its own spaces for photos. You can switch any time; what you've written and your photos stay.</span></span>
-        <div class="art-tpls" role="radiogroup" aria-label="Template">${list.map(([n, l, d]) => `<button type="button" class="art-tpl${st.art.tpl === n ? " on" : ""}" role="radio" aria-checked="${st.art.tpl === n}" data-tpl="${n}">
-          <span class="art-thumb" aria-hidden="true"><span class="art-thumb-in">${artPage({ tpl: n, title: P.title || "Your article title", date: P.date, src: P.src, html: ART_SAMPLE, demo: true })}</span></span><b>${l}</b><small>${d}</small></button>`).join("")}</div></div>
-      <div class="ed-field"><span>Your article <span class="ed-hint">Fill in each box on the page: the title, the introduction, then a heading and text for each section. Add or remove sections as you need. Select a grey box to add a photo and write its caption. Fonts and colours are set by the ASLP branding; empty photo boxes and the optional quote don't show on the website.</span></span>
-        <div class="art-desk">${artPage({ tpl: st.art.tpl, ...P, edit: true, photos: st.art.photos, form: formHtml() })}</div>
+      <div class="ed-field"><span>Template <span class="ed-hint">${isPost ? "A Megaphone for announcements of events, calls and deadlines; a Quick Note for everything else." : `Pick the one that matches the activity. Each has set sections with examples, the ASLP and ${esc(artBrand(P.src).name)} branding and spaces for photos. Use the General article only when nothing else fits.`} You can switch any time; what you've written stays.</span></span>
+        <div class="art-tpls${isPost ? " two" : ""}" role="radiogroup" aria-label="Template">${list.map(t => `<button type="button" class="art-tpl${st.art.tpl === t.k ? " on" : ""}" role="radio" aria-checked="${st.art.tpl === t.k}" data-tpl="${t.k}">
+          <span class="art-thumb${t.kind === "post" ? " post" : ""}" aria-hidden="true"><span class="art-thumb-in">${artPage({ tpl: t.k, title: P.title || "Your title here", date: P.date, src: P.src, html: artDocHtml(sampleDoc(t), t.k), facts: factsBox(factsOf(t, sampleDoc(t))), demo: true })}</span></span><b>${esc(t.name)}</b><small>${esc(t.for)}</small></button>`).join("")}</div></div>
+      <div class="ed-field"><span>Your ${isPost ? "post" : "article"} <span class="ed-hint">Fill in the boxes on the page. Each one says what to write, with an example; you can paste from a report or email. Select a grey box to add a photo and write its caption. Fonts, colours and layout are set for you. Empty boxes don't show on the website.</span></span>
+        <div class="art-desk">${artPage({ tpl: st.art.tpl, ...P, edit: true, photos: st.art.photos, form: formHtml(T), facts: factsForm(T) })}</div>
         <input type="file" id="art-slot-in" accept="image/*" hidden></div></div>`;
     requestAnimationFrame(() => { fitThumbs(); box.querySelectorAll(".art-desk textarea").forEach(grow); });
   }
   $("ue-file").addEventListener("input", e => {
-    const f = e.target.closest("[data-af]"); if (!f || st.kind !== "article") return; grow(f);
+    const f = e.target.closest("[data-af]"); if (!f || (st.kind !== "article" && st.kind !== "text")) return; grow(f);
     const k = f.dataset.af, d = st.art.doc, sec = f.closest("[data-si]");
-    if (k === "title") { $("ue-title").value = f.value.replace(/\s*\n\s*/g, " "); }
+    if (k === "title") $("ue-title").value = f.value.replace(/\s*\n\s*/g, " ");
+    else if (k === "fact") d.facts[f.dataset.k] = f.value;
+    else if (k === "sec") d.s[f.dataset.k] = f.value;
     else if (sec) d.sections[+sec.dataset.si][k] = f.value; else d[k] = f.value;
     keep(); });
-  $("ue-file").addEventListener("keydown", e => { if (e.target.matches("[data-af=title], [data-af=h], [data-af=by]") && e.key === "Enter") e.preventDefault(); });
+  $("ue-file").addEventListener("keydown", e => { if (e.target.matches("[data-af=title], [data-af=h], [data-af=by], [data-af=fact]") && e.key === "Enter") e.preventDefault(); });
   $("ue-file").addEventListener("click", async e => {
-    const t = e.target.closest("[data-tpl]"); if (t) { const d = st.art.doc;
-      if (d && artEmpty(d) && d.sections.every(x => tplOf(st.art.tpl)[4].includes(x.h))) st.art.doc = { ...starterDoc(t.dataset.tpl), intro: d.intro || "" };
-      st.art.tpl = t.dataset.tpl; drawArticle(); keep(); return; }
+    const t = e.target.closest("[data-tpl]"); if (t) { st.art.tpl = t.dataset.tpl; drawArticle(); keep(); return; }
     const sa = e.target.closest("[data-slot-add]"); if (sa) { if (st.busy) return; st.slotKey = sa.dataset.slotAdd; $("art-slot-in").click(); return; }
     const sx = e.target.closest("[data-slot-x]"); if (sx) { const ph = st.art.photos[sx.dataset.slotX]; st.art.photos[sx.dataset.slotX] = { src: "", cap: (ph && ph.cap) || "" }; drawArticle(); keep(); return; }
     if (e.target.closest("[data-sadd2]")) { st.art.doc.sections.push({ h: "", t: "" }); drawArticle(); keep(); const l = [...box.querySelectorAll(".a-sec [data-af=h]")].pop(); if (l) l.focus(); return; }
@@ -3822,7 +3907,7 @@ function updateEditor(u, redraw) {
     const mv = e.target.closest("[data-sm]"); if (mv) { const j = i + +mv.dataset.sm; [S[i], S[j]] = [S[j], S[i]]; drawArticle(); keep(); return; }
     const del = e.target.closest("[data-sdel]");
     if (del) { if (!del.classList.contains("sure")) { del.classList.add("sure"); del.textContent = "Select again to remove"; setTimeout(() => { if (del.isConnected) { del.classList.remove("sure"); del.textContent = "Remove"; } }, 4000); return; }
-      S.splice(i, 1); drawArticle(); keep(); }
+      S.splice(i, 1); if (!S.length) S.push({ h: "", t: "" }); drawArticle(); keep(); }
   });
   $("ue-file").addEventListener("change", async e => {
     if (e.target.id !== "art-slot-in") return; e.stopPropagation(); const fl = e.target.files[0], key = st.slotKey; e.target.value = ""; if (!fl || !key || st.busy) return;
@@ -3832,12 +3917,12 @@ function updateEditor(u, redraw) {
       const c = box.querySelector(`[data-cap="${key}"]`); if (c) c.focus(); }, () => msg("Upload stopped. The photo was removed."));
   });
   // the page shows the title, date and CWG as they're typed or chosen
-  $("ue-title").addEventListener("input", e => { if (st.kind === "article") { const tt = box.querySelector(".art-desk [data-af=title]"); if (tt && tt !== document.activeElement) { tt.value = e.target.value; grow(tt); } } });
-  ["ue-cwg", "ue-date"].forEach(id => $(id).addEventListener("change", () => { if (st.kind === "article") drawArticle(); }));
+  $("ue-title").addEventListener("input", e => { if (st.kind === "article" || st.kind === "text") { const tt = box.querySelector(".art-desk [data-af=title]"); if (tt && tt !== document.activeElement) { tt.value = e.target.value; grow(tt); } } });
+  ["ue-cwg", "ue-date"].forEach(id => $(id).addEventListener("change", () => { if (st.kind === "article" || st.kind === "text") drawArticle(); }));
   if (!window.__artFit) { window.__artFit = 1; addEventListener("resize", () => document.querySelectorAll(".art-thumb").forEach(t => { const w = t.clientWidth; if (w) t.style.setProperty("--s", (w / 820).toFixed(4)); })); }
   // ---- writing check ----
   const checkParts = () => { const parts = [{ type: "title", el: $("ue-title"), text: $("ue-title").value }];
-    if (st.kind === "article") { const tt = box.querySelector(".art-desk [data-af=title]"); if (tt) parts[0].el = tt;
+    if (st.kind === "article" || st.kind === "text") { const tt = box.querySelector(".art-desk [data-af=title]"); if (tt) parts[0].el = tt;
       box.querySelectorAll(".art-desk [data-af]:not([data-af=title])").forEach(el => parts.push({ type: "input", el, text: el.value })); }
     else parts.push({ type: "input", el: $("ue-body"), text: $("ue-body").value });
     let off = 0; parts.forEach(p => { p.start = off; off += p.text.length + 2; }); return parts; };
@@ -3941,7 +4026,6 @@ function updateEditor(u, redraw) {
       () => { st.folder = oldFolder; drawKind(); msg("Upload stopped. Nothing from that file was kept, so you can choose another file."); });
   }
   box.querySelectorAll("[data-kind]").forEach(b => b.onclick = () => {
-    if (b.dataset.kind === "article" && (!st.art.doc || artEmpty(st.art.doc)) && $("ue-body").value.trim()) st.art.doc = { ...(st.art.doc || starterDoc(st.art.tpl)), intro: $("ue-body").value.trim() };
     st.kind = b.dataset.kind; drawKind(); keep(); });
   $("ue-photos").onclick = e => { const r = e.target.closest("[data-rmph]"); if (r) { st.photos.splice(+r.dataset.rmph, 1); drawPhotos(); keep(); } };
   $("ue-ph-in").onchange = async e => {
@@ -3965,14 +4049,19 @@ function updateEditor(u, redraw) {
     box.innerHTML = "";
   };
   $("ue-save").onclick = async () => {
-    const isArt = st.kind === "article";
-    const doc = isArt ? { intro: (st.art.doc.intro || "").trim(), sections: st.art.doc.sections.map(x => ({ h: (x.h || "").trim(), t: (x.t || "").trim() })).filter(x => x.h || x.t), quote: (st.art.doc.quote || "").trim(), by: (st.art.doc.by || "").trim() } : null;
-    const title = $("ue-title").value.trim(), body = isArt ? sanitizeArt(artDocHtml(doc, st.art.tpl)) : $("ue-body").value.trim();
-    if (!title) return msg("Give the update a title.", "err");
-    if (st.kind === "text" && !body && !st.photos.length) return msg("Write your post, or add some photos.", "err");
-    if (isArt && !doc.intro && !doc.sections.some(x => x.t)) return msg("Write your article on the page first: start with the introduction.", "err");
-    if (isArt) { const e0 = doc.sections.find(x => x.h && !x.t); if (e0) return msg(`The section "${esc(e0.h)}" has no text yet. Write something in it, or remove the section.`, "err"); }
-    if (!isArt && st.kind !== "text" && !(st.file && st.file.type === st.kind)) return msg(`Upload the ${st.kind === "pdf" ? "PDF" : "PowerPoint"} first.`, "err");
+    const isArt = st.kind === "article", isPost = st.kind === "text", comp = isArt || isPost, T = tplOf(st.art.tpl);
+    const dd = comp ? st.art.doc : null, clean = x => String(x || "").trim();
+    const doc = comp ? { facts: Object.fromEntries((T.facts || []).map(([k]) => [k, clean(dd.facts[k])]).filter(x => x[1])), intro: clean(dd.intro),
+      s: Object.fromEntries((T.secs || []).map(([k]) => [k, clean(dd.s[k])]).filter(x => x[1])), sections: T.free ? dd.sections.map(x => ({ h: clean(x.h), t: clean(x.t) })).filter(x => x.h || x.t) : [],
+      quote: T.quote || T.free ? clean(dd.quote) : "", by: T.quote || T.free ? clean(dd.by) : "" } : null;
+    const title = $("ue-title").value.trim(), body = isArt ? sanitizeArt(artDocHtml(doc, st.art.tpl)) : isPost ? postText(doc, st.art.tpl) : $("ue-body").value.trim();
+    if (!title) return msg("Give the update a title: it's the first box on the page.", "err");
+    if (comp) { const miss = (T.facts || []).find(([k, , , req]) => req && !doc.facts[k]);
+      if (!doc.intro) return msg(`Fill in "${esc(T.intro[0])}" first.`, "err");
+      if (miss) return msg(`Fill in "${esc(miss[1])}" in the box near the top.`, "err");
+      if (T.free) { const e0 = doc.sections.find(x => x.h && !x.t); if (e0) return msg(`The section "${esc(e0.h)}" has no text yet. Write something in it, or remove the section.`, "err"); }
+      else if ((T.secs || []).length && isArt && !Object.keys(doc.s).length) return msg(`Write at least one of the sections, for example "${esc(T.secs[0][1])}".`, "err"); }
+    if (!comp && !(st.file && st.file.type === st.kind)) return msg(`Upload the ${st.kind === "pdf" ? "PDF" : "PowerPoint"} first.`, "err");
     // check the writing before it goes out; a second select publishes once the suggestions have been seen
     if (checkText(checkParts()) !== st.checkedText) { $("ue-save").disabled = true; msg(loader("Checking your writing before it's published…", "sm inline"));
       const n = (await runCheck()).filter(x => !x.ignored).length; $("ue-save").disabled = false;
@@ -3981,7 +4070,7 @@ function updateEditor(u, redraw) {
     const keep = st.kind === "pdf" || st.kind === "pptx";
     const [ptype, psrc] = $("ue-cwg").value.split("|");
     const p = { type: ptype === "group" ? "group" : "cwg", cwg: psrc, title, date: $("ue-date").value, kind: st.kind, body, photos: st.photos,
-      file: isArt ? { type: "article", template: st.art.tpl, doc, photos: Object.fromEntries(Object.entries(st.art.photos || {}).filter(([k, v]) => v && v.src && tplOf(st.art.tpl)[3].includes(k))) } : keep ? st.file : null, pages: st.kind === "pdf" ? st.pages : [], slides: st.kind === "pptx" ? st.slides : [],
+      file: comp ? { type: isPost ? "post" : "article", template: st.art.tpl, doc, photos: Object.fromEntries(Object.entries(st.art.photos || {}).filter(([k, v]) => v && v.src && T.photos.includes(k))) } : keep ? st.file : null, pages: st.kind === "pdf" ? st.pages : [], slides: st.kind === "pptx" ? st.slides : [],
       sections: st.kind === "pptx" ? st.sections.map(x => ({ h: (x.h || "").trim(), t: (x.t || "").trim(), images: x.images || [] })).filter(x => x.h || x.t || x.images.length) : null };
     $("ue-save").disabled = true; msg(loader("Saving…", "sm inline"));
     const { data: id, error } = await db.rpc("aslp_save_update", { p_id: st.id, p_update: p });
@@ -4731,8 +4820,9 @@ function needUpdates() {
   return `<div class="lll page" role="status"><div class="lll-w" aria-hidden="true"><span style="--c:#0a84ff">Listen.</span><span style="--c:#f5c400">Learn.</span><span style="--c:#e14b1e">Lead.</span></div><div class="lll-l">Loading programme updates…</div></div>`;
 }
 const UKIND = { pdf: "PDF", pptx: "Article", article: "Article" };
+const ukind = u => u.file && u.file.type === "post" ? (u.file.template === "announce" ? "Announcement" : "") : UKIND[u.kind];
 const fmtDate = d => { if (!d) return ""; const x = new Date(String(d).slice(0, 10) + "T00:00:00"); return isNaN(x) ? "" : x.toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" }); };
-const upCover = u => u.cover || (u.kind === "article" && u.file && u.file.photos ? (tplOf(tplKey(u.file.template))[3].map(k => u.file.photos[k] && u.file.photos[k].src).find(Boolean) || "") : "") || (u.photos || [])[0] || (u.kind === "article" ? artImgs(u.body)[0] : "") || ((u.sections || []).find(s => (s.images || []).length) || { images: [] }).images[0] || (u.pages || [])[0] || ((u.slides || []).find(s => (s.images || []).length) || { images: [] }).images[0] || "";
+const upCover = u => u.cover || (u.file && u.file.photos ? (tplOf(tplKey(u.file.template)).photos.map(k => u.file.photos[k] && u.file.photos[k].src).find(Boolean) || "") : "") || (u.photos || [])[0] || (u.kind === "article" ? artImgs(u.body)[0] : "") || ((u.sections || []).find(s => (s.images || []).length) || { images: [] }).images[0] || (u.pages || [])[0] || ((u.slides || []).find(s => (s.images || []).length) || { images: [] }).images[0] || "";
 const upExcerpt = u => { const t = (u.kind === "article" ? artText(u.body) : (u.body || "")).trim() || (Array.isArray(u.sections) ? u.sections.map(x => x.t || "").filter(Boolean).join(" ") : (u.slides || []).flatMap(s => s.paras || []).map(p => p.t || p).slice(0, 4).join(" · ")); return t.replace(/^[-•]\s*/gm, "").replace(/\s+/g, " ").slice(0, 220); };
 const linkify = t => esc(t).replace(/(https?:\/\/[^\s<]+[^\s<.,;:)])/g, '<a class="textlink" href="$1" target="_blank" rel="noopener noreferrer">$1</a>');
 // typed text: a blank line starts a new paragraph; lines starting with "-" or "•" become a list
@@ -4765,7 +4855,7 @@ function upCard(u) {
   const cov = upCover(u), doc = !u.cover && !(u.photos || []).length && (u.pages || []).length;
   return `<a class="up-card" href="#/update/${esc(u.id)}" style="${srcVars(u)}">
     <div class="up-cov${doc ? " doc" : ""}">${cov ? `<img src="${esc(cov)}" alt="" loading="lazy">` : upArt(u)}</div>
-    <div class="up-in"><div class="up-meta"><span>${esc(srcLabel(u))}</span>${u.date ? `<span>${esc(fmtDate(u.date))}</span>` : ""}${UKIND[u.kind] ? `<span class="up-kind">${UKIND[u.kind]}</span>` : ""}</div>
+    <div class="up-in"><div class="up-meta"><span>${esc(srcLabel(u))}</span>${u.date ? `<span>${esc(fmtDate(u.date))}</span>` : ""}${ukind(u) ? `<span class="up-kind">${ukind(u)}</span>` : ""}</div>
       <div class="up-t">${esc(u.title)}</div>${upExcerpt(u) ? `<div class="up-x">${esc(upExcerpt(u))}</div>` : ""}</div></a>`;
 }
 function pageUpdates(cs) {
@@ -4824,17 +4914,19 @@ function pageUpdate(id) {
   const pics = list => list.map(s => ({ src: s, cap: u.title }));
   galleries[u.id + ":photos"] = pics(photos);
   galleries[u.id + ":slides"] = pics(slides.flatMap(s => s.images || []));
-  if (u.kind === "article" && f && f.photos) galleries[u.id + ":art"] = tplOf(tplKey(f.template))[3].filter(k => f.photos[k] && f.photos[k].src).map(k => ({ src: f.photos[k].src, cap: f.photos[k].cap || u.title }));
+  const comp = !!f && (f.type === "post" || f.type === "article");
+  if (comp && f.photos) galleries[u.id + ":art"] = tplOf(tplKey(f.template)).photos.filter(k => f.photos[k] && f.photos[k].src).map(k => ({ src: f.photos[k].src, cap: f.photos[k].cap || u.title }));
   const secs = u.kind === "pptx" && Array.isArray(u.sections) ? u.sections : null;
   if (secs) galleries[u.id + ":sec"] = pics(secs.flatMap(s => s.images || []));
   let gi = 0;
   let si = 0;
   return `<div style="${srcVars(u)}">${crumbs([["Home", "#/"], sec, [lab, srcList(u)], [u.title]])}
-    ${u.kind === "article" ? "" : `<div class="wrap ud-head"><div class="up-meta"><a class="ud-cwg" href="${srcList(u)}">${esc(lab)}</a>${u.date ? `<span>${esc(fmtDate(u.date))}</span>` : ""}${UKIND[u.kind] ? `<span class="up-kind">${UKIND[u.kind]}</span>` : ""}</div>
+    ${comp ? "" : `<div class="wrap ud-head"><div class="up-meta"><a class="ud-cwg" href="${srcList(u)}">${esc(lab)}</a>${u.date ? `<span>${esc(fmtDate(u.date))}</span>` : ""}${ukind(u) ? `<span class="up-kind">${ukind(u)}</span>` : ""}</div>
       <h1 class="h1">${esc(u.title)}</h1></div>`}
     <div class="wrap page-body">
       ${isPending(u) ? `<div class="wait-note"><b>Waiting for approval.</b> Only you${V().can_approve ? " and other approvers" : " and the ASC members and admins who approve updates"} can see this. ${V().can_approve ? `<button type="button" class="btn fill sm" data-uap-page="${esc(u.id)}">Approve and publish</button>` : ""}</div>` : ""}
-      ${u.kind === "article" ? `<div class="art-wrap">${artPage({ tpl: f && f.template, photos: f && f.photos, gal: u.id + ":art", title: u.title, date: u.date, src: (isGrp(u) ? "group|" : "cwg|") + u.cwg, html: sanitizeArt(u.body) })}</div>` : u.body ? `<div class="ud-body">${fmtBody(u.body)}</div>` : ""}
+      ${comp ? `<div class="art-wrap">${artPage({ tpl: f.template, photos: f.photos, gal: u.id + ":art", title: u.title, date: u.date, src: (isGrp(u) ? "group|" : "cwg|") + u.cwg,
+          html: u.kind === "article" ? sanitizeArt(u.body) : sanitizeArt(artDocHtml(f.doc, f.template)), facts: factsBox(factsOf(tplOf(tplKey(f.template)), f.doc)) })}</div>` : u.body ? `<div class="ud-body">${fmtBody(u.body)}</div>` : ""}
       ${photos.length ? `<div class="ud-photos">${photos.map((p, k) => `<button type="button" data-gal="${esc(u.id)}:photos" data-k="${k}" aria-label="Open photo ${k + 1}"><img src="${esc(p)}" alt="" loading="lazy"></button>`).join("")}</div>` : ""}
       ${pages.length ? `<div class="reader" id="reader"></div>` : ""}
       ${secs ? `<div class="ua">${secs.map(x => { const im = x.images || [];
