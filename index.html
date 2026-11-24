@@ -1249,7 +1249,7 @@
   .art .a-in::placeholder { color: #9a9a9a; font-weight: 500; }
   .art textarea.a-title.a-in { font-size: clamp(25px, 5.4cqi, 44px); font-weight: 850; letter-spacing: -.02em; line-height: 1.12; margin: 0; }
   .art .a-tf { margin-bottom: 12px; position: relative; } .art .a-cover .a-tf { z-index: 1; } .art .a-cover .a-tf .a-lab { color: #fff; } .art .a-cover textarea.a-title.a-in { font-size: clamp(28px, 6.4cqi, 54px); }
-  .art.tp-p2p .a-tf { width: 76%; } .art.tp-p2p .a-title.a-in { padding-right: 11px; }
+  
   .art .a-cover textarea.a-title.a-in { background: rgba(255,255,255,.1); border-color: rgba(255,255,255,.6); color: #fff; } .art .a-cover textarea.a-title.a-in::placeholder { color: rgba(255,255,255,.75); }
   .art .a-cover textarea.a-title.a-in:focus { background: rgba(255,255,255,.16); box-shadow: 0 0 0 3px rgba(255,255,255,.3); }
   .art .a-form { display: grid; gap: 16px; } .art .a-f { display: grid; gap: 6px; }
@@ -1272,15 +1272,20 @@
   .art .a-head + .a-tri { margin: 0 8% 5%; }
   .art .a-kicker { display: flex; align-items: center; gap: 8px; color: var(--cwg-a); font-weight: 800; font-size: 13.5px; margin-bottom: 10px; }
   /* photo spaces */
-  .art .a-slot { margin: 0 0 1.2em; min-width: 0; --ar: 16 / 9; } .art .a-row > * { min-width: 0; }
-  .art .a-slot.x-wide { --ar: 21 / 9; } .art .a-slot.x-portrait { --ar: 3 / 4; } .art .a-slot.x-side { --ar: 4 / 3; margin: 14px 0 0; } .art .a-row .a-slot { --ar: 4 / 3; margin: 0; } .art .a-row.x-tall .a-slot { --ar: 3 / 4; }
-  .art .a-slot > img, .art .a-slot > .a-slot-add, .art .a-slot > .a-slot-demo, .art .a-slot > .a-slot-v { width: 100%; aspect-ratio: var(--ar); height: auto; } .art .a-slot > img, .art .a-slot > .a-slot-v { display: block; }
-  .art .a-slot img { width: 100%; height: 100%; object-fit: cover; border-radius: 8px; display: block; }
+  .art .a-slot { margin: 0 0 1.4em; min-width: 0; --ar: 3 / 2; } .art .a-row > * { min-width: 0; }
+  .art .a-slot.x-wide { --ar: 2 / 1; } .art .a-slot.x-portrait { --ar: 3 / 4; } .art .a-slot.x-side { --ar: 4 / 3; margin: 14px 0 0; } .art .a-row .a-slot { --ar: 4 / 3; margin: 0; } .art .a-row.x-tall .a-slot { --ar: 3 / 4; } .art .a-row.n1 .a-slot { --ar: 3 / 2; }
   .art .a-slot figcaption { font-size: 12.5px; color: #666; margin-top: 6px; line-height: 1.4; outline: none; }
   .art .a-slot figcaption:empty::before { content: attr(data-ph); color: #aaa; }
   .art .a-row { display: grid; gap: 12px; margin: 1.2em 0; }
   .art .a-row.n2 { grid-template-columns: 1fr 1fr; } .art .a-row.n3 { grid-template-columns: repeat(3, 1fr); } .art .a-row.n4 { grid-template-columns: 1fr 1fr; }
-  .art .a-slot-v { display: block; width: 100%; padding: 0; border: 0; background: none; cursor: zoom-in; }
+  /* photo frames: the photo fills the frame; in the editor it can be dragged to choose what shows */
+  .art .a-frame { position: relative; display: block; width: 100%; aspect-ratio: var(--ar); overflow: hidden; border-radius: 8px; padding: 0; border: 0; background: #eee; }
+  .art .a-frame > img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; user-select: none; -webkit-user-drag: none; }
+  .art .a-frame > .a-slot-add, .art .a-frame > .a-slot-demo { position: absolute; inset: 0; width: 100%; height: 100%; min-height: 0; box-sizing: border-box; }
+  .art.is-edit .a-frame > img[data-drag] { cursor: grab; touch-action: none; } .art .a-frame.dragging > img { cursor: grabbing; }
+  .art .a-drag-hint { position: absolute; left: 8px; bottom: 8px; background: rgba(0,0,0,.62); color: #fff; font-size: 12px; font-weight: 700; padding: 4px 9px; border-radius: 999px; pointer-events: none; opacity: 0; transition: opacity .2s; }
+  .art .a-frame:hover .a-drag-hint { opacity: 1; }
+  .art .a-slot-v { cursor: zoom-in; }
   .art .a-slot-add, .art .a-slot-demo { display: grid; place-content: center; justify-items: center; gap: 4px; width: 100%; height: 100%; min-height: 60px; border: 2px dashed color-mix(in srgb, var(--cwg-a) 45%, #ccc); border-radius: 8px;
     background: color-mix(in srgb, var(--cwg-a) 7%, #f4f4f4); color: color-mix(in srgb, var(--cwg-a) 70%, #333); font: inherit; font-size: 13px; font-weight: 700; cursor: pointer; }
   .art .a-slot-add b { font-size: 26px; line-height: 1; } .art .a-slot-add:hover { background: color-mix(in srgb, var(--cwg-a) 14%, #f4f4f4); }
@@ -1298,10 +1303,14 @@
   .art .a-slot.x-lift { margin-top: -7%; position: relative; z-index: 1; } .art .a-cover + .a-main { padding-top: 5%; } .art .a-cover + .a-main:has(> .a-slot.x-lift) { padding-top: 0; } .art .a-cover:not(:has(+ .a-main > .a-slot.x-lift)) { padding-bottom: 7%; }
   /* Passport Stamp */
   .art.tp-p2p .a-main { position: relative; }
-  .art .a-stamp { position: absolute; top: -2%; right: 7%; width: clamp(84px, 17cqi, 132px); aspect-ratio: 1; border: 3px solid var(--cwg-a); border-radius: 50%; transform: rotate(-12deg);
-    display: grid; place-content: center; text-align: center; color: var(--cwg-a); line-height: 1.05; box-shadow: inset 0 0 0 4px #fff, inset 0 0 0 6px var(--cwg-a); opacity: .9; }
-  .art .a-stamp span { font-size: clamp(8px, 1.5cqi, 11px); font-weight: 800; } .art .a-stamp b { font-size: clamp(11px, 2.3cqi, 17px); font-weight: 900; margin: 2px 0; }
-  .art.tp-p2p h1.a-title { padding-right: 20%; }
+  
+  /* P2P stamps */
+  .art .a-p2ph { display: grid; grid-template-columns: 1fr auto; gap: 4%; align-items: start; }
+  .art .a-stp { display: block; width: 100%; height: auto; color: var(--cwg-a); opacity: .92; mix-blend-mode: multiply; }
+  .art .a-stp-wrap { width: clamp(92px, 19cqi, 150px); margin-top: 6px; transform: rotate(-11deg); }
+  .art .a-p2pfx { display: grid; grid-template-columns: minmax(0, 1fr) 36%; gap: 4%; align-items: center; margin-bottom: 1.4em; } .art .a-p2pfx .a-facts { margin: 0; grid-template-columns: 1fr 1fr; }
+  .art .a-visa > div { transform: rotate(4deg); } .art .a-p2pfx > :only-child { grid-column: 1 / -1; }
+  .art .a-visa .a-stp { color: color-mix(in srgb, var(--cwg-a) 55%, #7a1f3d); }
   /* Round the Table */
   .art .a-table i { width: 9px; height: 9px; border-radius: 50%; background: var(--cwg-a); margin-right: -4px; box-shadow: 0 0 0 2px #fff; } .art .a-table i:nth-child(2) { background: #f5c400; } .art .a-table i:nth-child(3) { background: #e14b1e; } .art .a-table i:nth-child(4) { margin-right: 6px; }
   /* Boots on the Ground */
@@ -1316,7 +1325,7 @@
   .art .a-story { display: grid; grid-template-columns: 38% 1fr; gap: 6%; align-items: end; margin-bottom: 1.4em; } .art .a-story .a-slot { margin: 0; }
   .art.tp-story .a-body blockquote:first-child, .art.tp-story .a-body > h2:first-child + p + blockquote { font-size: 1.35em; }
   @container (max-width: 560px) { .art .a-grid { grid-template-columns: 1fr; } .art .a-side { padding: 7% 8%; } .art .a-map, .art .a-acr { display: none; } .art .a-cwgv { width: 50%; }
-    .art .a-row.n3 { grid-template-columns: 1fr 1fr; } .art .a-story { grid-template-columns: 1fr; } .art .a-stamp { display: none; } .art.tp-p2p h1.a-title { padding-right: 0; } .art.tp-p2p .a-tf { width: 100%; } }
+    .art .a-row.n3 { grid-template-columns: 1fr 1fr; } .art .a-story { grid-template-columns: 1fr; } .art .a-p2ph { grid-template-columns: 1fr; } .art .a-stp-wrap { width: 110px; justify-self: end; margin-top: -10px; } .art .a-p2pfx { grid-template-columns: 1fr; } .art .a-visa > div { width: 70%; margin-left: auto; } }
   /* key facts box */
   .art .a-facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px 18px; margin: 0 0 1.4em; padding: 14px 16px; border-radius: 10px; background: color-mix(in srgb, var(--cwg-a) 8%, #fff); border-left: 4px solid var(--cwg-a); }
   .art .a-facts div { display: grid; gap: 2px; } .art .a-facts dt { font-size: 12px; font-weight: 800; color: var(--cwg-a); } .art .a-facts dt em { font-style: normal; font-weight: 600; color: #888; }
@@ -3610,7 +3619,7 @@ const ART_TPLS = [
   { k: "general", kind: "article", name: "General article", for: "Free layout for any news or story", photos: ["hero", "g1", "g2"], free: true, groups: true,
     intro: ["Introduction", "The opening paragraph: what happened, where and when, and who took part.", "Territories from across SPEA met in Singapore to share what is working in their community programmes."] },
   { k: "p2p", kind: "article", name: "Passport Stamp", for: "Programme-to-programme (P2P) learning visits", photos: ["a", "b", "g1", "g2", "g3"], badge: "P2P learning visit",
-    facts: [["when", "When", "14–18 October 2026", 1], ["where", "Where", "Central Java, Indonesia", 1], ["who", "Visiting team", "4 officers and staff from the Philippines Territory"], ["host", "Host programme", "Indonesia Territory savings group programme"]],
+    facts: [["from", "Visit from", "Philippines Territory", 1], ["to", "Visit to", "Indonesia Territory", 1], ["when", "When", "14–18 October 2026", 1], ["where", "Where", "Central Java, Indonesia", 1], ["who", "Who went", "4 officers and staff from the CD team"]],
     intro: ["Introduction", "Who visited whom, when, and the purpose of the visit, in two or three sentences.", "In October, four officers from the Philippines spent five days with the Indonesia Territory's savings group programme in Central Java."],
     secs: [["why", "Why we visited", "The question or need behind the visit.", "We wanted to see how savings groups keep meeting after project funding ends."],
       ["saw", "What we saw", "The places, programmes and people you visited.", "- A savings group of 25 women that has met every week since 2019\n- How corps officers support the groups"],
@@ -3668,15 +3677,41 @@ const tplKey = v => ({ 1: "general", 2: "training", 3: "general", 4: "field" })[
 const factsOf = (T, d) => (T.facts || []).map(([k, l]) => [l, String(((d && d.facts) || {})[k] || "").trim()]).filter(x => x[1]).map(([l, v]) => [l, esc(v)]);
 const factsBox = list => list.length ? `<dl class="a-facts">${list.map(([l, v]) => `<div><dt>${esc(l)}</dt><dd>${v}</dd></div>`).join("")}</dl>` : "";
 const MEGA = `<svg viewBox="0 0 48 48" aria-hidden="true"><path d="M6 20v8h6l18 10V10L12 20z" fill="currentColor"/><path d="M14 30l3 10h5l-2-8" fill="currentColor"/><path d="M36 17c3 4 3 10 0 14M40 12c6 7 6 17 0 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg>`;
-function artPage({ tpl, title, date, src, html, edit, demo, photos, gal, form, facts }) {
+// passport-style stamps for P2P visits: worn ink, double borders, slightly rotated, in the CWG's colour
+const STAMP_INK = `<filter id="a-ink" x="-5%" y="-5%" width="110%" height="110%"><feTurbulence type="fractalNoise" baseFrequency="1.3" numOctaves="2" seed="7" result="n"/><feColorMatrix in="n" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 -1.5 1.45" result="m"/><feComposite in="SourceGraphic" in2="m" operator="in" result="c"/><feTurbulence type="fractalNoise" baseFrequency=".05" numOctaves="2" seed="3" result="w"/><feDisplacementMap in="c" in2="w" scale="1.6"/></filter>`;
+const fitTxt = (t, max, size) => { const est = t.length * size * .6; return est > max ? ` textLength="${max}" lengthAdjust="spacingAndGlyphs"` : ""; };
+function stampRound(date) {
+  const d = esc(String(date || "").toUpperCase().slice(0, 22));
+  return `<svg class="a-stp a-stp-r" viewBox="0 0 200 200" aria-hidden="true"><defs>${STAMP_INK}<path id="a-arcT" d="M30 100a70 70 0 0 1 140 0"/><path id="a-arcB" d="M26 100a74 74 0 0 0 148 0"/></defs>
+    <g filter="url(#a-ink)" fill="none" stroke="currentColor"><circle cx="100" cy="100" r="92" stroke-width="5"/><circle cx="100" cy="100" r="82" stroke-width="1.6"/><circle cx="100" cy="100" r="54" stroke-width="1.6" stroke-dasharray="3 3"/>
+      <g fill="currentColor" stroke="none" font-family="Archivo, sans-serif" font-weight="900">
+        <text font-size="14" letter-spacing="2.4"><textPath href="#a-arcT" startOffset="50%" text-anchor="middle">SHARING &amp; LEARNING</textPath></text>
+        <text font-size="13" letter-spacing="3"><textPath href="#a-arcB" startOffset="50%" text-anchor="middle" dominant-baseline="hanging">★ ASIA-PACIFIC ★</textPath></text>
+        <text x="100" y="94" font-size="34" text-anchor="middle" letter-spacing="1">ASLP</text><text x="100" y="118" font-size="17" text-anchor="middle" letter-spacing="1.5">P2P VISIT</text>
+        ${d ? `<text x="100" y="136" font-size="9.5" font-weight="700" text-anchor="middle" letter-spacing=".8"${fitTxt(d, 92, 9.5)}>${d}</text>` : ""}</g></g></svg>`;
+}
+function stampVisa(from, to, date) {
+  const f = esc(String(from || "Your territory").toUpperCase().slice(0, 40)), t = esc(String(to || "Host territory").toUpperCase().slice(0, 40)), d = esc(String(date || "").toUpperCase().slice(0, 26));
+  return `<svg class="a-stp a-stp-v" viewBox="0 0 300 168" aria-hidden="true"><defs>${STAMP_INK}</defs>
+    <g filter="url(#a-ink)" fill="none" stroke="currentColor"><rect x="4" y="4" width="292" height="160" rx="14" stroke-width="5"/><rect x="13" y="13" width="274" height="142" rx="8" stroke-width="1.6"/>
+      <path d="M13 46h274M13 124h274" stroke-width="1.6"/>
+      <g fill="currentColor" stroke="none" font-family="Archivo, sans-serif">
+        <text x="150" y="37" font-size="20" font-weight="900" text-anchor="middle" letter-spacing="4">VISA · APPROVED</text>
+        <text x="28" y="68" font-size="9" font-weight="800" letter-spacing="1.5">FROM</text><text x="28" y="86" font-size="15" font-weight="900"${fitTxt(f, 244, 15)}>${f}</text>
+        <text x="28" y="102" font-size="9" font-weight="800" letter-spacing="1.5">TO</text><text x="44" y="117" font-size="15" font-weight="900"${fitTxt(t, 228, 15)}>${t}</text>
+        <path d="M28 106l8 5-8 5z"/>
+        <text x="28" y="144" font-size="10" font-weight="800" letter-spacing="1.2">ASLP P2P VISIT</text>${d ? `<text x="272" y="144" font-size="10" font-weight="800" text-anchor="end" letter-spacing=".8"${fitTxt(d, 130, 10)}>${d}</text>` : ""}</g></g></svg>`;
+}
+function artPage({ tpl, title, date, src, html, edit, demo, photos, gal, form, facts, fv }) {
   const T = tplOf(tplKey(tpl)), k = T.k, b = artBrand(src), P = photos || {}, tt = esc(title || "");
   const filled = T.photos.filter(x => P[x] && P[x].src);
+  const pos = ph => ` style="object-position:${esc((ph && ph.pos) || "50% 50%")}"`;
   const slot = (key, cls) => { const ph = P[key];
-    if (edit) return `<figure class="a-slot ${cls}" data-slot="${key}">${ph && ph.src ? `<img src="${esc(ph.src)}" alt=""><button type="button" class="a-slot-x" data-slot-x="${key}" aria-label="Remove this photo">×</button>`
-        : `<button type="button" class="a-slot-add" data-slot-add="${key}"><b>+</b>Add a photo</button>`}<figcaption contenteditable="true" data-cap="${key}" data-ph="Caption: who, what and where">${esc((ph && ph.cap) || "")}</figcaption></figure>`;
-    if (demo) return `<figure class="a-slot ${cls}"><span class="a-slot-demo"></span></figure>`;
+    if (edit) return `<figure class="a-slot ${cls}" data-slot="${key}"><div class="a-frame">${ph && ph.src ? `<img src="${esc(ph.src)}" alt="" draggable="false" data-drag="${key}"${pos(ph)}><span class="a-drag-hint">Drag to move the photo in the frame</span><button type="button" class="a-slot-x" data-slot-x="${key}" aria-label="Remove this photo">×</button>`
+        : `<button type="button" class="a-slot-add" data-slot-add="${key}"><b>+</b>Add a photo</button>`}</div><figcaption contenteditable="true" data-cap="${key}" data-ph="Caption: who, what and where">${esc((ph && ph.cap) || "")}</figcaption></figure>`;
+    if (demo) return `<figure class="a-slot ${cls}"><div class="a-frame"><span class="a-slot-demo"></span></div></figure>`;
     if (!ph || !ph.src) return "";
-    return `<figure class="a-slot ${cls}"><button type="button" class="a-slot-v" data-gal="${esc(gal || "")}" data-k="${filled.indexOf(key)}" aria-label="Open photo"><img src="${esc(ph.src)}" alt="${esc(ph.cap || "")}" loading="lazy"></button>${ph.cap ? `<figcaption>${esc(ph.cap)}</figcaption>` : ""}</figure>`; };
+    return `<figure class="a-slot ${cls}"><button type="button" class="a-frame a-slot-v" data-gal="${esc(gal || "")}" data-k="${filled.indexOf(key)}" aria-label="Open photo"><img src="${esc(ph.src)}" alt="${esc(ph.cap || "")}" loading="lazy"${pos(ph)}></button>${ph.cap ? `<figcaption>${esc(ph.cap)}</figcaption>` : ""}</figure>`; };
   const row = (keys, cls) => { const xs = keys.map(x => slot(x, "")).filter(Boolean); return xs.length ? `<div class="a-row ${cls} n${xs.length}">${xs.join("")}</div>` : ""; };
   const cwgLogo = b.h ? `<img class="a-cwg" src="${b.h}" alt="${esc(b.full)}">` : `<span class="a-grp">${esc(b.name)}</span>`;
   const meta = `<div class="a-meta"><span>${esc(b.full || b.name)}</span>${date ? `<span>${esc(fmtDate(date))}</span>` : ""}</div>`;
@@ -3688,7 +3723,7 @@ function artPage({ tpl, title, date, src, html, edit, demo, photos, gal, form, f
   const foot = `<div class="a-foot"><span class="a-lll"><b>Listen.</b> <b>Learn.</b> <b>Lead.</b></span><span>${esc(b.name)} · Asia-Pacific Sharing &amp; Learning Programme</span></div>`;
   const inner = {
     general: () => `${head}<div class="a-main">${slot("hero", "x-hero")}${h1}${meta}${body}${row(["g1", "g2"], "x-duo")}</div>`,
-    p2p: () => `${head}<div class="a-main"><div class="a-stamp" aria-hidden="true"><span>Programme to programme</span><b>P2P visit</b><span>${esc(b.name)}</span></div><div class="a-kicker">Programme-to-programme learning visit</div>${h1}${meta}${fx}${row(["a", "b"], "x-duo x-tall")}${body}${row(["g1", "g2", "g3"], "x-trio")}</div>`,
+    p2p: () => { const v = fv || {}; return `${head}<div class="a-main"><div class="a-p2ph"><div><div class="a-kicker">Programme-to-programme learning visit</div>${h1}${meta}</div><div class="a-stp-wrap" data-stamp="round">${stampRound(v.when)}</div></div><div class="a-p2pfx">${fx}<div class="a-visa"><div data-stamp="visa">${stampVisa(v.from, v.to, v.when)}</div></div></div>${row(["a", "b"], "x-duo x-tall")}${body}${row(["g1", "g2", "g3"], "x-trio")}</div>`; },
     training: () => `${cover("Training")}<div class="a-main">${slot("hero", "x-hero x-lift")}${fx}${body}${row(["g1", "g2", "g3", "g4"], "x-quad")}</div>`,
     workshop: () => `${head}<div class="a-main"><div class="a-kicker a-notes"><i></i><i></i><i></i>Workshop</div>${h1}${meta}${fx}${slot("hero", "x-hero x-wide")}${body}${row(["g1", "g2", "g3"], "x-trio")}</div>`,
     meeting: () => `${head}<div class="a-main"><div class="a-kicker a-table"><i></i><i></i><i></i><i></i>CWG meeting</div>${h1}${meta}${fx}${slot("hero", "x-hero x-wide")}${body}${row(["g1", "g2", "g3"], "x-trio")}</div>`,
@@ -3872,7 +3907,7 @@ function updateEditor(u, redraw) {
       ${(T.secs || []).map(([k, h, what, ex]) => `<div class="a-f a-sec"><h2 class="a-fh">${esc(h)}</h2>${guide(what, ex)}<textarea class="a-in a-p" data-af="sec" data-k="${k}" rows="3" placeholder="${ph}" aria-label="${esc(h)}">${esc((d.s || {})[k] || "")}</textarea></div>`).join("")}
       ${quote}<p class="a-note">Every ${esc(st.art.tplName)} uses these same sections, so updates from all CWGs read the same way. Leave a section empty if it doesn't apply; it won't show.</p></div>`;
   }
-  const factsForm = T => (T.facts || []).length ? `<dl class="a-facts is-form">${T.facts.map(([k, l, ex, req]) => `<div><dt>${esc(l)}${req ? "" : ` <em>optional</em>`}</dt><dd><input class="a-in a-fact" data-af="fact" data-k="${k}" value="${esc(((st.art.doc.facts || {})[k]) || "")}" placeholder="e.g. ${esc(ex)}" aria-label="${esc(l)}"></dd></div>`).join("")}</dl>` : "";
+  const factsForm = T => (T.facts || []).length ? `${T.k === "p2p" ? `<p class="a-hint a-p2pq"><b>Where was the visit?</b> Fill in "Visit from" and "Visit to" with a territory, region, country or CWG. The passport stamps are made from them.</p>` : ""}<dl class="a-facts is-form">${T.facts.map(([k, l, ex, req]) => `<div><dt>${esc(l)}${req ? "" : ` <em>optional</em>`}</dt><dd><input class="a-in a-fact" data-af="fact" data-k="${k}" value="${esc(((st.art.doc.facts || {})[k]) || "")}" placeholder="e.g. ${esc(ex)}" aria-label="${esc(l)}"></dd></div>`).join("")}</dl>` : "";
   function drawArticle() {
     const P = artProps(), list = tplsFor(st.kind, P.src);
     if (!list.some(t => t.k === st.art.tpl)) st.art.tpl = list[0].k;
@@ -3883,9 +3918,9 @@ function updateEditor(u, redraw) {
     $("ue-file").innerHTML = `<div class="art-ed">
       <div class="ed-field"><span>Template <span class="ed-hint">${isPost ? "A Megaphone for announcements of events, calls and deadlines; a Quick Note for everything else." : `Pick the one that matches the activity. Each has set sections with examples, the ASLP and ${esc(artBrand(P.src).name)} branding and spaces for photos. Use the General article only when nothing else fits.`} You can switch any time; what you've written stays.</span></span>
         <div class="art-tpls${isPost ? " two" : ""}" role="radiogroup" aria-label="Template">${list.map(t => `<button type="button" class="art-tpl${st.art.tpl === t.k ? " on" : ""}" role="radio" aria-checked="${st.art.tpl === t.k}" data-tpl="${t.k}">
-          <span class="art-thumb${t.kind === "post" ? " post" : ""}" aria-hidden="true"><span class="art-thumb-in">${artPage({ tpl: t.k, title: P.title || "Your title here", date: P.date, src: P.src, html: artDocHtml(sampleDoc(t), t.k), facts: factsBox(factsOf(t, sampleDoc(t))), demo: true })}</span></span><b>${esc(t.name)}</b><small>${esc(t.for)}</small></button>`).join("")}</div></div>
+          <span class="art-thumb${t.kind === "post" ? " post" : ""}" aria-hidden="true"><span class="art-thumb-in">${artPage({ tpl: t.k, title: P.title || "Your title here", date: P.date, src: P.src, html: artDocHtml(sampleDoc(t), t.k), facts: factsBox(factsOf(t, sampleDoc(t))), fv: sampleDoc(t).facts, demo: true })}</span></span><b>${esc(t.name)}</b><small>${esc(t.for)}</small></button>`).join("")}</div></div>
       <div class="ed-field"><span>Your ${isPost ? "post" : "article"} <span class="ed-hint">Fill in the boxes on the page. Each one says what to write, with an example; you can paste from a report or email. Select a grey box to add a photo and write its caption. Fonts, colours and layout are set for you. Empty boxes don't show on the website.</span></span>
-        <div class="art-desk">${artPage({ tpl: st.art.tpl, ...P, edit: true, photos: st.art.photos, form: formHtml(T), facts: factsForm(T) })}</div>
+        <div class="art-desk">${artPage({ tpl: st.art.tpl, ...P, edit: true, photos: st.art.photos, form: formHtml(T), facts: factsForm(T), fv: st.art.doc.facts })}</div>
         <input type="file" id="art-slot-in" accept="image/*" hidden></div></div>`;
     requestAnimationFrame(() => { fitThumbs(); box.querySelectorAll(".art-desk textarea").forEach(grow); });
   }
@@ -3893,10 +3928,23 @@ function updateEditor(u, redraw) {
     const f = e.target.closest("[data-af]"); if (!f || (st.kind !== "article" && st.kind !== "text")) return; grow(f);
     const k = f.dataset.af, d = st.art.doc, sec = f.closest("[data-si]");
     if (k === "title") $("ue-title").value = f.value.replace(/\s*\n\s*/g, " ");
-    else if (k === "fact") d.facts[f.dataset.k] = f.value;
+    else if (k === "fact") { d.facts[f.dataset.k] = f.value;
+      if (st.art.tpl === "p2p") { const r = box.querySelector(".art-desk [data-stamp=round]"), v = box.querySelector(".art-desk [data-stamp=visa]");
+        if (r) r.innerHTML = stampRound(d.facts.when); if (v) v.innerHTML = stampVisa(d.facts.from, d.facts.to, d.facts.when); } }
     else if (k === "sec") d.s[f.dataset.k] = f.value;
     else if (sec) d.sections[+sec.dataset.si][k] = f.value; else d[k] = f.value;
     keep(); });
+  $("ue-file").addEventListener("pointerdown", e => {
+    const im = e.target.closest("img[data-drag]"); if (!im) return; e.preventDefault();
+    const fr = im.parentElement, key = im.dataset.drag, ph = st.art.photos[key]; if (!ph) return;
+    const [x0, y0] = String(ph.pos || "50% 50%").split(" ").map(v => parseFloat(v) || 50), sx = e.clientX, sy = e.clientY;
+    const W = fr.clientWidth, H = fr.clientHeight, sc = Math.max(W / (im.naturalWidth || W), H / (im.naturalHeight || H)), ox = (im.naturalWidth || W) * sc - W, oy = (im.naturalHeight || H) * sc - H;
+    fr.classList.add("dragging"); im.setPointerCapture(e.pointerId);
+    const clamp = v => Math.max(0, Math.min(100, v));
+    const move = ev => { const x = ox > 1 ? clamp(x0 - (ev.clientX - sx) / ox * 100) : 50, y = oy > 1 ? clamp(y0 - (ev.clientY - sy) / oy * 100) : 50; ph.pos = `${x.toFixed(1)}% ${y.toFixed(1)}%`; im.style.objectPosition = ph.pos; };
+    const up = () => { fr.classList.remove("dragging"); im.removeEventListener("pointermove", move); im.removeEventListener("pointerup", up); im.removeEventListener("pointercancel", up); keep(); };
+    im.addEventListener("pointermove", move); im.addEventListener("pointerup", up); im.addEventListener("pointercancel", up);
+  });
   $("ue-file").addEventListener("keydown", e => { if (e.target.matches("[data-af=title], [data-af=h], [data-af=by], [data-af=fact]") && e.key === "Enter") e.preventDefault(); });
   $("ue-file").addEventListener("click", async e => {
     const t = e.target.closest("[data-tpl]"); if (t) { st.art.tpl = t.dataset.tpl; drawArticle(); keep(); return; }
@@ -3913,7 +3961,7 @@ function updateEditor(u, redraw) {
     if (e.target.id !== "art-slot-in") return; e.stopPropagation(); const fl = e.target.files[0], key = st.slotKey; e.target.value = ""; if (!fl || !key || st.busy) return;
     await op(async () => { msg(loader("Uploading the photo…", "sm inline"));
       const im = await shrinkImage(fl, 1800); upCheck(); const url = await upPut(`${folder()}/art-${key}-${newId().slice(0, 8)}.${im.ext}`, im.blob, im.blob.type);
-      st.art.photos[key] = { src: url, cap: (st.art.photos[key] && st.art.photos[key].cap) || "" }; drawArticle(); keep(); msg("Photo added. Write its caption underneath.", "ok");
+      st.art.photos[key] = { src: url, cap: (st.art.photos[key] && st.art.photos[key].cap) || "", pos: "50% 50%" }; drawArticle(); keep(); msg("Photo added. Write its caption underneath.", "ok");
       const c = box.querySelector(`[data-cap="${key}"]`); if (c) c.focus(); }, () => msg("Upload stopped. The photo was removed."));
   });
   // the page shows the title, date and CWG as they're typed or chosen
@@ -4926,7 +4974,7 @@ function pageUpdate(id) {
     <div class="wrap page-body">
       ${isPending(u) ? `<div class="wait-note"><b>Waiting for approval.</b> Only you${V().can_approve ? " and other approvers" : " and the ASC members and admins who approve updates"} can see this. ${V().can_approve ? `<button type="button" class="btn fill sm" data-uap-page="${esc(u.id)}">Approve and publish</button>` : ""}</div>` : ""}
       ${comp ? `<div class="art-wrap">${artPage({ tpl: f.template, photos: f.photos, gal: u.id + ":art", title: u.title, date: u.date, src: (isGrp(u) ? "group|" : "cwg|") + u.cwg,
-          html: u.kind === "article" ? sanitizeArt(u.body) : sanitizeArt(artDocHtml(f.doc, f.template)), facts: factsBox(factsOf(tplOf(tplKey(f.template)), f.doc)) })}</div>` : u.body ? `<div class="ud-body">${fmtBody(u.body)}</div>` : ""}
+          html: u.kind === "article" ? sanitizeArt(u.body) : sanitizeArt(artDocHtml(f.doc, f.template)), facts: factsBox(factsOf(tplOf(tplKey(f.template)), f.doc)), fv: (f.doc && f.doc.facts) || {} })}</div>` : u.body ? `<div class="ud-body">${fmtBody(u.body)}</div>` : ""}
       ${photos.length ? `<div class="ud-photos">${photos.map((p, k) => `<button type="button" data-gal="${esc(u.id)}:photos" data-k="${k}" aria-label="Open photo ${k + 1}"><img src="${esc(p)}" alt="" loading="lazy"></button>`).join("")}</div>` : ""}
       ${pages.length ? `<div class="reader" id="reader"></div>` : ""}
       ${secs ? `<div class="ua">${secs.map(x => { const im = x.images || [];
