@@ -1224,7 +1224,7 @@
   .sv-q { font-size: 13.5px; color: var(--ink-2); line-height: 1.45; }
   /* articles: an A4-style page */
   .art-wrap { padding: var(--g4) 0 var(--g5); }
-  .art { position: relative; width: 100%; max-width: 820px; margin: 0 auto; aspect-ratio: 210 / 297; background: #fff; color: #161616; box-shadow: 0 1px 3px rgba(0,0,0,.12), 0 14px 44px rgba(0,0,0,.09);
+  .art { position: relative; width: 100%; max-width: 820px; margin: 0 auto; min-height: 640px; background: #fff; color: #161616; box-shadow: 0 1px 3px rgba(0,0,0,.12), 0 14px 44px rgba(0,0,0,.09);
     display: flex; flex-direction: column; overflow: clip; font-size: 16.5px; line-height: 1.62; container-type: inline-size; text-align: left; }
   @supports not (overflow: clip) { .art { overflow: visible; } }
   .art .a-main { padding: 0 8% 6%; flex: 1; }
@@ -1242,7 +1242,25 @@
   .art .a-body figcaption { font-size: 13px; color: #666; margin-top: 6px; line-height: 1.4; }
   .art .a-body a { color: var(--cwg-a); text-decoration: underline; }
   .art .a-body hr { border: 0; border-top: 2px solid #e6e6e6; margin: 1.5em 0; }
-  .art .a-body[contenteditable] { outline: none; min-height: 18em; caret-color: var(--cwg-a); }
+  /* the boxes writers fill in, styled as the finished parts */
+  .art .a-in { display: block; width: 100%; box-sizing: border-box; font: inherit; color: inherit; background: color-mix(in srgb, var(--cwg-a) 4%, #fff); border: 1.5px dashed color-mix(in srgb, var(--cwg-a) 40%, #c9c9c9);
+    border-radius: 8px; padding: 8px 11px; resize: none; overflow: hidden; line-height: inherit; }
+  .art .a-in:hover { border-color: color-mix(in srgb, var(--cwg-a) 70%, #999); } .art .a-in:focus { outline: none; border-style: solid; border-color: var(--cwg-a); background: #fff; box-shadow: 0 0 0 3px color-mix(in srgb, var(--cwg-a) 18%, transparent); }
+  .art .a-in::placeholder { color: #9a9a9a; font-weight: 500; }
+  .art textarea.a-title.a-in { font-size: clamp(25px, 5.4cqi, 44px); font-weight: 850; letter-spacing: -.02em; line-height: 1.12; margin: 0; }
+  .art .a-tf { margin-bottom: 12px; position: relative; } .art .a-cover .a-tf { z-index: 1; } .art .a-cover .a-tf .a-lab { color: #fff; } .art .a-cover textarea.a-title.a-in { font-size: clamp(28px, 6.4cqi, 54px); }
+  .art.tp-p2p .a-tf { width: 76%; } .art.tp-p2p .a-title.a-in { padding-right: 11px; }
+  .art .a-cover textarea.a-title.a-in { background: rgba(255,255,255,.1); border-color: rgba(255,255,255,.6); color: #fff; } .art .a-cover textarea.a-title.a-in::placeholder { color: rgba(255,255,255,.75); }
+  .art .a-cover textarea.a-title.a-in:focus { background: rgba(255,255,255,.16); box-shadow: 0 0 0 3px rgba(255,255,255,.3); }
+  .art .a-form { display: grid; gap: 16px; } .art .a-f { display: grid; gap: 6px; }
+  .art .a-lab { font-size: 12.5px; font-weight: 800; color: var(--cwg-a); } .art .a-lab em { font-style: normal; font-weight: 600; color: #888; }
+  .art .a-sec { border-top: 1px solid #eee; padding-top: 14px; } .art .a-sec-bar { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+  .art .a-sec-btns { display: flex; gap: 4px; } .art .a-sec-btns button { font: inherit; font-size: 12.5px; font-weight: 700; border: 1px solid #ddd; background: #fff; color: #333; border-radius: 999px; padding: 3px 10px; cursor: pointer; }
+  .art .a-sec-btns button:disabled { opacity: .35; cursor: default; } .art .a-sec-btns button.sure { border-color: #c0392b; color: #c0392b; }
+  .art .a-in.a-h2 { font-size: 1.42em; font-weight: 800; line-height: 1.2; } .art .a-in.a-p { min-height: 5.2em; }
+  .art .a-in.a-q { font-size: 1.14em; font-weight: 600; } .art .a-in.a-by { font-size: 14px; }
+  .art .a-add { justify-self: start; font: inherit; font-size: 14px; font-weight: 800; color: var(--cwg-a); background: none; border: 1.5px dashed var(--cwg-a); border-radius: 999px; padding: 7px 16px; cursor: pointer; }
+  .art .a-add:hover { background: color-mix(in srgb, var(--cwg-a) 8%, #fff); }
   .art .a-body[contenteditable]:empty::before { content: attr(data-ph); color: #9a9a9a; }
   .art .a-tri { display: flex; height: 5px; } .art .a-tri i { flex: 1; } .art .a-tri i:nth-child(1) { background: #0a84ff; } .art .a-tri i:nth-child(2) { background: #f5c400; } .art .a-tri i:nth-child(3) { background: #e14b1e; }
   .art .a-foot { display: flex; justify-content: space-between; gap: 6px 14px; flex-wrap: wrap; padding: 14px 8%; border-top: 1px solid #eee; font-size: 12px; color: #6b6b6b; margin-top: auto; }
@@ -1287,7 +1305,7 @@
   .art .a-stamp { position: absolute; top: -2%; right: 7%; width: clamp(84px, 17cqi, 132px); aspect-ratio: 1; border: 3px solid var(--cwg-a); border-radius: 50%; transform: rotate(-12deg);
     display: grid; place-content: center; text-align: center; color: var(--cwg-a); line-height: 1.05; box-shadow: inset 0 0 0 4px #fff, inset 0 0 0 6px var(--cwg-a); opacity: .9; }
   .art .a-stamp span { font-size: clamp(8px, 1.5cqi, 11px); font-weight: 800; } .art .a-stamp b { font-size: clamp(11px, 2.3cqi, 17px); font-weight: 900; margin: 2px 0; }
-  .art.tp-p2p .a-title { padding-right: 20%; }
+  .art.tp-p2p h1.a-title { padding-right: 20%; }
   /* Round the Table */
   .art .a-table i { width: 9px; height: 9px; border-radius: 50%; background: var(--cwg-a); margin-right: -4px; box-shadow: 0 0 0 2px #fff; } .art .a-table i:nth-child(2) { background: #f5c400; } .art .a-table i:nth-child(3) { background: #e14b1e; } .art .a-table i:nth-child(4) { margin-right: 6px; }
   /* Boots on the Ground */
@@ -1302,7 +1320,7 @@
   .art .a-story { display: grid; grid-template-columns: 38% 1fr; gap: 6%; align-items: end; margin-bottom: 1.4em; } .art .a-story .a-slot { margin: 0; }
   .art.tp-story .a-body blockquote:first-child, .art.tp-story .a-body > h2:first-child + p + blockquote { font-size: 1.35em; }
   @container (max-width: 560px) { .art .a-grid { grid-template-columns: 1fr; } .art .a-side { padding: 7% 8%; } .art .a-map, .art .a-acr { display: none; } .art .a-cwgv { width: 50%; }
-    .art .a-row.n3 { grid-template-columns: 1fr 1fr; } .art .a-story { grid-template-columns: 1fr; } .art .a-stamp { display: none; } .art.tp-p2p .a-title { padding-right: 0; } }
+    .art .a-row.n3 { grid-template-columns: 1fr 1fr; } .art .a-story { grid-template-columns: 1fr; } .art .a-stamp { display: none; } .art.tp-p2p h1.a-title { padding-right: 0; } .art.tp-p2p .a-tf { width: 100%; } }
   /* article editor */
   .art-ed { display: grid; gap: var(--g4); }
   .art-tpls { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
@@ -3581,7 +3599,7 @@ const ART_TPLS = [
 const tplOf = k => ART_TPLS.find(t => t[0] === k) || ART_TPLS[0];
 const tplsFor = src => ART_TPLS.filter(t => String(src || "").startsWith("group|") ? t[5] : t[0] !== "activity");
 const tplKey = v => ({ 1: "general", 2: "training", 3: "general", 4: "field" })[v] || (ART_TPLS.some(t => t[0] === v) ? v : "general");
-function artPage({ tpl, title, date, src, html, edit, demo, photos, gal }) {
+function artPage({ tpl, title, date, src, html, edit, demo, photos, gal, form }) {
   const T = tplOf(tplKey(tpl)), k = T[0], b = artBrand(src), P = photos || {}, tt = esc(title || "") || (edit ? `<span class="a-ph">Your title (type it in the Title box above)</span>` : "");
   const filled = T[3].filter(x => P[x] && P[x].src);
   const slot = (key, cls) => { const ph = P[key];
@@ -3593,8 +3611,8 @@ function artPage({ tpl, title, date, src, html, edit, demo, photos, gal }) {
   const row = (keys, cls) => { const xs = keys.map(x => slot(x, "")).filter(Boolean); return xs.length ? `<div class="a-row ${cls} n${xs.length}">${xs.join("")}</div>` : ""; };
   const cwgLogo = b.h ? `<img class="a-cwg" src="${b.h}" alt="${esc(b.full)}">` : `<span class="a-grp">${esc(b.name)}</span>`;
   const meta = `<div class="a-meta"><span>${esc(b.full || b.name)}</span>${date ? `<span>${esc(fmtDate(date))}</span>` : ""}</div>`;
-  const h1 = `<h1 class="a-title">${tt}</h1>`;
-  const body = `<div class="a-body"${edit ? ` id="art-body" contenteditable="true" spellcheck="true" aria-label="Article text" data-ph="Start writing here. Mark each part as a heading, text, bullets or a quote using the bar above."` : ""}>${html || ""}</div>`;
+  const h1 = edit ? `<div class="a-f a-tf"><span class="a-lab">Title</span><textarea class="a-title a-in" data-af="title" rows="1" placeholder="Write the title here" aria-label="Title">${esc(title || "")}</textarea></div>` : `<h1 class="a-title">${tt}</h1>`;
+  const body = edit ? form || "" : `<div class="a-body">${html || ""}</div>`;
   const tri = `<div class="a-tri"><i></i><i></i><i></i></div>`;
   const head = `<header class="a-head"><img class="a-lock" src="brand/lockup-v1.webp" alt="Asia-Pacific Sharing & Learning Programme">${cwgLogo}</header>${tri}`;
   const cover = badge => `${head.replace(/<div class="a-tri">.*$/, "")}<header class="a-cover">${tri}<img class="a-dd" src="${b.doodles}" alt="" aria-hidden="true"><span class="a-badge">${badge}</span>${h1}${meta}</header>`;
@@ -3644,6 +3662,38 @@ function richMap(root) {
     if (last && blk !== last && text && !text.endsWith("\n\n")) text += "\n\n"; last = blk; segs.push({ node: n, start: text.length }); text += n.data; }
   return { text, segs };
 }
+// an article's parts (introduction, sections, quote) become the page; bullets are lines starting with "- "
+const ART_HINTS = { "Who visited whom, and why": "Which territories took part, where you went, and what you hoped to learn.", "What we saw": "The programmes, places and people you saw, and what stood out.",
+  "What we'll take home": "Ideas you will try in your own territory, and any follow-up agreed.", "About the training": "What the training covered, who led it and who took part.",
+  "What participants learnt": "The main skills and ideas people took away. A few bullet points work well.", "What changes next": "How participants will use what they learnt in their work.",
+  "Who met": "Which territories and people met, where and when.", "What we discussed": "The main topics and what each territory shared.", "What we agreed": "Decisions, actions and who will follow them up.",
+  "Where we went": "The community or project you visited, and why.", "What happens next": "Follow-up actions and who is responsible.",
+  "Their story": "Tell the person's story in your words: who they are and what their life was like.", "What changed": "What is different now, and how the programme helped.",
+  "Looking ahead": "Their hopes and plans, and what support they still need.", "About the activity": "What the activity was, where and when, and who took part.",
+  "What happened": "The main things that happened and what was achieved.", "What's next": "What follows, and how others can get involved." };
+function textToHtml(t) {
+  const lk = x => esc(x).replace(/(https?:\/\/[^\s<]+[^\s<.,;:)])/g, '<a href="$1">$1</a>');
+  return String(t || "").trim().split(/\n\s*\n/).map(p => { const ls = p.split("\n").map(l => l.trim()).filter(Boolean); let out = "", buf = [], ul = [];
+    const flush = () => { if (buf.length) out += `<p>${buf.map(lk).join("<br>")}</p>`; if (ul.length) out += `<ul>${ul.map(x => `<li>${lk(x)}</li>`).join("")}</ul>`; buf = []; ul = []; };
+    ls.forEach(l => { const m = l.match(/^[-•*]\s+(.*)$/); if (m) { if (buf.length) flush(); ul.push(m[1]); } else { if (ul.length) flush(); buf.push(l); } }); flush(); return out; }).join("");
+}
+function artDocHtml(d, tpl) {
+  d = d || {}; const secs = (d.sections || []).filter(x => (x.h || "").trim() || (x.t || "").trim());
+  const q = (d.quote || "").trim().replace(/^["“”']+|["“”']+$/g, ""), quote = q ? `<blockquote>“${esc(q)}”${(d.by || "").trim() ? `<br>— ${esc(d.by.trim())}` : ""}</blockquote>` : "";
+  const sec = x => `${(x.h || "").trim() ? `<h2>${esc(x.h.trim())}</h2>` : ""}${textToHtml(x.t)}`;
+  const at = tpl === "story" || !secs.length ? 0 : 1;
+  return textToHtml(d.intro) + (at === 0 ? quote : "") + secs.map((x, i) => sec(x) + (at && i === 0 ? quote : "")).join("");
+}
+function htmlToDoc(html) {
+  const d = { intro: "", sections: [], quote: "", by: "" }, el = document.createElement("div"); el.innerHTML = html || ""; let cur = null;
+  const add = t => { if (!t) return; if (cur) cur.t += (cur.t ? "\n\n" : "") + t; else d.intro += (d.intro ? "\n\n" : "") + t; };
+  el.childNodes.forEach(n => { if (n.nodeType === 3) { add(n.data.trim()); return; } if (n.nodeType !== 1) return; const tg = n.tagName;
+    if (tg === "H2" || tg === "H3") { cur = { h: n.textContent.trim(), t: "" }; d.sections.push(cur); }
+    else if (tg === "BLOCKQUOTE" && !d.quote) { const [q, by] = n.innerText ? n.innerText.split(/\n\s*—\s*/) : [n.textContent, ""]; d.quote = (q || "").trim().replace(/^["“”]+|["“”]+$/g, ""); d.by = (by || "").trim(); }
+    else if (tg === "UL" || tg === "OL") add([...n.querySelectorAll("li")].map(li => "- " + li.textContent.trim()).join("\n"));
+    else if (tg !== "FIGURE") add(n.textContent.trim()); });
+  return d;
+}
 function updateEditor(u, redraw) {
   const box = $("up-editor"); if (!box || !u) return;
   const cwgs = acctKind(V()) === "member" ? [] : [...(V().post_cwgs || []), ...(V().submit_cwgs || [])], grps = Object.keys(PGROUPS).filter(canGroupPost);
@@ -3652,7 +3702,7 @@ function updateEditor(u, redraw) {
   const st = { id: u.id || null, src: fixSrc(u.src) || (u.cwg ? (isGrp(u) ? "group|" : "cwg|") + u.cwg : "") || srcs[0], kind: u.kind || "text", file: u.file || null, pages: u.pages || [], slides: u.slides || [], photos: [...(u.photos || [])], busy: false,
     sections: Array.isArray(u.sections) ? JSON.parse(JSON.stringify(u.sections)) : (u.kind === "pptx" && (u.slides || []).length ? slidesToSections(u.slides).sections : []),
     folder: (u.file && pathOf(u.file.url).replace(/\/[^/]+$/, "")) || "",
-    art: { tpl: tplKey(u.kind === "article" && u.file && u.file.template), html: u.kind === "article" ? sanitizeArt(u.body || "") : "", photos: JSON.parse(JSON.stringify((u.kind === "article" && u.file && u.file.photos) || {})) } };
+    art: { tpl: tplKey(u.kind === "article" && u.file && u.file.template), doc: u.kind === "article" ? (u.file && u.file.doc ? JSON.parse(JSON.stringify(u.file.doc)) : htmlToDoc(sanitizeArt(u.body || ""))) : null, photos: JSON.parse(JSON.stringify((u.kind === "article" && u.file && u.file.photos) || {})) } };
   const srcSlugOf = v => { const [t, x] = v.split("|"); return t === "group" ? x : cwgSlug(x); };
   const folder = () => st.folder || (st.folder = `${srcSlugOf($("ue-cwg").value)}/${newId()}`);
   // everything uploaded while this editor is open, so Cancel can remove it; what the saved update already uses is kept
@@ -3698,7 +3748,7 @@ function updateEditor(u, redraw) {
   box.oninput = keep; box.onchange = keep;
   const drawKind = () => {
     box.querySelectorAll("[data-kind]").forEach(b => { b.classList.toggle("on", b.dataset.kind === st.kind); b.setAttribute("aria-checked", b.dataset.kind === st.kind); });
-    $("ue-body").closest("label").hidden = st.kind === "article";
+    $("ue-body").closest("label").hidden = st.kind === "article"; $("ue-title").closest("label").hidden = st.kind === "article"; $("ue-photos").closest(".ed-field").hidden = st.kind === "article";
     $("ue-body-l").innerHTML = st.kind === "text" ? `Your post <span class="ed-hint">A short update. Leave a blank line between paragraphs. Start a line with "-" to make a list. For a longer piece with headings and pictures, choose "Write an article".</span>` : st.kind === "pdf" ? `Short introduction <span class="ed-hint">optional, shown above the pages</span>` : `Introduction <span class="ed-hint">the opening paragraph of the article</span>`;
     $("ue-body").rows = st.kind === "text" ? 10 : st.kind === "pptx" ? 4 : 3;
     const f = $("ue-file");
@@ -3718,88 +3768,77 @@ function updateEditor(u, redraw) {
     d.ondragover = e => { e.preventDefault(); d.classList.add("over"); }; d.ondragleave = () => d.classList.remove("over");
     d.ondrop = e => { e.preventDefault(); d.classList.remove("over"); takeFile(e.dataTransfer.files[0]); };
   };
-  // ---- article: template picker, toolbar and the A4 page ----
-  const ART_SAMPLE = `<p>Territories from across the region met to share what is working in their community programmes and to plan the year ahead.</p><h2>What we learnt</h2><p>Teams compared how they listen to communities before a project starts, and how savings groups keep going after funding ends.</p><blockquote>“We left with ideas we can use next week.”</blockquote><ul><li>Three territories will visit each other</li><li>A shared MEAL toolkit</li></ul><p>The group meets again in March.</p>`;
-  let artRange = null;
-  const artBody = () => $("art-body");
-  const artSync = () => { const b = artBody(); if (b) { st.art.html = b.innerHTML; keep(); } };
+  // ---- article: template picker and the page, with a box for every part ----
+  const ART_SAMPLE = artDocHtml({ intro: "Territories from across the region met to share what is working in their community programmes and to plan the year ahead.",
+    sections: [{ h: "What we learnt", t: "Teams compared how they listen to communities before a project starts, and how savings groups keep going after funding ends." }, { h: "What's next", t: "- Three territories will visit each other\n- A shared MEAL toolkit" }],
+    quote: "We left with ideas we can use next week.", by: "" });
+  const artEmpty = d => !d || (!(d.intro || "").trim() && !(d.quote || "").trim() && !(d.sections || []).some(x => (x.t || "").trim()));
+  const starterDoc = k => ({ intro: "", sections: tplOf(k)[4].map(h => ({ h, t: "" })), quote: "", by: "" });
+  const grow = el => { if (el && el.tagName === "TEXTAREA") { el.style.height = "auto"; el.style.height = el.scrollHeight + 2 + "px"; } };
   const artProps = () => ({ title: $("ue-title").value.trim(), date: $("ue-date").value, src: $("ue-cwg").value });
   const fitThumbs = () => box.querySelectorAll(".art-thumb").forEach(t => { const w = t.clientWidth; if (w) t.style.setProperty("--s", (w / 820).toFixed(4)); });
-  const starterHtml = k => tplOf(k)[4].map(h => `<h2>${esc(h)}</h2><p><br></p>`).join("");
-  const isStarter = h => !artText(h) || ART_TPLS.some(t => t[4].length && artText(h) === artText(starterHtml(t[0])));
+  function formHtml() {
+    const d = st.art.doc, n = d.sections.length, hint = x => ART_HINTS[x.h] || "Write this section here. Leave a blank line between paragraphs. Start a line with “- ” for a bullet point.";
+    return `<div class="a-body a-form">
+      <div class="a-f"><span class="a-lab">Introduction</span><textarea class="a-in a-p" data-af="intro" rows="3" placeholder="The opening paragraph: what happened, where and when, and who took part.">${esc(d.intro || "")}</textarea></div>
+      ${d.sections.map((x, i) => `<div class="a-f a-sec" data-si="${i}"><div class="a-sec-bar"><span class="a-lab">Section ${i + 1}</span><span class="a-sec-btns">
+          <button type="button" data-sm="-1" ${i ? "" : "disabled"} aria-label="Move section up">↑</button><button type="button" data-sm="1" ${i < n - 1 ? "" : "disabled"} aria-label="Move section down">↓</button><button type="button" data-sdel>Remove</button></span></div>
+        <input class="a-in a-h2" data-af="h" value="${esc(x.h || "")}" placeholder="Section heading, for example What we saw" aria-label="Section ${i + 1} heading">
+        <textarea class="a-in a-p" data-af="t" rows="3" placeholder="${esc(hint(x))}" aria-label="Section ${i + 1} text">${esc(x.t || "")}</textarea></div>`).join("")}
+      <button type="button" class="a-add" data-sadd2>+ Add a section</button>
+      <div class="a-f"><span class="a-lab">Quote <em>optional</em></span><textarea class="a-in a-q" data-af="quote" rows="2" placeholder="A few words from someone who took part, without quotation marks">${esc(d.quote || "")}</textarea>
+        <input class="a-in a-by" data-af="by" value="${esc(d.by || "")}" placeholder="Who said it, for example Maria, savings group member, Mindanao" aria-label="Who said the quote"></div></div>`;
+  }
   function drawArticle() {
-    const b = artBody(); if (b) st.art.html = b.innerHTML;
     const P = artProps(), list = tplsFor(P.src);
     if (!list.some(t => t[0] === st.art.tpl)) st.art.tpl = list[0][0];
     if (!st.art.photos) st.art.photos = {};
-    if (!artText(st.art.html) && !/<img/.test(st.art.html)) st.art.html = starterHtml(st.art.tpl);
+    if (!st.art.doc) st.art.doc = { intro: "", sections: [], quote: "", by: "" };
+    if (artEmpty(st.art.doc) && !st.art.doc.sections.some(x => (x.h || "").trim() && !tplOf(st.art.tpl)[4].includes(x.h))) st.art.doc = { ...starterDoc(st.art.tpl), intro: st.art.doc.intro || "" };
     $("ue-file").innerHTML = `<div class="art-ed">
-      <div class="ed-field"><span>Template <span class="ed-hint">Pick the one that fits what you're writing about. Each has the ASLP and ${esc(artBrand(P.src).name)} branding and its own spaces for photos. You can switch any time; your text and photos stay.</span></span>
+      <div class="ed-field"><span>Template <span class="ed-hint">Pick the one that fits what you're writing about. Each has the ASLP and ${esc(artBrand(P.src).name)} branding and its own spaces for photos. You can switch any time; what you've written and your photos stay.</span></span>
         <div class="art-tpls" role="radiogroup" aria-label="Template">${list.map(([n, l, d]) => `<button type="button" class="art-tpl${st.art.tpl === n ? " on" : ""}" role="radio" aria-checked="${st.art.tpl === n}" data-tpl="${n}">
           <span class="art-thumb" aria-hidden="true"><span class="art-thumb-in">${artPage({ tpl: n, title: P.title || "Your article title", date: P.date, src: P.src, html: ART_SAMPLE, demo: true })}</span></span><b>${l}</b><small>${d}</small></button>`).join("")}</div></div>
-      <div class="ed-field"><span>Your article <span class="ed-hint">Type straight onto the page and mark each part as a heading, text, bullets, a quote or a picture. Fonts, sizes and colours are set by the ASLP branding, so every article looks the same. The title comes from the Title box above. Pasting from Word keeps the headings, lists and links only.</span></span>
-        <div class="art-bar" role="toolbar" aria-label="Parts of the article">
-          <button type="button" data-ac="h2" title="A section heading">Heading</button><button type="button" data-ac="h3" title="A smaller heading inside a section">Subheading</button><button type="button" data-ac="p" title="Normal paragraph">Text</button><i class="sep"></i>
-          <button type="button" data-ac="ul" title="Bulleted list">Bullets</button><button type="button" data-ac="ol" title="Numbered list">Numbered list</button><button type="button" data-ac="quote" title="A quote from someone">Quote</button><i class="sep"></i>
-          <button type="button" data-ac="img" title="Add a picture with a caption">Picture</button><button type="button" data-ac="link" title="Link the selected words to a web page">Link</button><i class="sep"></i>
-          <button type="button" data-ac="undo" title="Undo">Undo</button><button type="button" data-ac="redo" title="Redo">Redo</button></div>
-        <div class="art-link" id="art-link" hidden><input type="url" id="art-url" placeholder="https://…" aria-label="Link address"><button type="button" class="btn fill sm" id="art-url-ok">Add link</button><button type="button" class="btn sm" id="art-url-x">Cancel</button></div>
-        <p class="small" style="margin:8px 0 0">The grey boxes are spaces for photos: select one to add a photo, then write its caption underneath. Boxes you leave empty don't show on the website.</p>
-        <div class="art-desk">${artPage({ tpl: st.art.tpl, ...P, html: st.art.html, edit: true, photos: st.art.photos })}</div>
-        <input type="file" id="art-img-in" accept="image/*" hidden><input type="file" id="art-slot-in" accept="image/*" hidden></div></div>`;
-    requestAnimationFrame(fitThumbs);
-    const ed = artBody();
-    try { document.execCommand("defaultParagraphSeparator", false, "p"); } catch (e) {}
-    ed.addEventListener("keydown", e => { if ((e.ctrlKey || e.metaKey) && /^[biu]$/i.test(e.key)) e.preventDefault(); });
-    ed.addEventListener("input", artSync);
-    ed.addEventListener("focus", () => { if (!ed.innerHTML.trim()) { ed.innerHTML = "<p><br></p>"; const r = document.createRange(); r.setStart(ed.firstChild, 0); r.collapse(true); const sel = getSelection(); sel.removeAllRanges(); sel.addRange(r); } });
-    ed.addEventListener("blur", () => { if (!artText(ed.innerHTML) && !ed.querySelector("img")) { ed.innerHTML = ""; artSync(); } });
-    ed.addEventListener("paste", e => { const cd = e.clipboardData; if (!cd) return; e.preventDefault();
-      const h = cd.getData("text/html"), t = cd.getData("text/plain");
-      const clean = h ? sanitizeArt(h.replace(/<!--[\s\S]*?-->/g, "")) : String(t || "").split(/\n{2,}/).map(x => `<p>${esc(x).replace(/\n/g, "<br>")}</p>`).join("");
-      document.execCommand("insertHTML", false, clean); artSync(); });
+      <div class="ed-field"><span>Your article <span class="ed-hint">Fill in each box on the page: the title, the introduction, then a heading and text for each section. Add or remove sections as you need. Select a grey box to add a photo and write its caption. Fonts and colours are set by the ASLP branding; empty photo boxes and the optional quote don't show on the website.</span></span>
+        <div class="art-desk">${artPage({ tpl: st.art.tpl, ...P, edit: true, photos: st.art.photos, form: formHtml() })}</div>
+        <input type="file" id="art-slot-in" accept="image/*" hidden></div></div>`;
+    requestAnimationFrame(() => { fitThumbs(); box.querySelectorAll(".art-desk textarea").forEach(grow); });
   }
-  document.addEventListener("selectionchange", () => { const ed = artBody(), sel = getSelection(); if (ed && sel.rangeCount && ed.contains(sel.anchorNode)) artRange = sel.getRangeAt(0).cloneRange(); });
-  const artRestore = () => { const ed = artBody(); if (!ed) return; ed.focus(); if (artRange) { const sel = getSelection(); sel.removeAllRanges(); sel.addRange(artRange); } };
-  $("ue-file").addEventListener("mousedown", e => { if (e.target.closest("[data-ac]")) e.preventDefault(); });
+  $("ue-file").addEventListener("input", e => {
+    const f = e.target.closest("[data-af]"); if (!f || st.kind !== "article") return; grow(f);
+    const k = f.dataset.af, d = st.art.doc, sec = f.closest("[data-si]");
+    if (k === "title") { $("ue-title").value = f.value.replace(/\s*\n\s*/g, " "); }
+    else if (sec) d.sections[+sec.dataset.si][k] = f.value; else d[k] = f.value;
+    keep(); });
+  $("ue-file").addEventListener("keydown", e => { if (e.target.matches("[data-af=title], [data-af=h], [data-af=by]") && e.key === "Enter") e.preventDefault(); });
   $("ue-file").addEventListener("click", async e => {
-    const t = e.target.closest("[data-tpl]"); if (t) { const ab = artBody(); if (ab) st.art.html = ab.innerHTML;
-      if (isStarter(st.art.html)) st.art.html = ""; st.art.tpl = t.dataset.tpl; drawArticle(); keep(); return; }
+    const t = e.target.closest("[data-tpl]"); if (t) { const d = st.art.doc;
+      if (d && artEmpty(d) && d.sections.every(x => tplOf(st.art.tpl)[4].includes(x.h))) st.art.doc = { ...starterDoc(t.dataset.tpl), intro: d.intro || "" };
+      st.art.tpl = t.dataset.tpl; drawArticle(); keep(); return; }
     const sa = e.target.closest("[data-slot-add]"); if (sa) { if (st.busy) return; st.slotKey = sa.dataset.slotAdd; $("art-slot-in").click(); return; }
     const sx = e.target.closest("[data-slot-x]"); if (sx) { const ph = st.art.photos[sx.dataset.slotX]; st.art.photos[sx.dataset.slotX] = { src: "", cap: (ph && ph.cap) || "" }; drawArticle(); keep(); return; }
-    if (e.target.id === "art-url-x") { $("art-link").hidden = true; return; }
-    if (e.target.id === "art-url-ok") { const v = $("art-url").value.trim(); $("art-link").hidden = true;
-      if (!/^(https?:\/\/|mailto:)/i.test(v)) return msg("A link should start with https://", "err"); artRestore(); document.execCommand("createLink", false, v); artSync(); return; }
-    const a = e.target.closest("[data-ac]"); if (!a) return; const c = a.dataset.ac;
-    if (c === "img") { $("art-img-in").click(); return; }
-    if (c === "link") { $("art-link").hidden = false; $("art-url").value = ""; $("art-url").focus(); return; }
-    artRestore();
-    const blk = { p: "<p>", h2: "<h2>", h3: "<h3>", quote: "<blockquote>" }[c];
-    if (blk) document.execCommand("formatBlock", false, blk);
-    else document.execCommand({ ul: "insertUnorderedList", ol: "insertOrderedList", hr: "insertHorizontalRule", center: "justifyCenter", left: "justifyLeft", clear: "removeFormat" }[c] || c, false, null);
-    artSync();
+    if (e.target.closest("[data-sadd2]")) { st.art.doc.sections.push({ h: "", t: "" }); drawArticle(); keep(); const l = [...box.querySelectorAll(".a-sec [data-af=h]")].pop(); if (l) l.focus(); return; }
+    const card = e.target.closest(".a-sec[data-si]"); if (!card) return; const i = +card.dataset.si, S = st.art.doc.sections;
+    const mv = e.target.closest("[data-sm]"); if (mv) { const j = i + +mv.dataset.sm; [S[i], S[j]] = [S[j], S[i]]; drawArticle(); keep(); return; }
+    const del = e.target.closest("[data-sdel]");
+    if (del) { if (!del.classList.contains("sure")) { del.classList.add("sure"); del.textContent = "Select again to remove"; setTimeout(() => { if (del.isConnected) { del.classList.remove("sure"); del.textContent = "Remove"; } }, 4000); return; }
+      S.splice(i, 1); drawArticle(); keep(); }
   });
   $("ue-file").addEventListener("change", async e => {
-    if (e.target.id === "art-slot-in") { e.stopPropagation(); const fl = e.target.files[0], key = st.slotKey; e.target.value = ""; if (!fl || !key || st.busy) return;
-      await op(async () => { msg(loader("Uploading the photo…", "sm inline"));
-        const im = await shrinkImage(fl, 1800); upCheck(); const url = await upPut(`${folder()}/art-${key}-${newId().slice(0, 8)}.${im.ext}`, im.blob, im.blob.type);
-        st.art.photos[key] = { src: url, cap: (st.art.photos[key] && st.art.photos[key].cap) || "" }; drawArticle(); keep(); msg("Photo added. Write its caption underneath.", "ok");
-        const c = box.querySelector(`[data-cap="${key}"]`); if (c) c.focus(); }, () => msg("Upload stopped. The photo was removed."));
-      return; }
-    if (e.target.id !== "art-img-in") return; e.stopPropagation();
-    const fl = e.target.files[0]; e.target.value = ""; if (!fl || st.busy) return;
-    await op(async () => { msg(loader("Uploading the picture…", "sm inline"));
-      const im = await shrinkImage(fl); upCheck(); const url = await upPut(`${folder()}/art-${newId().slice(0, 8)}.${im.ext}`, im.blob, im.blob.type);
-      artRestore(); document.execCommand("insertHTML", false, `<figure><img src="${esc(url)}" alt=""><figcaption>Write a caption: who, what and where</figcaption></figure><p><br></p>`);
-      artSync(); msg("Picture added. Click the caption under it to change it.", "ok"); }, () => msg("Upload stopped. The picture was removed."));
+    if (e.target.id !== "art-slot-in") return; e.stopPropagation(); const fl = e.target.files[0], key = st.slotKey; e.target.value = ""; if (!fl || !key || st.busy) return;
+    await op(async () => { msg(loader("Uploading the photo…", "sm inline"));
+      const im = await shrinkImage(fl, 1800); upCheck(); const url = await upPut(`${folder()}/art-${key}-${newId().slice(0, 8)}.${im.ext}`, im.blob, im.blob.type);
+      st.art.photos[key] = { src: url, cap: (st.art.photos[key] && st.art.photos[key].cap) || "" }; drawArticle(); keep(); msg("Photo added. Write its caption underneath.", "ok");
+      const c = box.querySelector(`[data-cap="${key}"]`); if (c) c.focus(); }, () => msg("Upload stopped. The photo was removed."));
   });
   // the page shows the title, date and CWG as they're typed or chosen
-  $("ue-title").addEventListener("input", e => { if (st.kind === "article") { const tt = box.querySelector(".art-desk .a-title"); if (tt) tt.textContent = e.target.value || ""; } });
+  $("ue-title").addEventListener("input", e => { if (st.kind === "article") { const tt = box.querySelector(".art-desk [data-af=title]"); if (tt && tt !== document.activeElement) { tt.value = e.target.value; grow(tt); } } });
   ["ue-cwg", "ue-date"].forEach(id => $(id).addEventListener("change", () => { if (st.kind === "article") drawArticle(); }));
   if (!window.__artFit) { window.__artFit = 1; addEventListener("resize", () => document.querySelectorAll(".art-thumb").forEach(t => { const w = t.clientWidth; if (w) t.style.setProperty("--s", (w / 820).toFixed(4)); })); }
   // ---- writing check ----
   const checkParts = () => { const parts = [{ type: "title", el: $("ue-title"), text: $("ue-title").value }];
-    if (st.kind === "article") { const b = artBody(); if (b) { const m = richMap(b); parts.push({ type: "rich", root: b, map: m, text: m.text }); } }
+    if (st.kind === "article") { const tt = box.querySelector(".art-desk [data-af=title]"); if (tt) parts[0].el = tt;
+      box.querySelectorAll(".art-desk [data-af]:not([data-af=title])").forEach(el => parts.push({ type: "input", el, text: el.value })); }
     else parts.push({ type: "input", el: $("ue-body"), text: $("ue-body").value });
     let off = 0; parts.forEach(p => { p.start = off; off += p.text.length + 2; }); return parts; };
   const checkText = parts => parts.map(p => p.text).join("\n\n");
@@ -3837,7 +3876,7 @@ function updateEditor(u, redraw) {
     if (p.type !== "rich") { p.el.value = p.text.slice(0, loc) + rp + p.text.slice(loc + it.length); p.el.dispatchEvent(new Event("input", { bubbles: true })); }
     else { const sg = p.map.segs.find(q => loc >= q.start && loc + it.length <= q.start + q.node.data.length);
       if (!sg) return msg("This one spans formatting, so change it on the page yourself.", "err");
-      const a0 = loc - sg.start; sg.node.data = sg.node.data.slice(0, a0) + rp + sg.node.data.slice(a0 + it.length); artSync(); }
+      const a0 = loc - sg.start; sg.node.data = sg.node.data.slice(0, a0) + rp + sg.node.data.slice(a0 + it.length); keep(); }
     const d = rp.length - it.length; st.check.items.forEach(x => { if (x !== it && x.offset > it.offset) x.offset += d; });
     it.ignored = true; st.checkedText = checkText(checkParts()); keep(); drawCheck();
   });
@@ -3901,8 +3940,8 @@ function updateEditor(u, redraw) {
     } catch (e) { if (e && e.stop) throw e; console.error(e); drawKind(); msg(esc(e && e.message) || "The file couldn't be read. Try saving it again, or upload it as a PDF.", "err"); } },
       () => { st.folder = oldFolder; drawKind(); msg("Upload stopped. Nothing from that file was kept, so you can choose another file."); });
   }
-  box.querySelectorAll("[data-kind]").forEach(b => b.onclick = () => { const ab = artBody(); if (ab) st.art.html = ab.innerHTML;
-    if (b.dataset.kind === "article" && !artText(st.art.html) && $("ue-body").value.trim()) st.art.html = $("ue-body").value.trim().split(/\n{2,}/).map(x => /^\s*-\s/.test(x) ? `<ul>${x.split(/\n/).map(l => `<li>${esc(l.replace(/^\s*-\s*/, ""))}</li>`).join("")}</ul>` : `<p>${esc(x).replace(/\n/g, "<br>")}</p>`).join("");
+  box.querySelectorAll("[data-kind]").forEach(b => b.onclick = () => {
+    if (b.dataset.kind === "article" && (!st.art.doc || artEmpty(st.art.doc)) && $("ue-body").value.trim()) st.art.doc = { ...(st.art.doc || starterDoc(st.art.tpl)), intro: $("ue-body").value.trim() };
     st.kind = b.dataset.kind; drawKind(); keep(); });
   $("ue-photos").onclick = e => { const r = e.target.closest("[data-rmph]"); if (r) { st.photos.splice(+r.dataset.rmph, 1); drawPhotos(); keep(); } };
   $("ue-ph-in").onchange = async e => {
@@ -3926,13 +3965,13 @@ function updateEditor(u, redraw) {
     box.innerHTML = "";
   };
   $("ue-save").onclick = async () => {
-    const isArt = st.kind === "article"; if (isArt && artBody()) st.art.html = artBody().innerHTML;
-    const title = $("ue-title").value.trim(), body = isArt ? sanitizeArt(st.art.html) : $("ue-body").value.trim();
+    const isArt = st.kind === "article";
+    const doc = isArt ? { intro: (st.art.doc.intro || "").trim(), sections: st.art.doc.sections.map(x => ({ h: (x.h || "").trim(), t: (x.t || "").trim() })).filter(x => x.h || x.t), quote: (st.art.doc.quote || "").trim(), by: (st.art.doc.by || "").trim() } : null;
+    const title = $("ue-title").value.trim(), body = isArt ? sanitizeArt(artDocHtml(doc, st.art.tpl)) : $("ue-body").value.trim();
     if (!title) return msg("Give the update a title.", "err");
     if (st.kind === "text" && !body && !st.photos.length) return msg("Write your post, or add some photos.", "err");
-    if (isArt && (!artText(body) || isStarter(body))) return msg("Write your article on the page first.", "err");
-    if (isArt) { const d = document.createElement("div"); d.innerHTML = body; const hs = [...d.querySelectorAll("h2,h3")].filter(h => { const n = h.nextElementSibling; return !n || /^H[23]$/.test(n.tagName); });
-      if (hs.length) return msg(`The heading "${esc(hs[0].textContent.trim())}" has nothing under it. Write something under it, or delete the heading.`, "err"); }
+    if (isArt && !doc.intro && !doc.sections.some(x => x.t)) return msg("Write your article on the page first: start with the introduction.", "err");
+    if (isArt) { const e0 = doc.sections.find(x => x.h && !x.t); if (e0) return msg(`The section "${esc(e0.h)}" has no text yet. Write something in it, or remove the section.`, "err"); }
     if (!isArt && st.kind !== "text" && !(st.file && st.file.type === st.kind)) return msg(`Upload the ${st.kind === "pdf" ? "PDF" : "PowerPoint"} first.`, "err");
     // check the writing before it goes out; a second select publishes once the suggestions have been seen
     if (checkText(checkParts()) !== st.checkedText) { $("ue-save").disabled = true; msg(loader("Checking your writing before it's published…", "sm inline"));
@@ -3942,7 +3981,7 @@ function updateEditor(u, redraw) {
     const keep = st.kind === "pdf" || st.kind === "pptx";
     const [ptype, psrc] = $("ue-cwg").value.split("|");
     const p = { type: ptype === "group" ? "group" : "cwg", cwg: psrc, title, date: $("ue-date").value, kind: st.kind, body, photos: st.photos,
-      file: isArt ? { type: "article", template: st.art.tpl, photos: Object.fromEntries(Object.entries(st.art.photos || {}).filter(([k, v]) => v && v.src && tplOf(st.art.tpl)[3].includes(k))) } : keep ? st.file : null, pages: st.kind === "pdf" ? st.pages : [], slides: st.kind === "pptx" ? st.slides : [],
+      file: isArt ? { type: "article", template: st.art.tpl, doc, photos: Object.fromEntries(Object.entries(st.art.photos || {}).filter(([k, v]) => v && v.src && tplOf(st.art.tpl)[3].includes(k))) } : keep ? st.file : null, pages: st.kind === "pdf" ? st.pages : [], slides: st.kind === "pptx" ? st.slides : [],
       sections: st.kind === "pptx" ? st.sections.map(x => ({ h: (x.h || "").trim(), t: (x.t || "").trim(), images: x.images || [] })).filter(x => x.h || x.t || x.images.length) : null };
     $("ue-save").disabled = true; msg(loader("Saving…", "sm inline"));
     const { data: id, error } = await db.rpc("aslp_save_update", { p_id: st.id, p_update: p });
