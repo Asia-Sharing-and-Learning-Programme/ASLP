@@ -2085,10 +2085,12 @@ function pageCwgs() {
       ${cwgExplainer()}
       ${fundPanel(null, "Every territory, command and region in the four CWGs can ask the programme to fund these six activities. Many haven't used this yet.")}
       <div class="aslp-map" id="map-all" role="region" aria-label="Map of ASLP territorial and regional headquarters"></div>${zoneLegend(["SPEA", "SASIA"])}
-      ${viewSwitch("cwgs", [["cwg", "By CWG"], ["theme", "By thematic area"]])}
+      ${viewSwitch("cwgs", [["cwg", "By CWG"], ["theme", "By thematic area"], ["str", "By strength"]])}
       <div data-vpane="cwgs" data-vk2="cwg">${ZONES.map(zoneSection).join("")}</div>
       <div data-vpane="cwgs" data-vk2="theme" hidden><p class="lede gv-lede">Every territory and region in SPEA and SASIA, grouped by the thematic areas they work in. Select one to open its profile.</p>
         ${groupedView(placesIn(cwgList()), [["", THEME_LIST]], x => themesOf(x.p), null, "Thematic areas will show here once territories add them to their profiles.")}</div>
+      <div data-vpane="cwgs" data-vk2="str" hidden><p class="lede gv-lede">Every territory and region in SPEA and SASIA, grouped by their strengths. Select one to open its profile.</p>
+        ${groupedView(placesIn(cwgList()), STRENGTH_GROUPS, x => strengthsOf(x.p), null, "Strengths will show here once territories pick them in their profiles.")}</div>
     </div>`;
 }
 function pageZone(zk) {
@@ -2096,10 +2098,12 @@ function pageZone(zk) {
   pendingMaps.push(() => mountPins("map-zone", terrs().filter(t => zoneOf(t.cwg) === z.key)));
   return `${crumbs([["Home", "#/"], ["Cluster Working Groups", "#/cwgs"], [z.label]])}
     <div class="wrap page-body">${fundPanel(null, `Territories, commands and regions in ${esc(z.label)} can ask the programme to fund these six activities. Many haven't used this yet.`)}
-      ${viewSwitch("zone", [["cwg", "By CWG"], ["theme", "By thematic area"]])}
+      ${viewSwitch("zone", [["cwg", "By CWG"], ["theme", "By thematic area"], ["str", "By strength"]])}
       <div data-vpane="zone" data-vk2="cwg">${zoneSection(z)}</div>
       <div data-vpane="zone" data-vk2="theme" hidden><p class="lede gv-lede">${esc(z.label)} territories and regions grouped by thematic area, showing where its two CWGs work on the same things.</p>
         ${(() => { const cs = cwgList().filter(c => zoneOf(c) === z.key); return groupedView(placesIn(cs), [["", THEME_LIST]], x => themesOf(x.p), cs.length === 2 ? cs : null, "Thematic areas will show here once territories add them to their profiles."); })()}</div>
+      <div data-vpane="zone" data-vk2="str" hidden><p class="lede gv-lede">${esc(z.label)} territories and regions grouped by strength, showing where its two CWGs can learn from each other.</p>
+        ${(() => { const cs = cwgList().filter(c => zoneOf(c) === z.key); return groupedView(placesIn(cs), STRENGTH_GROUPS, x => strengthsOf(x.p), cs.length === 2 ? cs : null, "Strengths will show here once territories pick them in their profiles."); })()}</div>
       <div style="margin-top:var(--g6)"><div class="aslp-map" id="map-zone" role="region" aria-label="Map of ${esc(z.label)} headquarters"></div>${zoneLegend([z.key])}</div></div>`;
 }
 
@@ -2118,7 +2122,9 @@ function pageCwg(cs) {
     </div></section>
     <div class="wrap page-body" style="padding-top:var(--g7)">
       <p class="lede" style="margin-bottom:var(--g6)">${esc(c)} is one of four <a class="textlink" href="#/cwgs">Cluster Working Groups</a>. Its members meet online through the year and in person every two years to share what works, build their teams' skills and shape their territories' Community Development Strategies.</p>
-      <div class="row-head"><h2 class="h2">${ts.length} territories and regions</h2>${viewSwitch("cwgst", [["list", "Territories"], ["str", "By strength"]])}</div>
+      <div class="row-head"><h2 class="h2">${ts.length} territories and regions</h2>${viewSwitch("cwgst", [["list", "Territories"], ["theme", "By thematic area"], ["str", "By strength"]])}</div>
+      <div data-vpane="cwgst" data-vk2="theme" hidden><p class="lede gv-lede">${esc(c)}'s territories and regions grouped by the thematic areas they work in.</p>
+        ${groupedView(placesIn([c]), [["", THEME_LIST]], x => themesOf(x.p), null, "Thematic areas will show here once territories add them to their profiles.")}</div>
       <div data-vpane="cwgst" data-vk2="str" hidden><p class="lede gv-lede">${esc(c)}'s territories and regions grouped by their strengths, as named at the Asia Sharing and Learning Forums.</p>
         ${groupedView(placesIn([c]), STRENGTH_GROUPS, x => strengthsOf(x.p), null, "Strengths will show here once territories pick them in their profiles.")}</div>
       <div data-vpane="cwgst" data-vk2="list" class="terr-grid">${ts.map(t => { const p = t.profile || {}, us = unitsOf(t.id).filter(u => u.cwg === c);
