@@ -571,6 +571,12 @@
   /* the sub-pages box (the full menu's narrow-screen styles would otherwise strip it) */
   .home-menu .hm-sub.dd-menu { background: var(--paper); border: 1px solid var(--line); border-radius: 16px; box-shadow: 0 14px 36px rgba(0,0,0,.13); padding: var(--g2); min-width: 330px; }
   .home-menu .hm-sub.dd-menu a { padding: var(--g1) 10px; font-size: 15px; }
+  /* About and Updates: the page name with its description under it; ASLP Groups: short name, then the full name */
+  .home-menu .hm-sub[data-src="dd-about"] a, .home-menu .hm-sub[data-src="dd-updates"] a { display: grid; gap: 2px; padding: 8px 12px; }
+  .home-menu .hm-sub[data-src="dd-about"] a b, .home-menu .hm-sub[data-src="dd-updates"] a b { min-width: 0; font-size: 16px; }
+  .home-menu .hm-sub[data-src="dd-about"] a span, .home-menu .hm-sub[data-src="dd-updates"] a span { font-size: 14px; line-height: 1.4; }
+  .home-menu .hm-sub[data-src="dd-groups"] a { display: grid; grid-template-columns: 4.4em minmax(0, 1fr); align-items: center; gap: 12px; }
+  .home-menu .hm-sub[data-src="dd-groups"] a b { min-width: 0; }
   .home-menu .hm-sub .dd-sub-menu { display: none; position: absolute; left: 100%; top: calc(-1 * var(--g2) - 1px); margin-left: 4px; min-width: 300px; background: var(--paper); border: 1px solid var(--line); border-radius: 16px; box-shadow: 0 14px 36px rgba(0,0,0,.13); padding: var(--g2); }
   .home-menu .hm-sub .dd-sub:hover > .dd-sub-menu, .home-menu .hm-sub .dd-sub:focus-within > .dd-sub-menu { display: block; }
   .hm-theme { display: none; padding: 8px 12px 4px; border-top: 1px solid var(--line); margin-top: 4px; }
@@ -1855,7 +1861,7 @@ function pageHistory() {
   const build = () => {
     const items = [...$("menu").children].filter(el => !el.classList.contains("theme-in-menu") && el.getAttribute("data-nav") !== "home").map(el => {
       if (el.classList.contains("dd")) { const top = el.querySelector(".dd-top"), sub = el.querySelector(".dd-menu");
-        return `<div class="hm-item has-sub"><a href="${top.getAttribute("href")}" role="menuitem" aria-haspopup="true">${esc(top.textContent.trim())}</a><div class="hm-sub dd-menu">${sub ? sub.innerHTML : ""}</div></div>`; }
+        return `<div class="hm-item has-sub"><a href="${top.getAttribute("href")}" role="menuitem" aria-haspopup="true">${esc(top.textContent.trim())}</a><div class="hm-sub dd-menu" data-src="${sub ? sub.id : ""}">${sub ? sub.innerHTML : ""}</div></div>`; }
       return `<div class="hm-item"><a href="${el.getAttribute("href")}" role="menuitem">${esc(el.textContent.trim())}</a></div>`; }).join("");
     const th = document.querySelector(".topbar .theme");
     panel.innerHTML = `<div class="hm-list">${items}${th ? `<div class="hm-theme">${th.outerHTML.replace('class="seg theme"', 'class="seg"')}</div>` : ""}</div>`;
