@@ -1308,7 +1308,13 @@
   .art .a-p2ph { display: grid; grid-template-columns: 1fr auto; gap: 4%; align-items: start; }
   .art .a-stp { display: block; width: 100%; height: auto; color: var(--cwg-a); opacity: .92; mix-blend-mode: multiply; }
   .art .a-stp-wrap { width: clamp(92px, 19cqi, 150px); margin-top: 6px; transform: rotate(-11deg); }
-  .art .a-p2pfx { display: grid; grid-template-columns: minmax(0, 1fr) 36%; gap: 4%; align-items: center; margin-bottom: 1.4em; } .art .a-p2pfx .a-facts { margin: 0; grid-template-columns: 1fr 1fr; }
+  .art .a-fxw { min-width: 0; } .art .a-fxw .a-facts { margin: 0; }
+  .art .a-facts .a-pick { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; } .art .a-pick-sel { width: 0; min-width: 110px; max-width: 100%; flex: 1 1 120px; padding: 6px 8px; }
+  .art .a-chip-p { display: inline-flex; align-items: center; gap: 4px; background: var(--cwg-a); color: #fff; font-size: 13px; font-weight: 750; padding: 4px 4px 4px 10px; border-radius: 999px; }
+  .art .a-chip-p button { border: 0; background: rgba(255,255,255,.25); color: #fff; width: 20px; height: 20px; border-radius: 50%; cursor: pointer; font-size: 13px; line-height: 1; }
+  .art .a-pk-h { display: block; margin-top: 4px; font-size: 11.5px; color: #888; } .art .a-facts [data-pick-other] { margin-top: 6px; }
+  .art .a-facts.is-form .a-pk { grid-column: 1 / -1; }
+  .art .a-p2pfx { display: grid; grid-template-columns: minmax(0, 1fr) 36%; gap: 4%; align-items: center; margin-bottom: 2.4em; } .art .a-visa { padding: 8px 4px; } .art .a-p2pfx .a-facts { margin: 0; grid-template-columns: 1fr 1fr; }
   .art .a-visa > div { transform: rotate(4deg); } .art .a-p2pfx > :only-child { grid-column: 1 / -1; }
   .art .a-visa .a-stp { color: color-mix(in srgb, var(--cwg-a) 55%, #7a1f3d); }
   /* Round the Table */
@@ -3691,7 +3697,8 @@ function stampRound(date) {
         ${d ? `<text x="100" y="136" font-size="9.5" font-weight="700" text-anchor="middle" letter-spacing=".8"${fitTxt(d, 92, 9.5)}>${d}</text>` : ""}</g></g></svg>`;
 }
 function stampVisa(from, to, date) {
-  const f = esc(String(from || "Your territory").toUpperCase().slice(0, 40)), t = esc(String(to || "Host territory").toUpperCase().slice(0, 40)), d = esc(String(date || "").toUpperCase().slice(0, 26));
+  const sh = x => { const ps = String(x || "").split(/,\s*| & /).map(shortName).filter(Boolean), j = ps.join(" & "); return j.length > 30 && ps.length > 1 ? `${ps[0]} + ${ps.length - 1} MORE` : j.slice(0, 40); };
+  const f = esc(sh(from || "Your territory").toUpperCase()), t = esc(sh(to || "Host territory").toUpperCase()), d = esc(String(date || "").toUpperCase().slice(0, 26));
   return `<svg class="a-stp a-stp-v" viewBox="0 0 300 168" aria-hidden="true"><defs>${STAMP_INK}</defs>
     <g filter="url(#a-ink)" fill="none" stroke="currentColor"><rect x="4" y="4" width="292" height="160" rx="14" stroke-width="5"/><rect x="13" y="13" width="274" height="142" rx="8" stroke-width="1.6"/>
       <path d="M13 46h274M13 124h274" stroke-width="1.6"/>
@@ -3800,7 +3807,8 @@ function htmlToDoc(html) {
 // a saved doc fits whichever template it is opened in: matching section headings carry over
 function fitDoc(d, tpl) {
   d = d ? JSON.parse(JSON.stringify(d)) : {}; const T = tplOf(tplKey(tpl));
-  d.facts = d.facts || {}; d.s = d.s || {}; d.sections = d.sections || []; d.intro = d.intro || ""; d.quote = d.quote || ""; d.by = d.by || "";
+  d.facts = d.facts || {}; d.s = d.s || {};
+  ["from", "to"].forEach(k => { if (d.facts[k] && !d.facts[k + "List"]) d.facts[k + "List"] = [d.facts[k]]; }); d.sections = d.sections || []; d.intro = d.intro || ""; d.quote = d.quote || ""; d.by = d.by || "";
   (T.secs || []).forEach(([k, h]) => { if (!d.s[k]) { const m = d.sections.find(x => (x.h || "").trim().toLowerCase() === h.toLowerCase()); if (m) d.s[k] = m.t; } });
   if (T.free && !d.sections.length) { d.sections = Object.entries(d.s).filter(([, t]) => (t || "").trim()).map(([k, t]) => { const h = (ART_TPLS.flatMap(x => x.secs || []).find(x => x[0] === k) || [])[1] || ""; return { h, t }; });
     if (!d.sections.length) d.sections = [{ h: "", t: "" }]; }
@@ -3907,7 +3915,18 @@ function updateEditor(u, redraw) {
       ${(T.secs || []).map(([k, h, what, ex]) => `<div class="a-f a-sec"><h2 class="a-fh">${esc(h)}</h2>${guide(what, ex)}<textarea class="a-in a-p" data-af="sec" data-k="${k}" rows="3" placeholder="${ph}" aria-label="${esc(h)}">${esc((d.s || {})[k] || "")}</textarea></div>`).join("")}
       ${quote}<p class="a-note">Every ${esc(st.art.tplName)} uses these same sections, so updates from all CWGs read the same way. Leave a section empty if it doesn't apply; it won't show.</p></div>`;
   }
-  const factsForm = T => (T.facts || []).length ? `${T.k === "p2p" ? `<p class="a-hint a-p2pq"><b>Where was the visit?</b> Fill in "Visit from" and "Visit to" with a territory, region, country or CWG. The passport stamps are made from them.</p>` : ""}<dl class="a-facts is-form">${T.facts.map(([k, l, ex, req]) => `<div><dt>${esc(l)}${req ? "" : ` <em>optional</em>`}</dt><dd><input class="a-in a-fact" data-af="fact" data-k="${k}" value="${esc(((st.art.doc.facts || {})[k]) || "")}" placeholder="e.g. ${esc(ex)}" aria-label="${esc(l)}"></dd></div>`).join("")}</dl>` : "";
+  // P2P "from" and "to": a whole CWG, one or more territories, regions or countries, or anything typed in
+  const joinNames = xs => xs.length <= 2 ? xs.join(" & ") : `${xs.slice(0, -1).join(", ")} & ${xs[xs.length - 1]}`;
+  const pickOpts = () => `<option value="">+ Add…</option><optgroup label="A whole CWG">${cwgList().map(c => `<option value="${esc(c)}">${esc(c)} (the whole CWG)</option>`).join("")}</optgroup>
+    <optgroup label="Territories and commands">${[...terrs()].sort((a, b) => (OFFICIAL_NAME[a.id] || a.name).localeCompare(OFFICIAL_NAME[b.id] || b.name)).map(t => { const n = OFFICIAL_NAME[t.id] || t.name; return `<option value="${esc(n)}">${esc(n)}${t.cwg ? ` (${esc(t.cwg)})` : ""}</option>`; }).join("")}</optgroup>
+    ${allUnits().length ? `<optgroup label="Regions, divisions and countries">${[...allUnits()].sort((a, b) => a.name.localeCompare(b.name)).map(u => `<option value="${esc(u.name)}">${esc(u.name)}${u.cwg ? ` (${esc(u.cwg)})` : ""}</option>`).join("")}</optgroup>` : ""}
+    <option value="__other">Something else: type it</option>`;
+  const pickField = (k, l, ex) => { const list = (st.art.doc.facts[k + "List"] || []);
+    return `<div class="a-pk"><dt>${esc(l)}</dt><dd><div class="a-pick" data-pk="${k}">${list.map((n, i) => `<span class="a-chip-p">${esc(n)}<button type="button" data-pkx="${k}" data-i="${i}" aria-label="Remove ${esc(n)}">×</button></span>`).join("")}
+      <select class="a-in a-fact a-pick-sel" data-pick="${k}" aria-label="${esc(l)}">${pickOpts()}</select></div>
+      ${st.art.pickOther === k ? `<input class="a-in a-fact" data-pick-other="${k}" placeholder="Type a name and press Enter, e.g. ${esc(ex)}">` : ""}
+      <small class="a-pk-h">${list.length ? "Add more to show a group of places." : "Choose a CWG, or one or more territories, regions or countries."}</small></dd></div>`; };
+  const factsForm = T => (T.facts || []).length ? `<div class="a-fxw">${T.k === "p2p" ? `<p class="a-hint a-p2pq"><b>Where was the visit?</b> Choose who visited (a whole CWG, or one or more territories, regions or countries) and who hosted. The same CWG or a different one, both work. The passport stamps are made from these.</p>` : ""}<dl class="a-facts is-form">${T.facts.map(([k, l, ex, req]) => T.k === "p2p" && (k === "from" || k === "to") ? pickField(k, l, ex) : `<div><dt>${esc(l)}${req ? "" : ` <em>optional</em>`}</dt><dd><input class="a-in a-fact" data-af="fact" data-k="${k}" value="${esc(((st.art.doc.facts || {})[k]) || "")}" placeholder="e.g. ${esc(ex)}" aria-label="${esc(l)}"></dd></div>`).join("")}</dl></div>` : "";
   function drawArticle() {
     const P = artProps(), list = tplsFor(st.kind, P.src);
     if (!list.some(t => t.k === st.art.tpl)) st.art.tpl = list[0].k;
@@ -3957,6 +3976,16 @@ function updateEditor(u, redraw) {
     if (del) { if (!del.classList.contains("sure")) { del.classList.add("sure"); del.textContent = "Select again to remove"; setTimeout(() => { if (del.isConnected) { del.classList.remove("sure"); del.textContent = "Remove"; } }, 4000); return; }
       S.splice(i, 1); if (!S.length) S.push({ h: "", t: "" }); drawArticle(); keep(); }
   });
+  const pickAdd = (k, name) => { name = String(name || "").trim().replace(/\s+/g, " ").slice(0, 60); if (!name) return; const F = st.art.doc.facts, L = F[k + "List"] = F[k + "List"] || [];
+    if (!L.some(x => x.toLowerCase() === name.toLowerCase())) L.push(name); F[k] = joinNames(L); st.art.pickOther = null; drawArticle(); keep();
+    const sel = box.querySelector(`[data-pick="${k}"]`); if (sel) sel.focus(); };
+  $("ue-file").addEventListener("change", e => { const sp = e.target.closest("[data-pick]"); if (!sp) return; e.stopPropagation(); const v = sp.value, k = sp.dataset.pick;
+    if (v === "__other") { st.art.pickOther = k; drawArticle(); const o = box.querySelector(`[data-pick-other="${k}"]`); if (o) o.focus(); return; }
+    if (v) pickAdd(k, v); });
+  $("ue-file").addEventListener("keydown", e => { const o = e.target.closest("[data-pick-other]"); if (o && e.key === "Enter") { e.preventDefault(); pickAdd(o.dataset.pickOther, o.value); } });
+  $("ue-file").addEventListener("focusout", e => { const o = e.target.closest("[data-pick-other]"); if (o && o.isConnected && st.art.pickOther === o.dataset.pickOther && o.value.trim()) { const v = o.value; setTimeout(() => { if (st.art.pickOther === o.dataset.pickOther) pickAdd(o.dataset.pickOther, v); }, 0); } });
+  $("ue-file").addEventListener("click", e => { const x = e.target.closest("[data-pkx]"); if (!x) return; const k = x.dataset.pkx, F = st.art.doc.facts, L = F[k + "List"] || [];
+    L.splice(+x.dataset.i, 1); F[k] = joinNames(L); drawArticle(); keep(); });
   $("ue-file").addEventListener("change", async e => {
     if (e.target.id !== "art-slot-in") return; e.stopPropagation(); const fl = e.target.files[0], key = st.slotKey; e.target.value = ""; if (!fl || !key || st.busy) return;
     await op(async () => { msg(loader("Uploading the photo…", "sm inline"));
@@ -4099,7 +4128,7 @@ function updateEditor(u, redraw) {
   $("ue-save").onclick = async () => {
     const isArt = st.kind === "article", isPost = st.kind === "text", comp = isArt || isPost, T = tplOf(st.art.tpl);
     const dd = comp ? st.art.doc : null, clean = x => String(x || "").trim();
-    const doc = comp ? { facts: Object.fromEntries((T.facts || []).map(([k]) => [k, clean(dd.facts[k])]).filter(x => x[1])), intro: clean(dd.intro),
+    const doc = comp ? { facts: { ...Object.fromEntries((T.facts || []).map(([k]) => [k, clean(dd.facts[k])]).filter(x => x[1])), ...(T.k === "p2p" ? { fromList: dd.facts.fromList || [], toList: dd.facts.toList || [] } : {}) }, intro: clean(dd.intro),
       s: Object.fromEntries((T.secs || []).map(([k]) => [k, clean(dd.s[k])]).filter(x => x[1])), sections: T.free ? dd.sections.map(x => ({ h: clean(x.h), t: clean(x.t) })).filter(x => x.h || x.t) : [],
       quote: T.quote || T.free ? clean(dd.quote) : "", by: T.quote || T.free ? clean(dd.by) : "" } : null;
     const title = $("ue-title").value.trim(), body = isArt ? sanitizeArt(artDocHtml(doc, st.art.tpl)) : isPost ? postText(doc, st.art.tpl) : $("ue-body").value.trim();
