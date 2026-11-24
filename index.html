@@ -1273,7 +1273,7 @@
   .art .a-kicker { display: flex; align-items: center; gap: 8px; color: var(--cwg-a); font-weight: 800; font-size: 13.5px; margin-bottom: 10px; }
   /* photo spaces */
   .art .a-slot { margin: 0 0 1.4em; min-width: 0; --ar: 3 / 2; } .art .a-row > * { min-width: 0; }
-  .art .a-slot.x-wide { --ar: 2 / 1; } .art .a-slot.x-portrait { --ar: 3 / 4; } .art .a-slot.x-side { --ar: 4 / 3; margin: 14px 0 0; } .art .a-row .a-slot { --ar: 4 / 3; margin: 0; } .art .a-row.x-tall .a-slot { --ar: 3 / 4; } .art .a-row.n1 .a-slot { --ar: 3 / 2; }
+  .art .a-slot.x-wide { --ar: 2 / 1; } .art .a-slot.x-portrait { --ar: 3 / 4; } .art .a-slot.x-side { --ar: 4 / 3; margin: 14px 0 0; } .art .a-row .a-slot { --ar: 4 / 3; margin: 0; } .art .a-row.x-tall .a-slot { --ar: 3 / 4; } .art .a-row.n1 { grid-template-columns: minmax(0, 1fr); } .art .a-row.x-tall.n1 { grid-template-columns: minmax(0, 50%); justify-content: center; }
   .art .a-slot figcaption { font-size: 12.5px; color: #666; margin-top: 6px; line-height: 1.4; outline: none; }
   .art .a-slot figcaption:empty::before { content: attr(data-ph); color: #aaa; }
   .art .a-row { display: grid; gap: 12px; margin: 1.2em 0; }
@@ -1290,7 +1290,8 @@
     background: color-mix(in srgb, var(--cwg-a) 7%, #f4f4f4); color: color-mix(in srgb, var(--cwg-a) 70%, #333); font: inherit; font-size: 13px; font-weight: 700; cursor: pointer; }
   .art .a-slot-add b { font-size: 26px; line-height: 1; } .art .a-slot-add:hover { background: color-mix(in srgb, var(--cwg-a) 14%, #f4f4f4); }
   .art .a-slot-demo { cursor: default; border-style: solid; border-width: 0; background: color-mix(in srgb, var(--cwg-a) 16%, #ececec); }
-  .art .a-slot { position: relative; } .art .a-slot-x { position: absolute; top: 6px; right: 6px; width: 30px; height: 30px; border-radius: 50%; border: 0; background: #fff; color: #111; font-size: 18px; cursor: pointer; box-shadow: 0 1px 4px rgba(0,0,0,.25); }
+  .art .a-slot-c { position: absolute; top: 6px; right: 42px; height: 30px; padding: 0 12px; border-radius: 999px; border: 0; background: #fff; color: #111; font: inherit; font-size: 13px; font-weight: 800; cursor: pointer; box-shadow: 0 1px 4px rgba(0,0,0,.25); z-index: 1; }
+  .art .a-slot { position: relative; } .art .a-slot-x { z-index: 1; position: absolute; top: 6px; right: 6px; width: 30px; height: 30px; border-radius: 50%; border: 0; background: #fff; color: #111; font-size: 18px; cursor: pointer; box-shadow: 0 1px 4px rgba(0,0,0,.25); }
   /* cover (Skill Up, Activity) */
   .art .a-cover { position: relative; background: var(--cwg-a); color: #fff; padding: 9% 8% 12%; overflow: hidden; }
   .art .a-cover > .a-tri { position: absolute; top: 0; left: 0; right: 0; z-index: 2; }
@@ -1309,7 +1310,9 @@
   .art .a-stp { display: block; width: 100%; height: auto; color: var(--cwg-a); opacity: .92; mix-blend-mode: multiply; }
   .art .a-stp-wrap { width: clamp(92px, 19cqi, 150px); margin-top: 6px; transform: rotate(-11deg); }
   .art .a-fxw { min-width: 0; } .art .a-fxw .a-facts { margin: 0; }
-  .art .a-facts .a-pick { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; } .art .a-pick-sel { width: 0; min-width: 110px; max-width: 100%; flex: 1 1 120px; padding: 6px 8px; }
+  .art .a-facts .a-pick { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; } .art .a-pick-sel { flex: 1 1 100%; width: 100%; min-width: 0; max-width: 100%; padding: 6px 8px; text-overflow: ellipsis; }
+  .art .a-facts dd, .art .a-facts > div, .art .a-pk { min-width: 0; } .art .a-facts select { box-sizing: border-box; }
+  .art .a-chip-p { max-width: 100%; } .art .a-chip-p { overflow-wrap: anywhere; }
   .art .a-chip-p { display: inline-flex; align-items: center; gap: 4px; background: var(--cwg-a); color: #fff; font-size: 13px; font-weight: 750; padding: 4px 4px 4px 10px; border-radius: 999px; }
   .art .a-chip-p button { border: 0; background: rgba(255,255,255,.25); color: #fff; width: 20px; height: 20px; border-radius: 50%; cursor: pointer; font-size: 13px; line-height: 1; }
   .art .a-pk-h { display: block; margin-top: 4px; font-size: 11.5px; color: #888; } .art .a-facts [data-pick-other] { margin-top: 6px; }
@@ -1317,6 +1320,17 @@
   .art .a-p2pfx { display: grid; grid-template-columns: minmax(0, 1fr) 36%; gap: 4%; align-items: center; margin-bottom: 2.4em; } .art .a-visa { padding: 8px 4px; } .art .a-p2pfx .a-facts { margin: 0; grid-template-columns: 1fr 1fr; }
   .art .a-visa > div { transform: rotate(4deg); } .art .a-p2pfx > :only-child { grid-column: 1 / -1; }
   .art .a-visa .a-stp { color: color-mix(in srgb, var(--cwg-a) 55%, #7a1f3d); }
+  .art:not(.is-edit) .a-p2pfx { display: flex; justify-content: flex-end; margin: -4px 0 2em; } .art:not(.is-edit) .a-visa { width: 46%; }
+  /* crop */
+  .crop-dlg { position: fixed; inset: 0; z-index: 1000; background: rgba(0,0,0,.6); display: grid; place-items: center; padding: 16px; }
+  .crop-box { background: var(--paper); color: var(--ink); border-radius: 18px; padding: 18px; width: min(760px, 100%); max-height: 100%; overflow: auto; display: grid; gap: 12px; box-shadow: 0 20px 60px rgba(0,0,0,.35); }
+  .crop-t { font-size: 18px; } .crop-p { margin: 0; font-size: 14px; color: var(--ink-2); }
+  .crop-vp { position: relative; overflow: hidden; border-radius: 10px; background: #111; cursor: grab; touch-action: none; user-select: none; margin: 0 auto; }
+  .crop-vp:active { cursor: grabbing; } .crop-vp img { position: absolute; top: 0; left: 0; max-width: none; transform-origin: 0 0; pointer-events: none; }
+  .crop-grid { position: absolute; inset: 0; pointer-events: none; box-shadow: inset 0 0 0 2px rgba(255,255,255,.9);
+    background: linear-gradient(to right, transparent 33.2%, rgba(255,255,255,.45) 33.3%, transparent 33.5%, transparent 66.5%, rgba(255,255,255,.45) 66.6%, transparent 66.8%), linear-gradient(to bottom, transparent 33.2%, rgba(255,255,255,.45) 33.3%, transparent 33.5%, transparent 66.5%, rgba(255,255,255,.45) 66.6%, transparent 66.8%); }
+  .crop-z { display: flex; align-items: center; gap: 12px; font-size: 14px; font-weight: 700; } .crop-z input { flex: 1; }
+  .crop-acts { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; } .crop-msg { font-size: 13.5px; color: #c0392b; }
   /* Round the Table */
   .art .a-table i { width: 9px; height: 9px; border-radius: 50%; background: var(--cwg-a); margin-right: -4px; box-shadow: 0 0 0 2px #fff; } .art .a-table i:nth-child(2) { background: #f5c400; } .art .a-table i:nth-child(3) { background: #e14b1e; } .art .a-table i:nth-child(4) { margin-right: 6px; }
   /* Boots on the Ground */
@@ -3686,15 +3700,15 @@ const MEGA = `<svg viewBox="0 0 48 48" aria-hidden="true"><path d="M6 20v8h6l18 
 // passport-style stamps for P2P visits: worn ink, double borders, slightly rotated, in the CWG's colour
 const STAMP_INK = `<filter id="a-ink" x="-5%" y="-5%" width="110%" height="110%"><feTurbulence type="fractalNoise" baseFrequency="1.3" numOctaves="2" seed="7" result="n"/><feColorMatrix in="n" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 -1.5 1.45" result="m"/><feComposite in="SourceGraphic" in2="m" operator="in" result="c"/><feTurbulence type="fractalNoise" baseFrequency=".05" numOctaves="2" seed="3" result="w"/><feDisplacementMap in="c" in2="w" scale="1.6"/></filter>`;
 const fitTxt = (t, max, size) => { const est = t.length * size * .6; return est > max ? ` textLength="${max}" lengthAdjust="spacingAndGlyphs"` : ""; };
-function stampRound(date) {
-  const d = esc(String(date || "").toUpperCase().slice(0, 22));
+function stampRound(date, place) {
+  const d = esc(String(date || "").toUpperCase().slice(0, 22)), pl = esc(String(place || "").toUpperCase().slice(0, 24));
   return `<svg class="a-stp a-stp-r" viewBox="0 0 200 200" aria-hidden="true"><defs>${STAMP_INK}<path id="a-arcT" d="M30 100a70 70 0 0 1 140 0"/><path id="a-arcB" d="M26 100a74 74 0 0 0 148 0"/></defs>
     <g filter="url(#a-ink)" fill="none" stroke="currentColor"><circle cx="100" cy="100" r="92" stroke-width="5"/><circle cx="100" cy="100" r="82" stroke-width="1.6"/><circle cx="100" cy="100" r="54" stroke-width="1.6" stroke-dasharray="3 3"/>
       <g fill="currentColor" stroke="none" font-family="Archivo, sans-serif" font-weight="900">
         <text font-size="14" letter-spacing="2.4"><textPath href="#a-arcT" startOffset="50%" text-anchor="middle">SHARING &amp; LEARNING</textPath></text>
         <text font-size="13" letter-spacing="3"><textPath href="#a-arcB" startOffset="50%" text-anchor="middle" dominant-baseline="hanging">★ ASIA-PACIFIC ★</textPath></text>
         <text x="100" y="94" font-size="34" text-anchor="middle" letter-spacing="1">ASLP</text><text x="100" y="118" font-size="17" text-anchor="middle" letter-spacing="1.5">P2P VISIT</text>
-        ${d ? `<text x="100" y="136" font-size="9.5" font-weight="700" text-anchor="middle" letter-spacing=".8"${fitTxt(d, 92, 9.5)}>${d}</text>` : ""}</g></g></svg>`;
+        ${d ? `<text x="100" y="136" font-size="9.5" font-weight="700" text-anchor="middle" letter-spacing=".8"${fitTxt(d, 92, 9.5)}>${d}</text>` : ""}${pl ? `<text x="100" y="66" font-size="9" font-weight="800" text-anchor="middle" letter-spacing=".8"${fitTxt(pl, 84, 9)}>${pl}</text>` : ""}</g></g></svg>`;
 }
 function stampVisa(from, to, date) {
   const sh = x => { const ps = String(x || "").split(/,\s*| & /).map(shortName).filter(Boolean), j = ps.join(" & "); return j.length > 30 && ps.length > 1 ? `${ps[0]} + ${ps.length - 1} MORE` : j.slice(0, 40); };
@@ -3709,12 +3723,51 @@ function stampVisa(from, to, date) {
         <path d="M28 106l8 5-8 5z"/>
         <text x="28" y="144" font-size="10" font-weight="800" letter-spacing="1.2">ASLP P2P VISIT</text>${d ? `<text x="272" y="144" font-size="10" font-weight="800" text-anchor="end" letter-spacing=".8"${fitTxt(d, 130, 10)}>${d}</text>` : ""}</g></g></svg>`;
 }
+// crop a photo to the shape of its frame before it's uploaded: drag to move, slider (or wheel/pinch) to zoom
+function cropDialog(src, ar) { return new Promise(res => {
+  const d = document.createElement("div"); d.className = "crop-dlg";
+  d.innerHTML = `<div class="crop-box" role="dialog" aria-modal="true" aria-labelledby="crop-h"><b id="crop-h" class="crop-t">Crop the photo</b>
+    <p class="crop-p">Drag the photo to move it and use the slider to zoom. The frame shows exactly what will appear on the page.</p>
+    <div class="crop-vp" style="aspect-ratio:${(+ar || 1.5).toFixed(4)};width:min(100%, calc(62vh * ${(+ar || 1.5).toFixed(4)}))"><img alt="" draggable="false"><span class="crop-grid" aria-hidden="true"></span></div>
+    <label class="crop-z"><span>Zoom</span><input type="range" min="1" max="4" step="0.01" value="1" aria-label="Zoom"></label>
+    <div class="crop-acts"><button type="button" class="btn fill sm" data-c="ok">Use this crop</button><button type="button" class="btn sm" data-c="x">Cancel</button><span class="crop-msg" role="status"></span></div></div>`;
+  document.body.appendChild(d);
+  const vp = d.querySelector(".crop-vp"), im = vp.querySelector("img"), z = d.querySelector("input[type=range]");
+  let s = 1, x = 0, y = 0, base = 1;
+  const W = () => vp.clientWidth, H = () => vp.clientHeight;
+  const apply = () => { const iw = im.naturalWidth * base * s, ih = im.naturalHeight * base * s; x = Math.min(0, Math.max(W() - iw, x)); y = Math.min(0, Math.max(H() - ih, y));
+    im.style.width = iw + "px"; im.style.height = ih + "px"; im.style.transform = `translate(${x}px, ${y}px)`; };
+  const fit = () => { base = Math.max(W() / im.naturalWidth, H() / im.naturalHeight); x = (W() - im.naturalWidth * base * s) / 2; y = (H() - im.naturalHeight * base * s) / 2; apply(); };
+  const zoomTo = (v, cx = W() / 2, cy = H() / 2) => { const old = s; s = Math.max(1, Math.min(4, v)); x = cx - (cx - x) * s / old; y = cy - (cy - y) * s / old; z.value = s; apply(); };
+  if (/^https?:/.test(src)) im.crossOrigin = "anonymous";
+  im.onload = fit; im.onerror = () => { d.querySelector(".crop-msg").textContent = "This photo couldn't be opened for cropping."; };
+  im.src = src;
+  z.oninput = () => zoomTo(+z.value);
+  vp.addEventListener("wheel", e => { e.preventDefault(); const r = vp.getBoundingClientRect(); zoomTo(s * (e.deltaY < 0 ? 1.08 : 1 / 1.08), e.clientX - r.left, e.clientY - r.top); }, { passive: false });
+  const pts = new Map(); let last = null, pinch = 0;
+  vp.addEventListener("pointerdown", e => { vp.setPointerCapture(e.pointerId); pts.set(e.pointerId, [e.clientX, e.clientY]); last = [e.clientX, e.clientY]; if (pts.size === 2) { const [a, b] = [...pts.values()]; pinch = Math.hypot(a[0] - b[0], a[1] - b[1]); } });
+  vp.addEventListener("pointermove", e => { if (!pts.has(e.pointerId)) return; pts.set(e.pointerId, [e.clientX, e.clientY]);
+    if (pts.size === 2) { const [a, b] = [...pts.values()], dist = Math.hypot(a[0] - b[0], a[1] - b[1]); if (pinch) zoomTo(s * dist / pinch); pinch = dist; return; }
+    x += e.clientX - last[0]; y += e.clientY - last[1]; last = [e.clientX, e.clientY]; apply(); });
+  const up = e => { pts.delete(e.pointerId); pinch = 0; if (pts.size) last = [...pts.values()][0]; };
+  vp.addEventListener("pointerup", up); vp.addEventListener("pointercancel", up);
+  const keys = e => { if (e.key === "Escape") done(null); };
+  addEventListener("keydown", keys);
+  const done = v => { d.remove(); removeEventListener("keydown", keys); res(v); };
+  d.addEventListener("click", e => { const b = e.target.closest("[data-c]"); if (!b) { if (e.target === d) done(null); return; }
+    if (b.dataset.c === "x") return done(null);
+    if (!im.naturalWidth) return;
+    const k = base * s, sx = -x / k, sy = -y / k, sw = W() / k, sh = H() / k, ow = Math.round(Math.min(2000, sw)), oh = Math.round(ow * sh / sw);
+    const cv = document.createElement("canvas"); cv.width = ow; cv.height = oh; cv.getContext("2d").drawImage(im, sx, sy, sw, sh, 0, 0, ow, oh);
+    try { cv.toBlob(bl => done(bl ? { blob: bl } : null), "image/jpeg", .9); } catch (er) { d.querySelector(".crop-msg").textContent = "This photo can't be cropped here. Remove it and add it again."; } });
+  setTimeout(() => d.querySelector("[data-c=ok]").focus(), 30);
+}); }
 function artPage({ tpl, title, date, src, html, edit, demo, photos, gal, form, facts, fv }) {
   const T = tplOf(tplKey(tpl)), k = T.k, b = artBrand(src), P = photos || {}, tt = esc(title || "");
   const filled = T.photos.filter(x => P[x] && P[x].src);
   const pos = ph => ` style="object-position:${esc((ph && ph.pos) || "50% 50%")}"`;
   const slot = (key, cls) => { const ph = P[key];
-    if (edit) return `<figure class="a-slot ${cls}" data-slot="${key}"><div class="a-frame">${ph && ph.src ? `<img src="${esc(ph.src)}" alt="" draggable="false" data-drag="${key}"${pos(ph)}><span class="a-drag-hint">Drag to move the photo in the frame</span><button type="button" class="a-slot-x" data-slot-x="${key}" aria-label="Remove this photo">×</button>`
+    if (edit) return `<figure class="a-slot ${cls}" data-slot="${key}"><div class="a-frame">${ph && ph.src ? `<img src="${esc(ph.src)}" alt="" draggable="false" data-drag="${key}"${pos(ph)}><span class="a-drag-hint">Drag to move the photo in the frame</span><button type="button" class="a-slot-c" data-slot-crop="${key}">Crop</button><button type="button" class="a-slot-x" data-slot-x="${key}" aria-label="Remove this photo">×</button>`
         : `<button type="button" class="a-slot-add" data-slot-add="${key}"><b>+</b>Add a photo</button>`}</div><figcaption contenteditable="true" data-cap="${key}" data-ph="Caption: who, what and where">${esc((ph && ph.cap) || "")}</figcaption></figure>`;
     if (demo) return `<figure class="a-slot ${cls}"><div class="a-frame"><span class="a-slot-demo"></span></div></figure>`;
     if (!ph || !ph.src) return "";
@@ -3730,7 +3783,7 @@ function artPage({ tpl, title, date, src, html, edit, demo, photos, gal, form, f
   const foot = `<div class="a-foot"><span class="a-lll"><b>Listen.</b> <b>Learn.</b> <b>Lead.</b></span><span>${esc(b.name)} · Asia-Pacific Sharing &amp; Learning Programme</span></div>`;
   const inner = {
     general: () => `${head}<div class="a-main">${slot("hero", "x-hero")}${h1}${meta}${body}${row(["g1", "g2"], "x-duo")}</div>`,
-    p2p: () => { const v = fv || {}; return `${head}<div class="a-main"><div class="a-p2ph"><div><div class="a-kicker">Programme-to-programme learning visit</div>${h1}${meta}</div><div class="a-stp-wrap" data-stamp="round">${stampRound(v.when)}</div></div><div class="a-p2pfx">${fx}<div class="a-visa"><div data-stamp="visa">${stampVisa(v.from, v.to, v.when)}</div></div></div>${row(["a", "b"], "x-duo x-tall")}${body}${row(["g1", "g2", "g3"], "x-trio")}</div>`; },
+    p2p: () => { const v = fv || {}; return `${head}<div class="a-main"><div class="a-p2ph"><div><div class="a-kicker">Programme-to-programme learning visit</div>${h1}${meta}</div><div class="a-stp-wrap" data-stamp="round">${stampRound(v.when, v.where)}</div></div><div class="a-p2pfx">${edit ? fx : ""}<div class="a-visa"><div data-stamp="visa">${stampVisa(v.from, v.to, v.when)}</div></div></div>${row(["a", "b"], "x-duo x-tall")}${body}${row(["g1", "g2", "g3"], "x-trio")}</div>`; },
     training: () => `${cover("Training")}<div class="a-main">${slot("hero", "x-hero x-lift")}${fx}${body}${row(["g1", "g2", "g3", "g4"], "x-quad")}</div>`,
     workshop: () => `${head}<div class="a-main"><div class="a-kicker a-notes"><i></i><i></i><i></i>Workshop</div>${h1}${meta}${fx}${slot("hero", "x-hero x-wide")}${body}${row(["g1", "g2", "g3"], "x-trio")}</div>`,
     meeting: () => `${head}<div class="a-main"><div class="a-kicker a-table"><i></i><i></i><i></i><i></i>CWG meeting</div>${h1}${meta}${fx}${slot("hero", "x-hero x-wide")}${body}${row(["g1", "g2", "g3"], "x-trio")}</div>`,
@@ -3926,7 +3979,7 @@ function updateEditor(u, redraw) {
       <select class="a-in a-fact a-pick-sel" data-pick="${k}" aria-label="${esc(l)}">${pickOpts()}</select></div>
       ${st.art.pickOther === k ? `<input class="a-in a-fact" data-pick-other="${k}" placeholder="Type a name and press Enter, e.g. ${esc(ex)}">` : ""}
       <small class="a-pk-h">${list.length ? "Add more to show a group of places." : "Choose a CWG, or one or more territories, regions or countries."}</small></dd></div>`; };
-  const factsForm = T => (T.facts || []).length ? `<div class="a-fxw">${T.k === "p2p" ? `<p class="a-hint a-p2pq"><b>Where was the visit?</b> Choose who visited (a whole CWG, or one or more territories, regions or countries) and who hosted. The same CWG or a different one, both work. The passport stamps are made from these.</p>` : ""}<dl class="a-facts is-form">${T.facts.map(([k, l, ex, req]) => T.k === "p2p" && (k === "from" || k === "to") ? pickField(k, l, ex) : `<div><dt>${esc(l)}${req ? "" : ` <em>optional</em>`}</dt><dd><input class="a-in a-fact" data-af="fact" data-k="${k}" value="${esc(((st.art.doc.facts || {})[k]) || "")}" placeholder="e.g. ${esc(ex)}" aria-label="${esc(l)}"></dd></div>`).join("")}</dl></div>` : "";
+  const factsForm = T => (T.facts || []).length ? `<div class="a-fxw">${T.k === "p2p" ? `<p class="a-hint a-p2pq"><b>Where was the visit?</b> Choose who visited (a whole CWG, or one or more territories, regions or countries) and who hosted; the same CWG or a different one both work. This box only makes the passport stamps: it doesn't show on the website.</p>` : ""}<dl class="a-facts is-form">${T.facts.map(([k, l, ex, req]) => T.k === "p2p" && (k === "from" || k === "to") ? pickField(k, l, ex) : `<div><dt>${esc(l)}${req ? "" : ` <em>optional</em>`}</dt><dd><input class="a-in a-fact" data-af="fact" data-k="${k}" value="${esc(((st.art.doc.facts || {})[k]) || "")}" placeholder="e.g. ${esc(ex)}" aria-label="${esc(l)}"></dd></div>`).join("")}</dl></div>` : "";
   function drawArticle() {
     const P = artProps(), list = tplsFor(st.kind, P.src);
     if (!list.some(t => t.k === st.art.tpl)) st.art.tpl = list[0].k;
@@ -3949,7 +4002,7 @@ function updateEditor(u, redraw) {
     if (k === "title") $("ue-title").value = f.value.replace(/\s*\n\s*/g, " ");
     else if (k === "fact") { d.facts[f.dataset.k] = f.value;
       if (st.art.tpl === "p2p") { const r = box.querySelector(".art-desk [data-stamp=round]"), v = box.querySelector(".art-desk [data-stamp=visa]");
-        if (r) r.innerHTML = stampRound(d.facts.when); if (v) v.innerHTML = stampVisa(d.facts.from, d.facts.to, d.facts.when); } }
+        if (r) r.innerHTML = stampRound(d.facts.when, d.facts.where); if (v) v.innerHTML = stampVisa(d.facts.from, d.facts.to, d.facts.when); } }
     else if (k === "sec") d.s[f.dataset.k] = f.value;
     else if (sec) d.sections[+sec.dataset.si][k] = f.value; else d[k] = f.value;
     keep(); });
@@ -3968,6 +4021,13 @@ function updateEditor(u, redraw) {
   $("ue-file").addEventListener("click", async e => {
     const t = e.target.closest("[data-tpl]"); if (t) { st.art.tpl = t.dataset.tpl; drawArticle(); keep(); return; }
     const sa = e.target.closest("[data-slot-add]"); if (sa) { if (st.busy) return; st.slotKey = sa.dataset.slotAdd; $("art-slot-in").click(); return; }
+    const sc = e.target.closest("[data-slot-crop]");
+    if (sc) { if (st.busy) return; const key = sc.dataset.slotCrop, ph = st.art.photos[key]; if (!ph || !ph.src) return;
+      const frame = sc.closest(".a-frame"), cr = await cropDialog(ph.src, frame.clientWidth / frame.clientHeight); if (!cr) return;
+      await op(async () => { msg(loader("Saving the crop…", "sm inline"));
+        const im = await shrinkImage(cr.blob, 1800); upCheck(); const url = await upPut(`${folder()}/art-${key}-${newId().slice(0, 8)}.${im.ext}`, im.blob, im.blob.type);
+        st.art.photos[key] = { ...ph, src: url, pos: "50% 50%" }; drawArticle(); keep(); msg("Photo cropped.", "ok"); }, () => msg("Stopped. The photo wasn't changed."));
+      return; }
     const sx = e.target.closest("[data-slot-x]"); if (sx) { const ph = st.art.photos[sx.dataset.slotX]; st.art.photos[sx.dataset.slotX] = { src: "", cap: (ph && ph.cap) || "" }; drawArticle(); keep(); return; }
     if (e.target.closest("[data-sadd2]")) { st.art.doc.sections.push({ h: "", t: "" }); drawArticle(); keep(); const l = [...box.querySelectorAll(".a-sec [data-af=h]")].pop(); if (l) l.focus(); return; }
     const card = e.target.closest(".a-sec[data-si]"); if (!card) return; const i = +card.dataset.si, S = st.art.doc.sections;
@@ -3988,8 +4048,10 @@ function updateEditor(u, redraw) {
     L.splice(+x.dataset.i, 1); F[k] = joinNames(L); drawArticle(); keep(); });
   $("ue-file").addEventListener("change", async e => {
     if (e.target.id !== "art-slot-in") return; e.stopPropagation(); const fl = e.target.files[0], key = st.slotKey; e.target.value = ""; if (!fl || !key || st.busy) return;
+    const frame = box.querySelector(`.art-desk [data-slot="${key}"] .a-frame`), ar = frame && frame.clientHeight ? frame.clientWidth / frame.clientHeight : 1.5;
+    const ou = URL.createObjectURL(fl), cr = await cropDialog(ou, ar); URL.revokeObjectURL(ou); if (!cr) return;
     await op(async () => { msg(loader("Uploading the photo…", "sm inline"));
-      const im = await shrinkImage(fl, 1800); upCheck(); const url = await upPut(`${folder()}/art-${key}-${newId().slice(0, 8)}.${im.ext}`, im.blob, im.blob.type);
+      const im = await shrinkImage(cr.blob, 1800); upCheck(); const url = await upPut(`${folder()}/art-${key}-${newId().slice(0, 8)}.${im.ext}`, im.blob, im.blob.type);
       st.art.photos[key] = { src: url, cap: (st.art.photos[key] && st.art.photos[key].cap) || "", pos: "50% 50%" }; drawArticle(); keep(); msg("Photo added. Write its caption underneath.", "ok");
       const c = box.querySelector(`[data-cap="${key}"]`); if (c) c.focus(); }, () => msg("Upload stopped. The photo was removed."));
   });
