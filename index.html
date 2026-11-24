@@ -1221,7 +1221,6 @@
   .gv-ic .wi { width: 44px; height: 44px; }
   /* thematic area and strength pictures: one accent each (--tc); they move only while their card is on screen */
   .ti .hb, .ti .lf, .ti .dr, .ti .fl, .ti .bulb, .ti .hub, .ti .ctr, .ti .c, .ti .fg { fill: var(--tc); stroke: var(--ink); }
-  .gv-card:not(.live) .ti *, .gv-card:not(.live) .ti { animation-play-state: paused !important; }
   .ti-health .hb { fill: color-mix(in srgb, var(--tc) 30%, var(--paper)); transform-box: fill-box; transform-origin: center; animation: tiBeat 1.6s ease-in-out infinite; }
   .ti-health .ecg { stroke: var(--tc); stroke-width: 2.6; stroke-dasharray: 60; stroke-dashoffset: 60; --o: 60; animation: wiDraw 2.4s linear infinite; }
   .ti-wash .dr { stroke: none; animation: tiDrip 2s cubic-bezier(.5,0,.8,.5) infinite; } .ti-wash .rp { stroke: var(--tc); transform-box: fill-box; transform-origin: center; animation: tiRipple 2s ease-out infinite; }
