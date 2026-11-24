@@ -3142,7 +3142,8 @@ function pageConsole(a, b) {
 // ---- console: ASLP group details and members ----
 const GRP_COLS = [["groupRole", "Role in this group", "e.g. Chair, SASIA 1 CWG lead"], ["rank", "Rank (officers only)", "Empty if not an officer"], ["name", "Name"], ["role", "Job title or appointment", "e.g. Chief Secretary, Programme Manager"], ["office", "Office", "e.g. Bangladesh Territory, Salvation Army Switzerland"]];
 const PIN_GROUPS = ["apsg"];   // groups whose members sign in with the group's PIN
-const grpCols = key => PIN_GROUPS.includes(key) ? [...GRP_COLS, ["email", "Email (signs in with it)", "name@salvationarmy.org"]] : GRP_COLS;
+const OWN_PIN_GROUPS = ["asc"];  // groups whose members sign in with their own PIN (approved by an admin)
+const grpCols = key => PIN_GROUPS.includes(key) || OWN_PIN_GROUPS.includes(key) ? [...GRP_COLS, ["email", "Email (signs in with it)", "name@salvationarmy.org"]] : GRP_COLS;
 function groupEditor(key) {
   const box = $("grp-editor"), g = (data.groups || []).find(x => x.key === key); if (!box || !g) return;
   const GRP_COLS_K = grpCols(key);
@@ -3155,7 +3156,8 @@ function groupEditor(key) {
       <label class="full"><span>Mandate <span class="ed-hint">One point per line. The page says "${esc(tor ? tor.lead : "")}" before them.</span></span><textarea id="g-mandate" rows="6">${esc(tor.mandate.join("\n"))}</textarea></label>` : ""}
     </div>
     <h3 class="h3" style="margin-top:var(--g5)">Members</h3>
-    <p class="small">Listed on the ${esc(g.short)} page in this order. Use the arrows to move someone up or down. "Role in this group" is what they do in the ${esc(g.short)}, for example Chair. "Job title or appointment" and "Office" are their own work: an officer's appointment and territory, or an employee's job title and office. Leave Rank empty for anyone who isn't an officer. Being listed doesn't give anyone access to this console.</p>
+    <p class="small">Listed on the ${esc(g.short)} page in this order. Use the arrows to move someone up or down. "Role in this group" is what they do in the ${esc(g.short)}, for example Chair. "Job title or appointment" and "Office" are their own work: an officer's appointment and territory, or an employee's job title and office. Leave Rank empty for anyone who isn't an officer.${OWN_PIN_GROUPS.includes(key) || PIN_GROUPS.includes(key) ? "" : " Being listed doesn't give anyone access to this console."}</p>
+    ${OWN_PIN_GROUPS.includes(key) ? `<p class="small">Add each member's email (work email is fine). Members with an email can set up their own PIN on the sign-in page (<em>First time? Set up your PIN</em>); an admin approves it under PINs. Signed in, ${esc(g.short)} members can add and change Calendar entries, post and approve programme updates, and edit this page. Emails aren't shown on the website.</p>` : ""}
     ${PIN_GROUPS.includes(key) ? `<p class="small">Add each member's email (work email is fine). Members with an email sign in with it and the ${esc(g.short)}'s PIN${V().is_full_admin ? " (set it under PINs)" : ""}, and can then edit only this page and post ${esc(g.short)} updates. Emails aren't shown on the website.</p>` : ""}
     <div id="gm-box"><div class="ed-rows">${((g.members || []).length ? g.members : [{}]).map(m => fieldRow(GRP_COLS_K, m, [])).join("")}</div>
       <div class="ed-actions"><button type="button" class="btn sm ed-add">Add a member</button></div></div>
