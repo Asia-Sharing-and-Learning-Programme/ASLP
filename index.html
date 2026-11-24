@@ -830,6 +830,14 @@
   .fund-body { padding: 0 14px 14px; display: grid; gap: 8px; animation: fundIn .35s ease both; } .fund-body p { margin: 0; font-size: 15px; line-height: 1.55; }
   @keyframes fundIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
   .fund-ask { padding-top: 8px; border-top: 1.5px dashed color-mix(in srgb, #f5c400 70%, var(--line)); }
+  .linkbtn { background: none; border: 0; padding: 0; font: inherit; cursor: pointer; }
+  .leads-dlg { border: 0; border-radius: 20px; padding: var(--g4); width: min(520px, 94vw); background: var(--paper); color: var(--ink); }
+  .leads-dlg::backdrop { background: rgba(10,10,20,.55); }
+  .ld-head { display: flex; justify-content: space-between; align-items: center; } .ld-x { position: static; color: var(--ink); font-size: 30px; line-height: 1; }
+  .ld-zone { margin-top: var(--g3); } .ld-zone h3 { font-size: 13px; font-weight: 800; color: var(--ink-3); margin: 0 0 6px; }
+  .ld-row { display: grid; grid-template-columns: 112px minmax(0, 1fr) auto; gap: 12px; align-items: center; padding: 10px 12px; border-radius: 14px; background: var(--paper-2); color: inherit; text-decoration: none; margin-bottom: 6px; transition: background .2s; }
+  .ld-row:hover, .ld-row:focus-visible { background: color-mix(in srgb, #f5c400 22%, var(--paper-2)); }
+  .ld-row img { width: 100%; height: auto; display: block; } .ld-row span { display: grid; } .ld-row small { color: var(--ink-3); font-size: 13px; } .ld-row i { font-style: normal; font-size: 22px; color: var(--ink-3); }
   .fund-strip { display: grid; gap: 10px; padding: var(--g4); border-radius: 20px; background: color-mix(in srgb, #f5c400 18%, var(--paper)); border: 2px solid color-mix(in srgb, #f5c400 60%, transparent); margin-bottom: var(--g6); }
   .fund-strip p { margin: 0; max-width: 78ch; } .fund-jump { display: flex; flex-wrap: wrap; gap: 8px; }
   .fund-panel { padding: var(--g5) var(--g5) var(--g4); border-radius: 24px; background: color-mix(in srgb, #f5c400 14%, var(--paper)); border: 2px solid color-mix(in srgb, #f5c400 60%, transparent); margin: var(--g5) 0; display: grid; gap: var(--g4); }
@@ -4335,7 +4343,18 @@ const FUND_NOTE = "The programme can cover all or part of the cost, depending on
 const fundOf = t => (FUND.find(f => f[0] === t) || [])[1];
 const actId = t => "act-" + t.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
 const fundAsk = c => { const l = c && leadOf(c);
-  return `<b>Interested?</b> Contact ${l && l.name ? `${esc(l.name)}, your CWG lead,` : "your CWG lead"} or an <a class="textlink" href="#/group/apsg">APSG member</a> to plan it.`; };
+  return `<b>Interested?</b> Contact ${l && l.name ? `${esc(l.name)}, <button type="button" class="textlink linkbtn" data-cwg-leads>your CWG lead</button>,` : `<button type="button" class="textlink linkbtn" data-cwg-leads>your CWG lead</button>`} or an <a class="textlink" href="#/group/apsg">APSG member</a> to plan it.`; };
+// the four CWG leads, in a small window (no emails: those stay in the console)
+document.addEventListener("click", e => { if (!e.target.closest("[data-cwg-leads]")) return; e.preventDefault();
+  let d = $("leads-dlg"); if (!d) { d = document.createElement("dialog"); d.id = "leads-dlg"; d.className = "leads-dlg"; document.body.appendChild(d);
+    d.addEventListener("click", ev => { if (ev.target === d || ev.target.closest("[data-ldx]")) d.close(); if (ev.target.closest("a[href^='#/']")) d.close(); }); }
+  const rows = ZONES.map(z => { const cs = cwgList().filter(c => zoneOf(c) === z.key); if (!cs.length) return "";
+    return `<div class="ld-zone"><h3>${esc(z.label)}</h3>${cs.map(c => { const l = leadOf(c), a = ART(c);
+      return `<a class="ld-row" href="#/cwg/${esc(cwgSlug(c))}" style="${cwgVars(c)}">${a ? `<img src="${a.h}" alt="${esc(c)}">` : `<b>${esc(c)}</b>`}
+        <span>${l && l.name ? `<b>${esc(l.name)}</b><small>${esc([l.role, l.territory && terrName(l.territory)].filter(Boolean).join(", "))}</small>` : `<small>Lead to be confirmed</small>`}</span><i aria-hidden="true">›</i></a>`; }).join("")}</div>`; }).join("");
+  d.innerHTML = `<div class="ld-head"><h2 class="h3">CWG leads</h2><button type="button" class="lb-x ld-x" data-ldx aria-label="Close">×</button></div>
+    <p class="small">Contact the lead of your territory's Cluster Working Group to plan an activity. Not sure which CWG you're in? Open one to see its territories.</p>${rows}`;
+  d.showModal(); });
 // a highlighted panel listing the six, each opening to how a territory can use it (CWG pages)
 function fundPanel(c, intro) {
   return `<section class="fund-panel" aria-labelledby="fund-h-${esc(cwgSlug(c || "all"))}">
