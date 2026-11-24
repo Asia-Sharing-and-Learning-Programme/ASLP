@@ -813,6 +813,30 @@
   .act-card { flex: 1; display: flex; flex-direction: column; gap: var(--g2); background: var(--paper-2); border-radius: 20px; padding: var(--g4) var(--g4) var(--g3); border-top: 4px solid var(--ac); }
   .act-card .h3 { font-size: 20px; line-height: 1.2; } .act-card p { margin: 0; font-size: 15.5px; line-height: 1.55; color: var(--ink-2); max-width: none; }
   .act-card .textlink { font-weight: 700; font-size: 15px; }
+  /* funding for territories: one yellow highlight, the same everywhere */
+  .fund-badge { align-self: flex-start; justify-self: start; display: inline-flex; align-items: center; gap: 6px; font-size: 12.5px; font-weight: 800; color: #3d2f00; background: #f5c400; border-radius: 999px; padding: 4px 11px 4px 9px; }
+  .fund-badge::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: #3d2f00; animation: fundPulse 2.4s ease-in-out infinite; }
+  @keyframes fundPulse { 0%, 100% { opacity: .35; transform: scale(.8); } 50% { opacity: 1; transform: scale(1.15); } }
+  .act-card.is-fund { box-shadow: inset 0 0 0 2px color-mix(in srgb, #f5c400 70%, transparent); }
+  .act-card.flash { animation: fundFlash 1.6s ease; } @keyframes fundFlash { 0%, 100% { box-shadow: inset 0 0 0 2px color-mix(in srgb, #f5c400 70%, transparent); } 30% { box-shadow: inset 0 0 0 4px #f5c400, 0 0 0 8px color-mix(in srgb, #f5c400 30%, transparent); } }
+  .fund-d { border-radius: 14px; background: color-mix(in srgb, #f5c400 16%, var(--paper)); }
+  .fund-d summary { list-style: none; cursor: pointer; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 11px 14px; font-weight: 800; font-size: 15px; color: var(--ink); border-radius: 14px; }
+  .fund-d summary::-webkit-details-marker { display: none; }
+  .fund-d summary:focus-visible { outline: 3px solid #005fc0; outline-offset: 2px; }
+  .fund-d summary i { width: 22px; height: 22px; flex: none; border-radius: 50%; background: #f5c400; position: relative; transition: transform .3s cubic-bezier(.16,1,.3,1); }
+  .fund-d summary i::before, .fund-d summary i::after { content: ""; position: absolute; left: 50%; top: 50%; width: 10px; height: 2px; background: #3d2f00; transform: translate(-50%, -50%); border-radius: 2px; }
+  .fund-d summary i::after { transform: translate(-50%, -50%) rotate(90deg); }
+  .fund-d[open] summary i { transform: rotate(45deg); }
+  .fund-body { padding: 0 14px 14px; display: grid; gap: 8px; animation: fundIn .35s ease both; } .fund-body p { margin: 0; font-size: 15px; line-height: 1.55; }
+  @keyframes fundIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
+  .fund-ask { padding-top: 8px; border-top: 1.5px dashed color-mix(in srgb, #f5c400 70%, var(--line)); }
+  .fund-strip { display: grid; gap: 10px; padding: var(--g4); border-radius: 20px; background: color-mix(in srgb, #f5c400 18%, var(--paper)); border: 2px solid color-mix(in srgb, #f5c400 60%, transparent); margin-bottom: var(--g6); }
+  .fund-strip p { margin: 0; max-width: 78ch; } .fund-jump { display: flex; flex-wrap: wrap; gap: 8px; }
+  .fund-panel { padding: var(--g5) var(--g5) var(--g4); border-radius: 24px; background: color-mix(in srgb, #f5c400 14%, var(--paper)); border: 2px solid color-mix(in srgb, #f5c400 60%, transparent); margin: var(--g5) 0; display: grid; gap: var(--g4); }
+  .fund-top { display: grid; gap: 8px; } .fund-top .h2 { margin: 0; } .fund-top p { margin: 0; max-width: 78ch; color: var(--ink-2); }
+  .fund-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 330px), 1fr)); gap: 10px; align-items: start; }
+  .fund-list .fund-d { background: var(--paper); box-shadow: 0 1px 0 var(--line); }
+  @media (prefers-reduced-motion: reduce) { .fund-badge::before, .fund-body, .act-card.flash { animation: none; } }
   .act-src { font-size: 12.5px !important; color: var(--ink-3) !important; line-height: 1.45 !important; margin-top: auto !important; padding-top: var(--g2); }
   .act-head .act-src { margin-top: var(--g2) !important; padding: 0; }
   .act-note { margin-top: var(--g6); color: var(--ink-3); }
@@ -1981,6 +2005,7 @@ function pageCwgs() {
       ${cluster([cl("spe1-01", 0, 6, 22), cl("g11-01", 26, 0, 20, 10), cl("sas2-03", 52, 10, 20), cl("spe2-17", 76, 2, 22), cl("sas1-13", 14, 56, 18), cl("g7-06", 40, 62, 34), cl("sas2-14", 80, 56, 18)])}</div>
     <div class="wrap page-body">
       ${cwgExplainer()}
+      ${fundPanel(null, "Every territory, command and region in the four CWGs can ask the programme to fund these six activities. Many haven't used this yet.")}
       <div class="aslp-map" id="map-all" role="region" aria-label="Map of ASLP territorial and regional headquarters"></div>${zoneLegend(["SPEA", "SASIA"])}
       ${viewSwitch("cwgs", [["cwg", "By CWG"], ["theme", "By thematic area"]])}
       <div data-vpane="cwgs" data-vk2="cwg">${ZONES.map(zoneSection).join("")}</div>
@@ -1992,7 +2017,8 @@ function pageZone(zk) {
   const z = ZONES.find(x => x.key.toLowerCase() === zk); if (!z) return notFound();
   pendingMaps.push(() => mountPins("map-zone", terrs().filter(t => zoneOf(t.cwg) === z.key)));
   return `${crumbs([["Home", "#/"], ["Cluster Working Groups", "#/cwgs"], [z.label]])}
-    <div class="wrap page-body">${viewSwitch("zone", [["cwg", "By CWG"], ["theme", "By thematic area"]])}
+    <div class="wrap page-body">${fundPanel(null, `Territories, commands and regions in ${esc(z.label)} can ask the programme to fund these six activities. Many haven't used this yet.`)}
+      ${viewSwitch("zone", [["cwg", "By CWG"], ["theme", "By thematic area"]])}
       <div data-vpane="zone" data-vk2="cwg">${zoneSection(z)}</div>
       <div data-vpane="zone" data-vk2="theme" hidden><p class="lede gv-lede">${esc(z.label)} territories and regions grouped by thematic area, showing where its two CWGs work on the same things.</p>
         ${(() => { const cs = cwgList().filter(c => zoneOf(c) === z.key); return groupedView(placesIn(cs), [["", THEME_LIST]], x => themesOf(x.p), cs.length === 2 ? cs : null, "Thematic areas will show here once territories add them to their profiles."); })()}</div>
@@ -2021,6 +2047,7 @@ function pageCwg(cs) {
         return `<a class="terr-row" href="#/territory/${esc(t.id)}"><div class="nm">${esc(t.name)}</div>
           <div class="where">${t.location ? `${isRegion(t) ? "Regional" : "Territorial"} Headquarters in ${esc(t.location)}` : ""}</div>
           ${themesOf(p).length ? tags(themesOf(p).slice(0, 4)) : `<span class="small">Profile coming soon</span>`}</a>${unitRows(us)}`; }).join("")}${unitRows(units().filter(u => u.cwg === c && !ts.some(t => t.id === u.parent)))}</div>
+      <div style="margin-top:var(--g6)">${fundPanel(c, `Every territory, command and region in ${esc(c)} can ask the programme to fund these six activities. Many haven't used this yet.`)}</div>
       ${(() => { const ms = membersOf(c); return `<div class="stack" style="margin-top:var(--g6)"><div class="row-head"><h2 class="h2">${esc(c)} CWG members</h2>${canCwg(c) ? `<a class="btn sm" href="#/console/cwg/${cwgSlug(c)}">Edit members</a>` : ""}</div>
         ${ms.length ? memberGroups(ms, c) : `<p class="empty">The members of ${esc(c)} will be listed here.</p>`}</div>`; })()}
       <div style="margin-top:var(--g6)"><div class="aslp-map" id="map-cwg" role="region" aria-label="Map of ${esc(c)} headquarters"></div>${z ? zoneLegend([z.key]) : ""}</div>
@@ -4296,9 +4323,38 @@ const ACT_PILLARS = [
       ["Programme-to-Programme Learning Visits", "Staff visit another territory's programme on a theme from their own strategy, see the work first-hand and bring the learning home and into the wider ASLP.", "Output 3.2 · Activity 3.2.4 · Theory of Change: learning"],
       ["Development Office Sustainability", "Clear IHQ guidance on project overheads, reserves and transparency, and development offices planning their own resourcing around their community development strategy rather than relying on project funding.", "Output 3.1 · Activities 3.1.1, 3.1.2"],
       ["Development Office Systems and Succession", "Using IHQ's job descriptions and recommended structure for development offices, handover systems for key roles, and a policy on succession planning for development officers and project staff.", "Outputs 3.2, 3.3 · Activities 3.2.1, 3.3.1"]] }];
+// ---- what the programme can fund for a territory, command or region (not group activities). No budgets or amounts. ----
+const FUND = [
+  ["Territorial Strategy Support", "Funding for a strategy consultation workshop in your territory, command or region, or for technical support when you need it, to develop, review or update your community development strategy in line with the Asia-Pacific strategy."],
+  ["Monitoring, Evaluation, Accountability and Learning (MEAL)", "Support to set up monitoring, evaluation, accountability and learning for your own strategy, planned together with the APSG. This can cover a baseline, how you'll track progress, and gathering stories of change."],
+  ["Partnerships and Collaboration", "Funding for your development office to build links outside The Salvation Army: attending NGO conferences and forums, or visiting NGOs, companies' CSR programmes and embassies, to find partners and make The Salvation Army's community development work known in your country."],
+  ["Capacity Development Trainings", "Training for your development officer and other development office staff, matched to the skills they need."],
+  ["Programme-to-Programme Learning Visits", "Funding for your staff to visit another territory's programme on a theme from your own strategy, see the work first-hand and bring the learning home to your team and the wider ASLP."],
+  ["Development Office Sustainability", "Support to plan how your development office is resourced around your strategy, rather than relying on project funding, using IHQ's guidance on overheads and reserves."]];
+const FUND_NOTE = "The programme can cover all or part of the cost, depending on your plan and the funds available.";
+const fundOf = t => (FUND.find(f => f[0] === t) || [])[1];
+const actId = t => "act-" + t.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+const fundAsk = c => { const l = c && leadOf(c);
+  return `<b>Interested?</b> Contact ${l && l.name ? `${esc(l.name)}, your CWG lead,` : "your CWG lead"} or an <a class="textlink" href="#/group/apsg">APSG member</a> to plan it.`; };
+// a highlighted panel listing the six, each opening to how a territory can use it (CWG pages)
+function fundPanel(c, intro) {
+  return `<section class="fund-panel" aria-labelledby="fund-h-${esc(cwgSlug(c || "all"))}">
+    <div class="fund-top"><span class="fund-badge">Funding for territories</span>
+      <h2 class="h2" id="fund-h-${esc(cwgSlug(c || "all"))}">The ASLP can fund these for your territory</h2>
+      <p>${intro || "Territories, commands and regions can ask the programme to fund these six activities."} ${FUND_NOTE}</p></div>
+    <div class="fund-list">${FUND.map(([t, d]) => `<details class="fund-d"><summary><span>${esc(t)}</span><i aria-hidden="true"></i></summary>
+      <div class="fund-body"><p>${esc(d)}</p><p class="fund-ask">${fundAsk(c)}</p><a class="textlink" href="#/activities" data-act-card="${actId(t)}">More about this activity</a></div></details>`).join("")}</div>
+  </section>`;
+}
+document.addEventListener("click", e => { const a = e.target.closest("[data-act-card]"); if (!a) return; e.preventDefault(); const id = a.dataset.actCard;
+  const go = () => { const el = $(id); if (!el) return; el.scrollIntoView({ behavior: "smooth", block: "center" }); const d = el.querySelector(".fund-d"); if (d) d.open = true; el.classList.add("flash"); setTimeout(() => el.classList.remove("flash"), 1600); };
+  if (!location.hash.startsWith("#/activities")) { location.hash = "#/activities"; setTimeout(go, 500); } else go(); });
 function pageActivities() {
-  const card = ([t, d, src, link]) => `<article class="act-card"><h3 class="h3">${esc(t)}</h3><p>${esc(d)}</p>
-      ${link ? `<a class="textlink" href="${link[0]}">${esc(link[1])}</a>` : ""}<p class="act-src">From the logframe: ${esc(src)}</p></article>`;
+  const card = ([t, d, src, link]) => { const f = fundOf(t);
+    return `<article class="act-card${f ? " is-fund" : ""}" id="${actId(t)}">${f ? `<span class="fund-badge">Funding for territories</span>` : ""}<h3 class="h3">${esc(t)}</h3><p>${esc(d)}</p>
+      ${link ? `<a class="textlink" href="${link[0]}">${esc(link[1])}</a>` : ""}
+      ${f ? `<details class="fund-d"><summary><span>How your territory can use this</span><i aria-hidden="true"></i></summary><div class="fund-body"><p>${esc(f)}</p><p class="small">${FUND_NOTE}</p><p class="fund-ask">${fundAsk()}</p></div></details>` : ""}
+      <p class="act-src">From the logframe: ${esc(src)}</p></article>`; };
   const rows = list => { const n = list.length, r = n <= 3 ? [n] : n === 4 ? [2, 2] : [Math.ceil(n / 2), Math.floor(n / 2)];
     let k = 0; return r.map(c => list.slice(k, k += c).map(a => `<div style="--w:calc((100% - ${c - 1} * var(--g4)) / ${c})">${card(a)}</div>`).join("")).join(""); };
   return `${crumbs([["Home", "#/"], ["ASLP Activities"]])}
@@ -4306,7 +4362,10 @@ function pageActivities() {
       <p class="lede">What the Asia-Pacific Sharing &amp; Learning Programme does, from 2024 to 2027, to strengthen development offices across the two zones and show that community development is integral to The Salvation Army's mission.</p>
       <nav class="up-filter" aria-label="Jump to a pillar" style="margin:var(--g2) 0 0">${ACT_PILLARS.map(p => `<a class="chip-btn" href="#/activities" data-act-jump="${p.key}">${p.name}</a>`).join("")}</nav></div>
       ${cluster([cl("g8-04", 4, 20, 26), cl("g11-05", 34, 0, 26), cl("g6-09", 22, 62, 34), cl("g11-03", 64, 6, 30), cl("g8-01", 70, 52, 22, 8)])}</div>
-    <div class="wrap page-body">${ACT_PILLARS.map(p => `<section class="act-sec" id="act-${p.key}" style="--ac:${p.c}">
+    <div class="wrap page-body"><div class="fund-strip"><span class="fund-badge">Funding for territories</span>
+        <p><b>Six of these activities can be funded for your territory, command or region.</b> ${FUND_NOTE} Look for the yellow label, then open <em>How your territory can use this</em>.</p>
+        <div class="fund-jump">${FUND.map(([t]) => `<a class="chip-btn" href="#/activities" data-act-card="${actId(t)}">${esc(t.replace(/ \(MEAL\)$/, ""))}</a>`).join("")}</div></div>
+      ${ACT_PILLARS.map(p => `<section class="act-sec" id="act-${p.key}" style="--ac:${p.c}">
         <div class="act-head"><h2 class="act-name">${p.name}</h2><div><p class="lede">${esc(p.lede)}</p><p class="act-src">${esc(p.src)}</p></div></div>
         <div class="act-grid">${rows(p.acts)}</div></section>`).join("")}
     </div>`;
