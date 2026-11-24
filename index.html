@@ -550,6 +550,40 @@
   .share-top { display: none; align-items: center; gap: 8px; border: 2px solid var(--ink); background: none; color: var(--ink); border-radius: 999px; padding: 7px 16px; font: inherit; font-weight: 700; font-size: 15px; cursor: pointer; }
   .share-top:hover { background: var(--ink); color: var(--paper); }
   body.is-home .share-top { display: inline-flex; }
+  /* home page: a small Menu beside Share. The sections show on hover (or tap); each section's own pages only when you hover it */
+  .home-menu { display: none; position: relative; margin-left: 10px; }
+  body.is-home .home-menu { display: block; }
+  .hm-btn { display: inline-flex; align-items: center; gap: 8px; border: 2px solid var(--ink); background: none; color: var(--ink); border-radius: 999px; padding: 6px 16px 6px 14px; font: inherit; font-weight: 700; font-size: 15px; cursor: pointer; }
+  .hm-btn:hover, .home-menu.open .hm-btn, .home-menu:focus-within .hm-btn { background: var(--ink); color: var(--paper); }
+  .hm-bars { display: grid; gap: 3px; width: 14px; } .hm-bars i { display: block; height: 2px; border-radius: 2px; background: currentColor; transition: transform .25s; }
+  .home-menu.open .hm-bars i:nth-child(1), .home-menu:hover .hm-bars i:nth-child(1) { transform: translateX(2px); }
+  .home-menu.open .hm-bars i:nth-child(3), .home-menu:hover .hm-bars i:nth-child(3) { transform: translateX(-2px); }
+  .hm-panel { position: absolute; left: 0; top: 100%; padding-top: 8px; min-width: 250px; z-index: 60; opacity: 0; visibility: hidden; transform: translateY(-4px); transition: opacity .2s, transform .2s, visibility 0s .2s; }
+  .hm-panel > .hm-list { background: var(--paper); border: 1px solid var(--line); border-radius: 16px; box-shadow: 0 14px 36px rgba(0,0,0,.13); padding: 8px; display: grid; gap: 2px; }
+  .home-menu:hover .hm-panel, .home-menu.open .hm-panel, .home-menu:focus-within .hm-panel { opacity: 1; visibility: visible; transform: none; transition: opacity .2s, transform .2s; }
+  .hm-item { position: relative; }
+  .hm-item > a { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 9px 12px; border-radius: 10px; text-decoration: none; font-weight: 700; font-size: 15px; color: var(--ink); }
+  .hm-item > a:hover, .hm-item:focus-within > a, .hm-item.open > a { background: var(--paper-2); }
+  .hm-item.has-sub > a::after { content: ""; width: 7px; height: 7px; border-right: 2px solid currentColor; border-top: 2px solid currentColor; transform: rotate(45deg); opacity: .5; flex: none; }
+  .hm-item > .hm-sub.dd-menu { display: none; position: absolute; left: 100%; top: -9px; margin-left: 6px; }
+  .hm-item > .hm-sub.dd-menu::before { content: ""; position: absolute; right: 100%; top: 0; bottom: 0; width: 12px; }   /* keeps the hover alive across the gap */
+  .hm-item.has-sub:hover > .hm-sub.dd-menu, .hm-item.has-sub:focus-within > .hm-sub.dd-menu, .hm-item.has-sub.open > .hm-sub.dd-menu { display: block; }
+  /* the sub-pages box (the full menu's narrow-screen styles would otherwise strip it) */
+  .home-menu .hm-sub.dd-menu { background: var(--paper); border: 1px solid var(--line); border-radius: 16px; box-shadow: 0 14px 36px rgba(0,0,0,.13); padding: var(--g2); min-width: 330px; }
+  .home-menu .hm-sub.dd-menu a { padding: var(--g1) 10px; font-size: 15px; }
+  .home-menu .hm-sub .dd-sub-menu { display: none; position: absolute; left: 100%; top: calc(-1 * var(--g2) - 1px); margin-left: 4px; min-width: 300px; background: var(--paper); border: 1px solid var(--line); border-radius: 16px; box-shadow: 0 14px 36px rgba(0,0,0,.13); padding: var(--g2); }
+  .home-menu .hm-sub .dd-sub:hover > .dd-sub-menu, .home-menu .hm-sub .dd-sub:focus-within > .dd-sub-menu { display: block; }
+  .hm-theme { display: none; padding: 8px 12px 4px; border-top: 1px solid var(--line); margin-top: 4px; }
+  @media (max-width: 520px) { body.is-home .topbar > .wrap > .theme { display: none !important; } body.is-home .tb-auth { margin-left: auto; } .hm-theme { display: block; } }
+  @media (max-width: 760px) {
+    .home-menu { position: static; }
+    .home-menu .hm-sub.dd-menu { min-width: 0; box-shadow: none; padding: 6px; } .home-menu .hm-sub .dd-sub-menu { display: block; position: static; box-shadow: none; border: 0; margin: 0; padding: 0 0 0 10px; min-width: 0; } .hm-panel { left: 12px; right: 12px; top: 64px; min-width: 0; }
+    .hm-item > .hm-sub.dd-menu { position: static; margin: 4px 0 6px; min-width: 0; box-shadow: none; }
+    .hm-item.has-sub > a::after { transform: rotate(135deg); } .hm-item.has-sub.open > a::after { transform: rotate(-45deg); }
+    .hm-item.has-sub:hover:not(.open) > .hm-sub.dd-menu { display: none; }
+    .hm-sub .dd-sub-menu { position: static; margin: 4px 0 0; box-shadow: none; }
+  }
+  @media (prefers-reduced-motion: reduce) { .hm-panel, .hm-bars i { transition: none; } }
   body.is-home .brand { display: none; }
   .mini-dlg { border: 0; border-radius: 22px; padding: var(--g4); width: min(460px, calc(100vw - 32px)); background: var(--paper); color: var(--ink); box-shadow: 0 24px 60px rgba(0,0,0,.25); }
   .mini-dlg::backdrop { background: rgba(0,0,0,.4); }
@@ -1271,6 +1305,7 @@
 <div class="topbar"><div class="wrap">
   <a class="brand" href="#/" aria-label="ASLP home"><span class="b-home"><img class="on-light" src="brand/acronym-h.webp" alt="ASLP"><img class="on-dark" src="brand/acronym-h-dark.webp" alt="ASLP"></span><span class="b-inner"><img class="on-light" src="brand/fullname-h.webp" alt="Asia-Pacific Sharing &amp; Learning Programme"><img class="on-dark" src="brand/fullname-h-dark.webp" alt="Asia-Pacific Sharing &amp; Learning Programme"></span></a>
   <button type="button" class="share-top" id="share-btn"><svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12M7 8l5-5 5 5M5 13v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>Share</button>
+  <div class="home-menu" id="home-menu"><button type="button" class="hm-btn" id="hm-btn" aria-expanded="false" aria-controls="hm-panel"><span class="hm-bars" aria-hidden="true"><i></i><i></i><i></i></span>Menu</button><div class="hm-panel" id="hm-panel" role="menu"></div></div>
   <button class="menu-btn" id="menu-btn" aria-expanded="false" aria-controls="menu">Menu</button>
   <nav class="menu" id="menu" aria-label="Main">
     <a href="#/" data-nav="home">Home</a>
@@ -1813,6 +1848,35 @@ function pageHistory() {
       <div class="hi-next"><a class="btn fill" href="#/about">About ASLP today</a><a class="btn" href="#/cwgs">Meet the Cluster Working Groups</a></div>
     </div>`;
 }
+// ---- home page Menu: the main sections, each opening to its own pages on hover (or a tap on touch screens) ----
+(function homeMenu() {
+  const box = $("home-menu"), btn = $("hm-btn"), panel = $("hm-panel"); if (!box) return;
+  const touch = () => matchMedia("(hover: none)").matches;
+  const build = () => {
+    const items = [...$("menu").children].filter(el => !el.classList.contains("theme-in-menu") && el.getAttribute("data-nav") !== "home").map(el => {
+      if (el.classList.contains("dd")) { const top = el.querySelector(".dd-top"), sub = el.querySelector(".dd-menu");
+        return `<div class="hm-item has-sub"><a href="${top.getAttribute("href")}" role="menuitem" aria-haspopup="true">${esc(top.textContent.trim())}</a><div class="hm-sub dd-menu">${sub ? sub.innerHTML : ""}</div></div>`; }
+      return `<div class="hm-item"><a href="${el.getAttribute("href")}" role="menuitem">${esc(el.textContent.trim())}</a></div>`; }).join("");
+    const th = document.querySelector(".topbar .theme");
+    panel.innerHTML = `<div class="hm-list">${items}${th ? `<div class="hm-theme">${th.outerHTML.replace('class="seg theme"', 'class="seg"')}</div>` : ""}</div>`;
+  };
+  const open = on => { if (on) build(); box.classList.toggle("open", on); btn.setAttribute("aria-expanded", on); };
+  box.addEventListener("mouseenter", () => { if (!touch()) build(); });
+  btn.addEventListener("focus", build);
+  btn.addEventListener("click", e => { e.stopPropagation(); open(!box.classList.contains("open")); });
+  panel.addEventListener("click", e => {
+    const tb = e.target.closest("[data-theme-set]");
+    if (tb) { e.stopPropagation(); const real = document.querySelector(`.topbar .theme [data-theme-set="${tb.dataset.themeSet}"]`); if (real) real.click();
+      panel.querySelectorAll("[data-theme-set]").forEach(b => b.classList.toggle("on", b === tb)); return; }
+    const top = e.target.closest(".hm-item.has-sub > a");
+    // on touch screens the first tap on a section opens its pages; the second follows the link
+    if (top && touch() && !top.parentElement.classList.contains("open")) { e.preventDefault(); panel.querySelectorAll(".hm-item.open").forEach(x => x.classList.remove("open")); top.parentElement.classList.add("open"); return; }
+    if (e.target.closest("a")) { open(false); if (document.activeElement) document.activeElement.blur(); }
+  });
+  document.addEventListener("click", e => { if (!box.contains(e.target)) open(false); });
+  document.addEventListener("keydown", e => { if (e.key === "Escape" && box.classList.contains("open")) { open(false); btn.focus(); } });
+  window.addEventListener("hashchange", () => open(false));
+})();
 // photo viewer for the history page
 function openLightbox(y, k) {
   const h = HISTORY.find(x => x.y === y); if (!h || !h.photos) return;
