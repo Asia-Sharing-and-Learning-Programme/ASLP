@@ -3526,7 +3526,7 @@ const artBrand = src => { const [t, x] = String(src || "").split("|");
 // only safe formatting survives, on the website and when pasting from Word
 function sanitizeArt(html) {
   const doc = new DOMParser().parseFromString(`<div>${html || ""}</div>`, "text/html"), out = document.createElement("div");
-  const OK = { P: "p", H2: "h2", H3: "h3", STRONG: "strong", B: "strong", EM: "em", I: "em", U: "u", UL: "ul", OL: "ol", LI: "li", BLOCKQUOTE: "blockquote", A: "a", BR: "br", FIGURE: "figure", IMG: "img", FIGCAPTION: "figcaption", HR: "hr", H1: "h2", H4: "h3", DIV: "p" };
+  const OK = { P: "p", H2: "h2", H3: "h3", UL: "ul", OL: "ol", LI: "li", BLOCKQUOTE: "blockquote", A: "a", BR: "br", FIGURE: "figure", IMG: "img", FIGCAPTION: "figcaption", HR: "hr", H1: "h2", H4: "h3", DIV: "p" };
   const walk = (from, to) => from.childNodes.forEach(n => {
     if (n.nodeType === 3) { to.appendChild(document.createTextNode(n.data)); return; }
     if (n.nodeType !== 1) return;
@@ -3536,8 +3536,6 @@ function sanitizeArt(html) {
     const el = document.createElement(tag);
     if (tag === "a") { const h = n.getAttribute("href") || ""; if (!/^(https?:|mailto:)/i.test(h)) { walk(n, to); return; } el.href = h; el.target = "_blank"; el.rel = "noopener noreferrer"; }
     if (tag === "img") { const s = n.getAttribute("src") || ""; if (!/^https:\/\//i.test(s)) return; el.src = s; el.alt = (n.getAttribute("alt") || "").slice(0, 200); el.loading = "lazy"; }
-    const al = (n.style && n.style.textAlign) || n.getAttribute("align") || "";
-    if (/^(p|h2|h3)$/.test(tag) && /^(center|right|justify)$/.test(al)) el.style.textAlign = al;
     to.appendChild(el); if (tag !== "img" && tag !== "br" && tag !== "hr") walk(n, el);
   });
   walk(doc.body.firstChild, out);
@@ -3682,20 +3680,19 @@ function updateEditor(u, redraw) {
       <div class="ed-field"><span>Template <span class="ed-hint">How the article will look on the website, with the ASLP logo and ${esc(artBrand(P.src).name)}'s branding. You can switch any time; your text stays.</span></span>
         <div class="art-tpls" role="radiogroup" aria-label="Template">${ART_TPLS.map(([n, l, d]) => `<button type="button" class="art-tpl${st.art.tpl === n ? " on" : ""}" role="radio" aria-checked="${st.art.tpl === n}" data-tpl="${n}">
           <span class="art-thumb" aria-hidden="true"><span class="art-thumb-in">${artPage({ tpl: n, title: P.title || "Your article title", date: P.date, src: P.src, html: ART_SAMPLE })}</span></span><b>${l}</b><small>${d}</small></button>`).join("")}</div></div>
-      <div class="ed-field"><span>Your article <span class="ed-hint">Type straight onto the page. The title comes from the Title box above. Pasting from Word keeps headings, bold, lists and links.</span></span>
-        <div class="art-bar" role="toolbar" aria-label="Formatting">
-          <button type="button" data-ac="p" title="Normal text">Text</button><button type="button" data-ac="h2" title="Heading">Heading</button><button type="button" data-ac="h3" title="Smaller heading">Subheading</button><i class="sep"></i>
-          <button type="button" data-ac="bold" title="Bold"><b>B</b></button><button type="button" data-ac="italic" title="Italic"><i>I</i></button><button type="button" data-ac="underline" title="Underline"><u>U</u></button><i class="sep"></i>
-          <button type="button" data-ac="ul" title="Bulleted list">• List</button><button type="button" data-ac="ol" title="Numbered list">1. List</button><button type="button" data-ac="quote" title="Quote">“ Quote</button><button type="button" data-ac="hr" title="Divider">Divider</button><i class="sep"></i>
-          <button type="button" data-ac="center" title="Centre">Centre</button><button type="button" data-ac="left" title="Align left">Left</button><i class="sep"></i>
-          <button type="button" data-ac="link" title="Add a link">Link</button><button type="button" data-ac="img" title="Add a picture">Picture</button><i class="sep"></i>
-          <button type="button" data-ac="undo" title="Undo">Undo</button><button type="button" data-ac="redo" title="Redo">Redo</button><button type="button" data-ac="clear" title="Remove formatting">Clear</button></div>
+      <div class="ed-field"><span>Your article <span class="ed-hint">Type straight onto the page and mark each part as a heading, text, bullets, a quote or a picture. Fonts, sizes and colours are set by the ASLP branding, so every article looks the same. The title comes from the Title box above. Pasting from Word keeps the headings, lists and links only.</span></span>
+        <div class="art-bar" role="toolbar" aria-label="Parts of the article">
+          <button type="button" data-ac="h2" title="A section heading">Heading</button><button type="button" data-ac="h3" title="A smaller heading inside a section">Subheading</button><button type="button" data-ac="p" title="Normal paragraph">Text</button><i class="sep"></i>
+          <button type="button" data-ac="ul" title="Bulleted list">Bullets</button><button type="button" data-ac="ol" title="Numbered list">Numbered list</button><button type="button" data-ac="quote" title="A quote from someone">Quote</button><i class="sep"></i>
+          <button type="button" data-ac="img" title="Add a picture with a caption">Picture</button><button type="button" data-ac="link" title="Link the selected words to a web page">Link</button><i class="sep"></i>
+          <button type="button" data-ac="undo" title="Undo">Undo</button><button type="button" data-ac="redo" title="Redo">Redo</button></div>
         <div class="art-link" id="art-link" hidden><input type="url" id="art-url" placeholder="https://…" aria-label="Link address"><button type="button" class="btn fill sm" id="art-url-ok">Add link</button><button type="button" class="btn sm" id="art-url-x">Cancel</button></div>
         <div class="art-desk">${artPage({ tpl: st.art.tpl, ...P, html: st.art.html, edit: true })}</div>
         <input type="file" id="art-img-in" accept="image/*" hidden></div></div>`;
     requestAnimationFrame(fitThumbs);
     const ed = artBody();
     try { document.execCommand("defaultParagraphSeparator", false, "p"); } catch (e) {}
+    ed.addEventListener("keydown", e => { if ((e.ctrlKey || e.metaKey) && /^[biu]$/i.test(e.key)) e.preventDefault(); });
     ed.addEventListener("input", artSync);
     ed.addEventListener("focus", () => { if (!ed.innerHTML.trim()) { ed.innerHTML = "<p><br></p>"; const r = document.createRange(); r.setStart(ed.firstChild, 0); r.collapse(true); const sel = getSelection(); sel.removeAllRanges(); sel.addRange(r); } });
     ed.addEventListener("blur", () => { if (!artText(ed.innerHTML) && !ed.querySelector("img")) { ed.innerHTML = ""; artSync(); } });
