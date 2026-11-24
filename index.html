@@ -1321,7 +1321,9 @@
   .art .a-p2pfx { display: grid; grid-template-columns: minmax(0, 1fr) 36%; gap: 4%; align-items: center; margin-bottom: 2.4em; } .art .a-visa { padding: 8px 4px; } .art .a-p2pfx .a-facts { margin: 0; grid-template-columns: 1fr 1fr; }
   .art .a-visa > div { transform: rotate(4deg); } .art .a-p2pfx > :only-child { grid-column: 1 / -1; }
   .art .a-visa .a-stp { color: color-mix(in srgb, var(--cwg-a) 55%, #7a1f3d); }
-  .art:not(.is-edit) .a-p2pfx { display: flex; justify-content: flex-end; margin: -4px 0 2em; } .art:not(.is-edit) .a-visa { width: 46%; }
+  .art .a-stamps { display: flex; align-items: center; justify-content: center; margin: 10px 0 1.8em; padding: 8px 0; }
+  .art .a-stamps .a-visa { width: min(58%, 360px); } .art .a-stamps .a-visa > div { transform: rotate(-3deg); }
+  .art .a-stamps .a-stp-wrap { width: min(30%, 170px); margin: 0 0 0 -3%; transform: rotate(12deg); }
   /* crop */
   .crop-dlg { position: fixed; inset: 0; z-index: 1000; background: rgba(0,0,0,.6); display: grid; place-items: center; padding: 16px; }
   .crop-box { background: var(--paper); color: var(--ink); border-radius: 18px; padding: 18px; width: min(760px, 100%); max-height: 100%; overflow: auto; display: grid; gap: 12px; box-shadow: 0 20px 60px rgba(0,0,0,.35); }
@@ -3802,7 +3804,9 @@ function artPage({ tpl, title, date, src, html, edit, demo, photos, gal, form, f
   const foot = `<div class="a-foot"><span class="a-lll"><b>Listen.</b> <b>Learn.</b> <b>Lead.</b></span><span>${esc(b.name)} · Asia-Pacific Sharing &amp; Learning Programme</span></div>`;
   const inner = {
     general: () => `${head}<div class="a-main">${slot("hero", "x-hero")}${h1}${meta}${body}${row(["g1", "g2"], "x-duo")}</div>`,
-    p2p: () => { const v = fv || {}; return `${head}<div class="a-main"><div class="a-p2ph"><div><div class="a-kicker">Programme-to-programme learning visit</div>${h1}${meta}</div><div class="a-stp-wrap" data-stamp="round">${stampRound(dShort(v), v.where)}</div></div><div class="a-p2pfx">${edit ? fx : ""}<div class="a-visa"><div data-stamp="visa">${stampVisa(v.from, v.to, dLong(v))}</div></div></div>${row(["a", "b"], "x-duo x-tall")}${body}${row(["g1", "g2", "g3"], "x-trio")}</div>`; },
+    p2p: () => { const v = fv || {}, round = `<div class="a-stp-wrap" data-stamp="round">${stampRound(dShort(v), v.where)}</div>`, visa = `<div data-stamp="visa">${stampVisa(v.from, v.to, dLong(v))}</div>`;
+      return edit ? `${head}<div class="a-main"><div class="a-p2ph"><div><div class="a-kicker">Programme-to-programme learning visit</div>${h1}${meta}</div>${round}</div><div class="a-p2pfx">${fx}<div class="a-visa">${visa}</div></div>${row(["a", "b"], "x-duo x-tall")}${body}${row(["g1", "g2", "g3"], "x-trio")}</div>`
+        : `${head}<div class="a-main"><div class="a-kicker">Programme-to-programme learning visit</div>${h1}${meta}<div class="a-stamps"><div class="a-visa">${visa}</div>${round}</div>${row(["a", "b"], "x-duo x-tall")}${body}${row(["g1", "g2", "g3"], "x-trio")}</div>`; },
     training: () => `${cover("Training")}<div class="a-main">${slot("hero", "x-hero x-lift")}${fx}${body}${row(["g1", "g2", "g3", "g4"], "x-quad")}</div>`,
     workshop: () => `${head}<div class="a-main"><div class="a-kicker a-notes"><i></i><i></i><i></i>Workshop</div>${h1}${meta}${fx}${slot("hero", "x-hero x-wide")}${body}${row(["g1", "g2", "g3"], "x-trio")}</div>`,
     meeting: () => `${head}<div class="a-main"><div class="a-kicker a-table"><i></i><i></i><i></i><i></i>CWG meeting</div>${h1}${meta}${fx}${slot("hero", "x-hero x-wide")}${body}${row(["g1", "g2", "g3"], "x-trio")}</div>`,
