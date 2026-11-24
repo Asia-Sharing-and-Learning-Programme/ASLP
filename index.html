@@ -3187,9 +3187,20 @@ function groupEditor(key) {
 const UPB = () => db.storage.from("updates");
 const newId = () => (crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36).slice(2));
 const safeName = n => String(n || "file").toLowerCase().replace(/[^a-z0-9.]+/g, "-").replace(/^-+|-+$/g, "") || "file";
+// the upload that's running now: Stop or Cancel sets .stopped, and everything it uploaded is listed so it can be removed
+let UPCTX = null;
+class UpStop extends Error { constructor() { super("Upload stopped."); this.stop = true; } }
+const upCheck = () => { if (UPCTX && UPCTX.stopped) throw new UpStop(); };
+async function upRemove(paths, drive) {
+  const ps = [...new Set(paths)].filter(Boolean);
+  for (let i = 0; i < ps.length; i += 100) await UPB().remove(ps.slice(i, i + 100)).catch(() => {});
+  for (const id of new Set(drive)) if (id) await db.functions.invoke("drive-upload", { body: { action: "delete", fileId: id } }).catch(() => {});
+}
 async function upPut(path, blob, type) {
+  upCheck(); const ctx = UPCTX;
   const { error } = await UPB().upload(path, blob, { contentType: type, upsert: true, cacheControl: "31536000" });
   if (error) throw new Error(/row-level|security|unauthor/i.test(error.message || "") ? "You don't have permission to upload for this CWG." : (error.message || "The upload didn't work."));
+  if (ctx) ctx.paths.push(path); upCheck();
   return UPB().getPublicUrl(path).data.publicUrl;
 }
 const pathOf = url => { const m = String(url || "").match(/\/object\/public\/updates\/(.+)$/); return m ? decodeURIComponent(m[1]) : ""; };
@@ -3209,13 +3220,14 @@ async function driveUpload(file, slug, type, note) {
     if (data && data.error) throw new Error(data.error); return data; };
   const st = await call({ action: "start", folder: slug, name: file.name, size: file.size, type });
   const res = await new Promise((ok, bad) => {
-    const x = new XMLHttpRequest(); x.open("PUT", st.uploadUrl); x.setRequestHeader("Content-Type", type);
+    upCheck(); const x = new XMLHttpRequest(); if (UPCTX) UPCTX.xhr = x; x.onabort = () => bad(new UpStop()); x.open("PUT", st.uploadUrl); x.setRequestHeader("Content-Type", type);
     x.upload.onprogress = e => { if (e.lengthComputable) note(`Uploading the file to Google Drive… ${Math.floor(e.loaded / e.total * 100)}%`); };
     x.onload = () => { if (x.status >= 200 && x.status < 300) { try { ok(JSON.parse(x.responseText || "{}")); } catch (e) { bad(new Error("Google Drive gave an unexpected answer.")); } } else bad(new Error(`Google Drive didn't accept the file (${x.status}).`)); };
     x.onerror = () => bad(new Error("The upload was interrupted. Check your connection and try again."));
     x.send(file);
   });
   if (!res.id) throw new Error("Google Drive didn't return the file.");
+  if (UPCTX) { UPCTX.drive.push(res.id); UPCTX.xhr = null; } upCheck();
   note("Finishing the upload…");
   const fin = await call({ action: "finish", fileId: res.id });
   return { url: fin.url, download: fin.download, drive: res.id };
@@ -3224,7 +3236,7 @@ async function driveUpload(file, slug, type, note) {
 async function keepOriginal(file, folder, type, kind, note) {
   if (file.size <= STORE_MAX) { note(`Uploading the ${kind}…`); return { url: await upPut(`${folder}/${safeName(file.name)}`, file, type) }; }
   try { return await driveUpload(file, folder.split("/")[0], type, note); }
-  catch (e) { console.error(e); return { url: null, big: true, driveError: (e && e.message) || "" }; }
+  catch (e) { if (e && e.stop) throw e; console.error(e); return { url: null, big: true, driveError: (e && e.message) || "" }; }
 }
 async function processPdf(file, folder, note) {
   await loadScript("vendor/pdf.min.js"); window.pdfjsLib.GlobalWorkerOptions.workerSrc = "vendor/pdf.worker.min.js";
@@ -3297,7 +3309,7 @@ async function processPptx(file, folder, note) {
       if (!(m in done)) {
         note(`Preparing picture ${++k} of ${total}…`); done[m] = "";
         try { const im = await shrinkImage(await zip.file(m).async("blob"));
-          if (im.w >= 100 || im.h >= 100) done[m] = await upPut(`${folder}/img-${k}.${im.ext}`, im.blob, im.blob.type); } catch (e) {}
+          if (im.w >= 100 || im.h >= 100) done[m] = await upPut(`${folder}/img-${k}.${im.ext}`, im.blob, im.blob.type); } catch (e) { if (e && e.stop) throw e; }
       }
       if (done[m]) s.images.push(done[m]);
     }
@@ -3382,6 +3394,21 @@ function updateEditor(u, redraw) {
     folder: (u.file && pathOf(u.file.url).replace(/\/[^/]+$/, "")) || "" };
   const srcSlugOf = v => { const [t, x] = v.split("|"); return t === "group" ? x : cwgSlug(x); };
   const folder = () => st.folder || (st.folder = `${srcSlugOf($("ue-cwg").value)}/${newId()}`);
+  // everything uploaded while this editor is open, so Cancel can remove it; what the saved update already uses is kept
+  const urlsOf = x => [x.file && x.file.url, ...(x.pages || []), ...(x.photos || []), ...(x.slides || []).flatMap(s => s.images || []), ...(x.sections || []).flatMap(s => s.images || [])];
+  const keepPaths = new Set(u.id ? urlsOf(u).map(pathOf) : []), keepDrive = u.id && u.file && u.file.drive;
+  const sess = { paths: [], drive: [] };
+  const stopBtn = on => { const b = $("ue-stop"); if (b) b.hidden = !on; };
+  async function op(fn, onStop) {
+    const ctx = { stopped: false, paths: [], drive: [], xhr: null }; st.ctx = ctx; UPCTX = ctx; st.busy = true; $("ue-save").disabled = true; stopBtn(true);
+    const run = (async () => { try { await fn(); }
+      catch (e) { if (!(e && e.stop)) throw e;
+        await upRemove(ctx.paths, ctx.drive); ctx.paths = []; ctx.drive = []; if (onStop && !ctx.closing) onStop(); } })();
+    st.op = run;
+    try { await run; } finally { sess.paths.push(...ctx.paths); sess.drive.push(...ctx.drive);
+      if (UPCTX === ctx) UPCTX = null; st.ctx = null; st.op = null; st.busy = false; if ($("ue-save")) $("ue-save").disabled = false; stopBtn(false); }
+  }
+  const stopOp = closing => { const c = st.ctx; if (!c) return; c.stopped = true; c.closing = !!closing; if (c.xhr) try { c.xhr.abort(); } catch (e) {} };
   box.innerHTML = `<div class="up-ed"><h3 class="h3">${st.id ? "Edit this update" : "New update"}</h3>
     <div class="ed-grid">
       <label><span>Post to</span><select id="ue-cwg">
@@ -3396,7 +3423,7 @@ function updateEditor(u, redraw) {
       <div class="full ed-field"><span>Photos <span class="ed-hint">optional, shown with the update</span></span>
         <div id="ue-photos"></div><label class="btn sm" style="justify-self:start;cursor:pointer;margin-top:6px">Add photos<input type="file" id="ue-ph-in" accept="image/*" multiple hidden></label></div>
     </div>
-    <div class="ed-actions"><button type="button" class="btn fill sm" id="ue-save">${st.id ? "Save changes" : "Publish the update"}</button><button type="button" class="btn sm" id="ue-cancel">Cancel</button><span class="ed-msg" id="ue-msg" role="status"></span></div></div>`;
+    <div class="ed-actions"><button type="button" class="btn fill sm" id="ue-save">${st.id ? "Save changes" : "Publish the update"}</button><button type="button" class="btn sm" id="ue-cancel">Cancel</button><button type="button" class="btn sm" id="ue-stop" hidden>Stop uploading</button><span class="ed-msg" id="ue-msg" role="status"></span></div></div>`;
   const msg = (t, c = "") => { const m = $("ue-msg"); m.className = "ed-msg " + c; m.innerHTML = t; };
   if (u.kind === "pptx" && !Array.isArray(u.sections) && !(u.body || "").trim() && (u.slides || []).length) $("ue-body").value = slidesToSections(u.slides).intro;
   const dkey = `upd:${st.id || "new"}`; box.dataset.draft = dkey;
@@ -3451,12 +3478,12 @@ function updateEditor(u, redraw) {
   $("ue-file").addEventListener("change", async e => {
     const inp = e.target.closest("[data-sadd]"); if (!inp) return; e.stopPropagation();
     const i = +inp.closest("[data-si]").dataset.si, fs = [...inp.files]; inp.value = ""; if (!fs.length || st.busy) return;
-    st.busy = true; $("ue-save").disabled = true;
-    try { for (let k = 0; k < fs.length; k++) { msg(loader(`Uploading picture ${k + 1} of ${fs.length}…`, "sm inline"));
-        const im = await shrinkImage(fs[k]); st.sections[i].images.push(await upPut(`${folder()}/sec-${newId().slice(0, 8)}.${im.ext}`, im.blob, im.blob.type)); drawSections(); }
+    const before = [...st.sections[i].images];
+    await op(async () => { try { for (let k = 0; k < fs.length; k++) { msg(loader(`Uploading picture ${k + 1} of ${fs.length}…`, "sm inline"));
+        const im = await shrinkImage(fs[k]); upCheck(); st.sections[i].images.push(await upPut(`${folder()}/sec-${newId().slice(0, 8)}.${im.ext}`, im.blob, im.blob.type)); drawSections(); }
       keep(); msg("Pictures added.", "ok");
-    } catch (er) { msg(esc(er && er.message) || "A picture couldn't be uploaded.", "err"); }
-    st.busy = false; $("ue-save").disabled = false;
+    } catch (er) { if (er && er.stop) throw er; msg(esc(er && er.message) || "A picture couldn't be uploaded.", "err"); } },
+      () => { if (st.sections[i]) st.sections[i].images = before; drawSections(); keep(); msg("Upload stopped. The pictures from it were removed."); });
   });
   const drawPhotos = () => { $("ue-photos").innerHTML = st.photos.length ? `<div class="prev-strip">${st.photos.map((p, k) => `<span style="position:relative;flex:0 0 auto"><img src="${esc(p)}" alt=""><button type="button" class="md-x" data-rmph="${k}" aria-label="Remove photo" style="position:absolute;top:2px;right:2px;background:#fff;border-radius:50%;width:26px;height:26px;line-height:1">×</button></span>`).join("")}</div>` : ""; };
   async function takeFile(file) {
@@ -3466,9 +3493,10 @@ function updateEditor(u, redraw) {
     if (st.kind === "pdf" && !isPdf) return msg("Choose a PDF file, or switch to \"Upload a PowerPoint\".", "err");
     if (st.kind === "pptx" && !isPptx) return msg("Choose a PowerPoint (.pptx) file, or switch to \"Upload a PDF\".", "err");
     if (file.size > 2 * 1024 * 1024 * 1024) return msg("This file is over 2 GB. Save a smaller copy (for example with compressed pictures) and try again.", "err");
-    st.busy = true; $("ue-save").disabled = true; msg("");
-    const note = t => { const p = $("ue-prog"); if (p) p.innerHTML = loader(t, "sm inline"); };
-    try {
+    msg("");
+    const note = t => { upCheck(); const p = $("ue-prog"); if (p) p.innerHTML = loader(t, "sm inline"); };
+    const oldFolder = st.folder;
+    await op(async () => { try {
       st.folder = `${srcSlugOf($("ue-cwg").value)}/${newId()}`;
       const r = isPdf ? await processPdf(file, folder(), note) : await processPptx(file, folder(), note);
       st.file = r.file; st.pages = r.pages || []; st.slides = r.slides || [];
@@ -3478,21 +3506,31 @@ function updateEditor(u, redraw) {
       msg(r.file.drive ? `Ready. The full file is saved in the ASLP Google Drive, so people can download it. Check the title, then publish.`
         : r.file.big ? `Ready, but the full file couldn't be saved to Google Drive${r.file.driveError ? ` (${esc(r.file.driveError)})` : ""}. The ${st.kind === "pdf" ? "pages" : "slides"} are kept. To let people download the file, paste a link to it below.`
         : r.more ? `Ready. Only the first 60 pages are shown on the website; the full PDF stays downloadable.` : isPptx ? "Ready. Your slides are now an article: check the title, introduction and sections below, then publish." : "Ready. Check the title, then publish.", "ok");
-    } catch (e) { console.error(e); drawKind(); msg(esc(e && e.message) || "The file couldn't be read. Try saving it again, or upload it as a PDF.", "err"); }
-    st.busy = false; $("ue-save").disabled = false;
+    } catch (e) { if (e && e.stop) throw e; console.error(e); drawKind(); msg(esc(e && e.message) || "The file couldn't be read. Try saving it again, or upload it as a PDF.", "err"); } },
+      () => { st.folder = oldFolder; drawKind(); msg("Upload stopped. Nothing from that file was kept, so you can choose another file."); });
   }
   box.querySelectorAll("[data-kind]").forEach(b => b.onclick = () => { st.kind = b.dataset.kind; drawKind(); keep(); });
   $("ue-photos").onclick = e => { const r = e.target.closest("[data-rmph]"); if (r) { st.photos.splice(+r.dataset.rmph, 1); drawPhotos(); keep(); } };
   $("ue-ph-in").onchange = async e => {
     const fs = [...e.target.files]; e.target.value = ""; if (!fs.length || st.busy) return;
-    st.busy = true; $("ue-save").disabled = true;
-    try { for (let i = 0; i < fs.length; i++) { msg(loader(`Uploading photo ${i + 1} of ${fs.length}…`, "sm inline"));
-        const im = await shrinkImage(fs[i]); st.photos.push(await upPut(`${folder()}/photo-${newId().slice(0, 8)}.${im.ext}`, im.blob, im.blob.type)); drawPhotos(); }
+    const before = [...st.photos];
+    await op(async () => { try { for (let i = 0; i < fs.length; i++) { msg(loader(`Uploading photo ${i + 1} of ${fs.length}…`, "sm inline"));
+        const im = await shrinkImage(fs[i]); upCheck(); st.photos.push(await upPut(`${folder()}/photo-${newId().slice(0, 8)}.${im.ext}`, im.blob, im.blob.type)); drawPhotos(); }
       keep(); msg("Photos added.", "ok");
-    } catch (er) { msg(esc(er && er.message) || "A photo couldn't be uploaded.", "err"); }
-    st.busy = false; $("ue-save").disabled = false;
+    } catch (er) { if (er && er.stop) throw er; msg(esc(er && er.message) || "A photo couldn't be uploaded.", "err"); } },
+      () => { st.photos = before; drawPhotos(); keep(); msg("Upload stopped. The photos from it were removed."); });
   };
-  $("ue-cancel").onclick = () => { clearTimeout(kt); putDraft(dkey, null); delete box.dataset.draft; box.innerHTML = ""; };
+  $("ue-stop").onclick = () => { stopOp(false); msg(loader("Stopping and removing what was uploaded…", "sm inline")); };
+  // Cancel: stop any upload, then remove every file uploaded for this post that the saved update doesn't use
+  $("ue-cancel").onclick = async () => {
+    const c = $("ue-cancel"); c.disabled = true; $("ue-save").disabled = true; stopBtn(false);
+    clearTimeout(kt); putDraft(dkey, null); delete box.dataset.draft;
+    if (st.op) { msg(loader("Stopping the upload…", "sm inline")); stopOp(true); await st.op.catch(() => {}); }
+    const paths = [...sess.paths, ...urlsOf(st).map(pathOf)].filter(p => p && !keepPaths.has(p));
+    const drive = [...sess.drive, st.file && st.file.drive].filter(d => d && d !== keepDrive);
+    if (paths.length || drive.length) { msg(loader("Removing the uploaded files…", "sm inline")); await upRemove(paths, drive); }
+    box.innerHTML = "";
+  };
   $("ue-save").onclick = async () => {
     const title = $("ue-title").value.trim(), body = $("ue-body").value.trim();
     if (!title) return msg("Give the update a title.", "err");
