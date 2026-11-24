@@ -1215,6 +1215,13 @@
   .gv-flow { display: grid; gap: var(--g4); margin-top: var(--g4); } .gv-grp > .h3 { margin-bottom: var(--g2); font-size: 17px; }
   .gv-grid { display: grid; gap: 12px; grid-template-columns: repeat(auto-fill, minmax(min(100%, 270px), 1fr)); }
   .gv-flow.pair .gv-grid { grid-template-columns: repeat(auto-fill, minmax(min(100%, 380px), 1fr)); }
+  .itags { display: flex; flex-wrap: wrap; gap: 8px; }
+  .itag { display: inline-flex; align-items: center; gap: 9px; padding: 4px 15px 4px 4px; border-radius: 999px; font-size: 15px; font-weight: 600; background: color-mix(in srgb, var(--tc) 11%, var(--paper)); }
+  .itag-ic { width: 36px; height: 36px; border-radius: 50%; flex: none; display: grid; place-items: center; overflow: hidden; background: color-mix(in srgb, var(--tc) 20%, var(--paper)); }
+  .itag-ic .wi { width: 28px; height: 28px; }
+  .sv-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+  .sv-list li { display: grid; gap: 4px; justify-items: start; }
+  .sv-q { font-size: 13.5px; color: var(--ink-2); line-height: 1.45; }
   .gv-card { background: var(--paper-2); border-radius: 16px; padding: 14px 16px 16px; display: grid; gap: 12px; align-content: start; scroll-margin-top: 90px; }
   .gv-top { display: flex; gap: 12px; align-items: center; }
   .gv-ic { width: 64px; height: 64px; border-radius: 16px; flex: none; display: grid; place-items: center; overflow: hidden; background: color-mix(in srgb, var(--tc) 16%, var(--paper)); }
@@ -2064,6 +2071,47 @@ const TICON = {
   "Proposal writing and fundraising": ["#e14b1e", TI("prop", `<path d="M11 4h18l8 8v32H11z"/><path d="M29 4v8h8"/><path class="ln l1" d="M16 20h16"/><path class="ln l2" d="M16 26h16"/><path class="ln l3" d="M16 32h10"/><path class="pen" d="M33 30l8-8 3 3-8 8-4 1z"/>`)],
   "Digital tools and innovation": ["#0a84ff", TI("dig", `<rect x="12" y="4" width="24" height="40" rx="4"/><path d="M21 39h6"/><path class="w1" d="M18 16c3.5-3 8.5-3 12 0"/><path class="w2" d="M20.5 20c2-1.6 5-1.6 7 0"/><circle class="hub" cx="24" cy="25" r="2"/>`)],
   "Technical expertise": ["#f5c400", TI("tech", `<path class="bulb" d="M17 30c-3-2.5-5-6-5-10a12 12 0 0 1 24 0c0 4-2 7.5-5 10v4H17z"/><path d="M18 39h12M20 43h8"/><path class="ray" d="M24 1v3M7 8l2.2 2.2M41 8l-2.2 2.2M2 20h3M43 20h3"/>`)] };
+// a thematic area or strength with its moving icon, for territory profiles
+const itags = list => `<div class="itags">${(list || []).map(k => { const [tc, ti] = TICON[k] || ["#24215f", ""];
+  return `<span class="itag" style="--tc:${tc}">${ti ? `<span class="itag-ic">${ti}</span>` : ""}<span>${esc(k)}</span></span>`; }).join("")}</div>`;
+// technical support: each territory writes it in its own words; similar offers are grouped by these fields
+const SUPPORT_FIELDS = [
+  ["Strategy development and planning", /strateg|planning|plan\b|theory of change|log ?frame|road ?map/i, "Participatory planning and facilitation"],
+  ["Project design and management", /project (design|management|cycle|planning|implementation)|program(me)? (design|management|cycle)|\bpcm\b/i, "Systems and governance"],
+  ["Proposal writing and fundraising", /proposal|fund ?rais|grant|donor|resource mobili|concept note/i, "Proposal writing and fundraising"],
+  ["Monitoring, evaluation and learning", /\bmeal\b|\bm ?& ?e\b|monitor|evaluat|baseline|endline|indicator|data|survey|learning review/i, "Monitoring, evaluation and learning"],
+  ["Financial management", /financ|budget|accounting|audit|bookkeep/i, "Financial management and stewardship"],
+  ["Disasters and emergencies", /disaster|emergenc|\bdrr\b|relief|humanitarian|risk reduction|preparedness|early warning/i, "Disaster preparedness and response"],
+  ["Climate and environment", /climate|environment|green|tree|recycl|renewable|solar/i, "Climate and environment"],
+  ["WASH", /\bwash\b|water|sanitation|hygiene|toilet|latrine/i, "WASH"],
+  ["Health and nutrition", /health|clinic|medical|hiv|nutrition|\btb\b|malaria|maternal|nurs|hospital/i, "Health"],
+  ["Education", /educat|school|literacy|tutor|early childhood|scholar/i, "Education"],
+  ["Livelihoods and savings groups", /livelihood|income|saving|self[- ]help|\bshgs?\b|micro ?(finance|credit|enterprise)|vocational|enterprise|business|agricultur|farm/i, "Livelihoods"],
+  ["Anti-human trafficking", /traffick|modern slavery|\baht\b|\bmshtr?\b|exploitation/i, "Anti-human trafficking"],
+  ["Safeguarding and protection", /safeguard|protection|abuse|\bpsea\b|child rights|rights/i, "Protection and safeguarding"],
+  ["Gender and inclusion", /gender|women|inclusi|disabilit|elderly|older people/i, "Gender equality"],
+  ["Community development approaches", /community (development|engagement|mobili|conversation|led)|community-led|\bfcd\b|\bicd\b|asset[- ]based|\babcd\b|participat|facilitat|faith[- ]based/i, "Community-led approaches"],
+  ["Faith and mission integration", /integrated mission|mission integration|integral mission|faith|spiritual|corps/i, "Faith and integrated mission"],
+  ["Working in diverse faith and cultural contexts", /interfaith|inter-faith|multi-?faith|muslim|buddhist|hindu|religious|diverse|cultur|minority/i, "Gender-responsive and inclusive approaches"],
+  ["Training and capacity building", /train|capacity|mentor|coach|workshop|orientation|induction/i, "Training and capacity building"],
+  ["Partnerships, networks and advocacy", /partner|network|advoca|government|policy|stakeholder|ngo|csr|embass/i, "Partnerships and networks"],
+  ["Research and assessments", /research|assessment|needs analysis|study|mapping/i, "Research and needs assessments"],
+  ["Digital tools and communications", /digital|\bict\b|software|database|kobo|aam digital|tola|excel|communicat|media|photo|video|report writing|story/i, "Digital tools and innovation"],
+  ["Children and youth", /youth|young people|child|adolescent|student/i, "Children, youth and families"]];
+const supportItems = p => tidyItems((p && p.techSupport) || "");
+const supportFieldsOf = line => { const hits = SUPPORT_FIELDS.filter(([, re]) => re.test(line)).map(([k]) => k); return hits.length ? hits : ["Other support"]; };
+function supportView(places) {
+  const by = {};
+  places.forEach(x => supportItems(x.p).forEach(line => supportFieldsOf(line).forEach(k => { const b = by[k] = by[k] || new Map(); (b.get(x.id) || b.set(x.id, { x, lines: [] }).get(x.id)).lines.push(line); })));
+  const keys = [...SUPPORT_FIELDS.map(f => f[0]), "Other support"].filter(k => by[k]).sort((a, b) => by[b].size - by[a].size || (a === "Other support") - (b === "Other support"));
+  if (!keys.length) return `<p class="empty">Technical support will show here once territories describe what they can offer in their profiles.</p>`;
+  const shared = keys.filter(k => k !== "Other support" && by[k].size > 1);
+  return `<div class="gv-links"><b>${shared.length ? `${shared.length} ${shared.length === 1 ? "field is" : "fields are"} offered by more than one place` : "No two places offer the same field yet"}</b>
+      ${shared.length ? `<div class="gv-shared">${shared.map(k => `<a href="#sv-${esc(k.replace(/\W+/g, "-").toLowerCase())}" class="tag gv-sh">${esc(k)} (${by[k].size})</a>`).join("")}</div>` : ""}</div>
+    <div class="gv-flow"><section class="gv-grp"><div class="gv-grid">${keys.map(k => { const f = SUPPORT_FIELDS.find(x => x[0] === k), [tc, ti] = TICON[f ? f[2] : ""] || ["#24215f", ""], es = [...by[k].values()];
+      return `<div class="gv-card sv-card" style="--tc:${tc}" id="sv-${esc(k.replace(/\W+/g, "-").toLowerCase())}"><div class="gv-top">${ti ? `<div class="gv-ic">${ti}</div>` : ""}<div class="gv-k"><b>${esc(k)}</b><span>${es.length} ${es.length === 1 ? "place offers" : "places offer"} this</span></div></div>
+        <ul class="sv-list">${es.map(({ x, lines }) => `<li>${placeChip(x)}<span class="sv-q">${lines.map(esc).join("; ")}</span></li>`).join("")}</ul></div>`; }).join("")}</div></section></div>`;
+}
 function groupedView(places, groups, pick, cwgPair, emptyMsg) {
   const by = {}; places.forEach(x => pick(x).forEach(k => (by[k] = by[k] || []).push(x)));
   const used = groups.map(([g, xs]) => [g, xs.filter(k => by[k])]).filter(([, xs]) => xs.length);
@@ -2092,12 +2140,14 @@ function pageCwgs() {
       ${cwgExplainer()}
       ${fundPanel(null, "Every territory, command and region in the four CWGs can ask the programme to fund these six activities. Many haven't used this yet.")}
       <div class="aslp-map" id="map-all" role="region" aria-label="Map of ASLP territorial and regional headquarters"></div>${zoneLegend(["SPEA", "SASIA"])}
-      ${viewSwitch("cwgs", [["cwg", "By CWG"], ["theme", "By thematic area"], ["str", "By strength"]])}
+      ${viewSwitch("cwgs", [["cwg", "By CWG"], ["theme", "By thematic area"], ["str", "By strength"], ["sup", "By technical support"]])}
       <div data-vpane="cwgs" data-vk2="cwg">${ZONES.map(zoneSection).join("")}</div>
       <div data-vpane="cwgs" data-vk2="theme" hidden><p class="lede gv-lede">Every territory and region in SPEA and SASIA, grouped by the thematic areas they work in. Select one to open its profile.</p>
         ${groupedView(placesIn(cwgList()), [["", THEME_LIST]], x => themesOf(x.p), null, "Thematic areas will show here once territories add them to their profiles.")}</div>
       <div data-vpane="cwgs" data-vk2="str" hidden><p class="lede gv-lede">Every territory and region in SPEA and SASIA, grouped by their strengths. Select one to open its profile.</p>
         ${groupedView(placesIn(cwgList()), STRENGTH_GROUPS, x => strengthsOf(x.p), null, "Strengths will show here once territories pick them in their profiles.")}</div>
+      <div data-vpane="cwgs" data-vk2="sup" hidden><p class="lede gv-lede">The technical support each territory, command and region says it can offer, grouped by field. Places in the same field can learn from each other, and anyone needing help in a field can see whom to ask. Each place's own words are shown under its name.</p>
+        ${supportView(placesIn(cwgList()))}</div>
     </div>`;
 }
 function pageZone(zk) {
@@ -2175,8 +2225,8 @@ function pageTerritory(id) {
           ${p.workAreas ? tidyHtml(p.workAreas, "margin-top:var(--g3)") : ""}
         </div>
         ${unitsOf(t.id).length ? `<div class="t-sec"><h2 class="h3">Regions, divisions and countries</h2><div class="terr-grid">${unitRows(unitsOf(t.id))}</div></div>` : ""}
-        ${sec("Thematic areas", themesOf(p).length ? tags(themesOf(p)) : "", "Thematic areas will appear here once the territory adds them.")}
-        ${sec("Strengths", strengthsOf(p).length ? tags(strengthsOf(p)) : "", "Strengths will appear here once the territory adds them.")}
+        ${sec("Thematic areas", themesOf(p).length ? itags(themesOf(p)) : "", "Thematic areas will appear here once the territory adds them.")}
+        ${sec("Strengths", strengthsOf(p).length ? itags(strengthsOf(p)) : "", "Strengths will appear here once the territory adds them.")}
         ${sec("Technical support they can offer other territories", p.techSupport ? tidyHtml(p.techSupport) : "", "Support offers will appear here once the territory adds them.")}
       </div>
       <aside>
@@ -2258,8 +2308,8 @@ function pageUnit(u) {
         <div class="t-sec"><h2 class="h3">Where they work</h2>
           <div class="aslp-map sm" id="map-terr" role="region" aria-label="Map of ${esc(u.name)}"></div>
           ${p.workAreas ? tidyHtml(p.workAreas, "margin-top:var(--g3)") : ""}</div>
-        ${sec("Thematic areas", themesOf(p).length ? tags(themesOf(p)) : "", `Thematic areas will appear here once ${esc(u.name)} adds them.`)}
-        ${sec("Strengths", strengthsOf(p).length ? tags(strengthsOf(p)) : "", `Strengths will appear here once ${esc(u.name)} adds them.`)}
+        ${sec("Thematic areas", themesOf(p).length ? itags(themesOf(p)) : "", `Thematic areas will appear here once ${esc(u.name)} adds them.`)}
+        ${sec("Strengths", strengthsOf(p).length ? itags(strengthsOf(p)) : "", `Strengths will appear here once ${esc(u.name)} adds them.`)}
         ${sec("Technical support they can offer others", p.techSupport ? tidyHtml(p.techSupport) : "", "Support offers will appear here once they're added.")}
       </div>
       <aside>
