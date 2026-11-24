@@ -1309,14 +1309,15 @@
   .art .a-p2ph { display: grid; grid-template-columns: 1fr auto; gap: 4%; align-items: start; }
   .art .a-stp { display: block; width: 100%; height: auto; color: var(--cwg-a); opacity: .92; mix-blend-mode: multiply; }
   .art .a-stp-wrap { width: clamp(92px, 19cqi, 150px); margin-top: 6px; transform: rotate(-11deg); }
-  .art .a-fxw { min-width: 0; } .art .a-fxw .a-facts { margin: 0; }
+  .art .a-fxw { min-width: 0; } .art .a-main > .a-fxw { margin-bottom: 1.4em; } .art .a-fxw .a-facts { margin: 0; }
   .art .a-facts .a-pick { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; } .art .a-pick-sel { flex: 1 1 100%; width: 100%; min-width: 0; max-width: 100%; padding: 6px 8px; text-overflow: ellipsis; }
   .art .a-facts dd, .art .a-facts > div, .art .a-pk { min-width: 0; } .art .a-facts select { box-sizing: border-box; }
   .art .a-chip-p { max-width: 100%; } .art .a-chip-p { overflow-wrap: anywhere; }
   .art .a-chip-p { display: inline-flex; align-items: center; gap: 4px; background: var(--cwg-a); color: #fff; font-size: 13px; font-weight: 750; padding: 4px 4px 4px 10px; border-radius: 999px; }
   .art .a-chip-p button { border: 0; background: rgba(255,255,255,.25); color: #fff; width: 20px; height: 20px; border-radius: 50%; cursor: pointer; font-size: 13px; line-height: 1; }
   .art .a-pk-h { display: block; margin-top: 4px; font-size: 11.5px; color: #888; } .art .a-facts [data-pick-other] { margin-top: 6px; }
-  .art .a-facts.is-form .a-pk { grid-column: 1 / -1; }
+  .art .a-facts.is-form .a-pk, .art .a-facts.is-form .a-dates { grid-column: 1 / -1; }
+  .art .a-dt { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; } .art .a-dt label { display: grid; gap: 3px; font-size: 11.5px; font-weight: 700; color: #666; } .art .a-dt em { font-style: normal; font-weight: 500; color: #999; }
   .art .a-p2pfx { display: grid; grid-template-columns: minmax(0, 1fr) 36%; gap: 4%; align-items: center; margin-bottom: 2.4em; } .art .a-visa { padding: 8px 4px; } .art .a-p2pfx .a-facts { margin: 0; grid-template-columns: 1fr 1fr; }
   .art .a-visa > div { transform: rotate(4deg); } .art .a-p2pfx > :only-child { grid-column: 1 / -1; }
   .art .a-visa .a-stp { color: color-mix(in srgb, var(--cwg-a) 55%, #7a1f3d); }
@@ -3697,6 +3698,24 @@ const tplKey = v => ({ 1: "general", 2: "training", 3: "general", 4: "field" })[
 const factsOf = (T, d) => (T.facts || []).map(([k, l]) => [l, String(((d && d.facts) || {})[k] || "").trim()]).filter(x => x[1]).map(([l, v]) => [l, esc(v)]);
 const factsBox = list => list.length ? `<dl class="a-facts">${list.map(([l, v]) => `<div><dt>${esc(l)}</dt><dd>${v}</dd></div>`).join("")}</dl>` : "";
 const MEGA = `<svg viewBox="0 0 48 48" aria-hidden="true"><path d="M6 20v8h6l18 10V10L12 20z" fill="currentColor"/><path d="M14 30l3 10h5l-2-8" fill="currentColor"/><path d="M36 17c3 4 3 10 0 14M40 12c6 7 6 17 0 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg>`;
+// dates picked on a calendar: "when" is shown in words; the stamps use DD.MM.YY (round) and DD.Month.YYYY (visa)
+const MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+const ymd = v => { const m = String(v || "").match(/^(\d{4})-(\d{2})-(\d{2})$/); return m ? { y: +m[1], m: +m[2], d: +m[3] } : null; };
+const p2 = n => String(n).padStart(2, "0");
+function whenText(f) { const a = ymd(f.whenStart), b = ymd(f.whenEnd); if (!a) return "";
+  const t = f.whenTime ? `, ${f.whenTime}` : "";
+  if (!b || f.whenEnd === f.whenStart) return `${a.d} ${MONTHS[a.m - 1]} ${a.y}${t}`;
+  if (a.y === b.y && a.m === b.m) return `${a.d}–${b.d} ${MONTHS[a.m - 1]} ${a.y}`;
+  if (a.y === b.y) return `${a.d} ${MONTHS[a.m - 1]} – ${b.d} ${MONTHS[b.m - 1]} ${a.y}`;
+  return `${a.d} ${MONTHS[a.m - 1]} ${a.y} – ${b.d} ${MONTHS[b.m - 1]} ${b.y}`; }
+function dShort(f) { f = f || {}; const a = ymd(f.whenStart), b = ymd(f.whenEnd), one = x => `${p2(x.d)}.${p2(x.m)}.${String(x.y).slice(2)}`;
+  if (!a) return f.when || ""; if (!b || f.whenEnd === f.whenStart) return one(a);
+  return a.y === b.y && a.m === b.m ? `${p2(a.d)}–${one(b)}` : `${one(a)}–${one(b)}`; }
+function dLong(f) { f = f || {}; const a = ymd(f.whenStart), b = ymd(f.whenEnd); if (!a) return f.when || ""; const M = x => MONTHS[x.m - 1];
+  if (!b || f.whenEnd === f.whenStart) return `${p2(a.d)}.${M(a)}.${a.y}`;
+  if (a.y === b.y && a.m === b.m) return `${p2(a.d)}–${p2(b.d)}.${M(a)}.${a.y}`;
+  if (a.y === b.y) return `${p2(a.d)}.${M(a)}–${p2(b.d)}.${M(b)}.${a.y}`;
+  return `${p2(a.d)}.${M(a)}.${a.y}–${p2(b.d)}.${M(b)}.${b.y}`; }
 // passport-style stamps for P2P visits: worn ink, double borders, slightly rotated, in the CWG's colour
 const STAMP_INK = `<filter id="a-ink" x="-5%" y="-5%" width="110%" height="110%"><feTurbulence type="fractalNoise" baseFrequency="1.3" numOctaves="2" seed="7" result="n"/><feColorMatrix in="n" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 -1.5 1.45" result="m"/><feComposite in="SourceGraphic" in2="m" operator="in" result="c"/><feTurbulence type="fractalNoise" baseFrequency=".05" numOctaves="2" seed="3" result="w"/><feDisplacementMap in="c" in2="w" scale="1.6"/></filter>`;
 const fitTxt = (t, max, size) => { const est = t.length * size * .6; return est > max ? ` textLength="${max}" lengthAdjust="spacingAndGlyphs"` : ""; };
@@ -3712,7 +3731,7 @@ function stampRound(date, place) {
 }
 function stampVisa(from, to, date) {
   const sh = x => { const ps = String(x || "").split(/,\s*| & /).map(shortName).filter(Boolean), j = ps.join(" & "); return j.length > 30 && ps.length > 1 ? `${ps[0]} + ${ps.length - 1} MORE` : j.slice(0, 40); };
-  const f = esc(sh(from || "Your territory").toUpperCase()), t = esc(sh(to || "Host territory").toUpperCase()), d = esc(String(date || "").toUpperCase().slice(0, 26));
+  const f = esc(sh(from || "Your territory").toUpperCase()), t = esc(sh(to || "Host territory").toUpperCase()), d = esc(String(date || "").slice(0, 34));
   return `<svg class="a-stp a-stp-v" viewBox="0 0 300 168" aria-hidden="true"><defs>${STAMP_INK}</defs>
     <g filter="url(#a-ink)" fill="none" stroke="currentColor"><rect x="4" y="4" width="292" height="160" rx="14" stroke-width="5"/><rect x="13" y="13" width="274" height="142" rx="8" stroke-width="1.6"/>
       <path d="M13 46h274M13 124h274" stroke-width="1.6"/>
@@ -3783,7 +3802,7 @@ function artPage({ tpl, title, date, src, html, edit, demo, photos, gal, form, f
   const foot = `<div class="a-foot"><span class="a-lll"><b>Listen.</b> <b>Learn.</b> <b>Lead.</b></span><span>${esc(b.name)} · Asia-Pacific Sharing &amp; Learning Programme</span></div>`;
   const inner = {
     general: () => `${head}<div class="a-main">${slot("hero", "x-hero")}${h1}${meta}${body}${row(["g1", "g2"], "x-duo")}</div>`,
-    p2p: () => { const v = fv || {}; return `${head}<div class="a-main"><div class="a-p2ph"><div><div class="a-kicker">Programme-to-programme learning visit</div>${h1}${meta}</div><div class="a-stp-wrap" data-stamp="round">${stampRound(v.when, v.where)}</div></div><div class="a-p2pfx">${edit ? fx : ""}<div class="a-visa"><div data-stamp="visa">${stampVisa(v.from, v.to, v.when)}</div></div></div>${row(["a", "b"], "x-duo x-tall")}${body}${row(["g1", "g2", "g3"], "x-trio")}</div>`; },
+    p2p: () => { const v = fv || {}; return `${head}<div class="a-main"><div class="a-p2ph"><div><div class="a-kicker">Programme-to-programme learning visit</div>${h1}${meta}</div><div class="a-stp-wrap" data-stamp="round">${stampRound(dShort(v), v.where)}</div></div><div class="a-p2pfx">${edit ? fx : ""}<div class="a-visa"><div data-stamp="visa">${stampVisa(v.from, v.to, dLong(v))}</div></div></div>${row(["a", "b"], "x-duo x-tall")}${body}${row(["g1", "g2", "g3"], "x-trio")}</div>`; },
     training: () => `${cover("Training")}<div class="a-main">${slot("hero", "x-hero x-lift")}${fx}${body}${row(["g1", "g2", "g3", "g4"], "x-quad")}</div>`,
     workshop: () => `${head}<div class="a-main"><div class="a-kicker a-notes"><i></i><i></i><i></i>Workshop</div>${h1}${meta}${fx}${slot("hero", "x-hero x-wide")}${body}${row(["g1", "g2", "g3"], "x-trio")}</div>`,
     meeting: () => `${head}<div class="a-main"><div class="a-kicker a-table"><i></i><i></i><i></i><i></i>CWG meeting</div>${h1}${meta}${fx}${slot("hero", "x-hero x-wide")}${body}${row(["g1", "g2", "g3"], "x-trio")}</div>`,
@@ -3950,7 +3969,7 @@ function updateEditor(u, redraw) {
   const fitThumbs = () => box.querySelectorAll(".art-thumb").forEach(t => { const w = t.clientWidth; if (w) t.style.setProperty("--s", (w / 820).toFixed(4)); });
   const exHtml = x => esc(x).replace(/\n/g, "<br>");
   const guide = (what, ex) => `<p class="a-hint"><b>What to write:</b> ${esc(what)}${ex ? ` <span class="a-ex"><b>Example:</b> ${exHtml(ex)}</span>` : ""}</p>`;
-  const sampleDoc = T => ({ facts: Object.fromEntries((T.facts || []).map(f => [f[0], f[2]])), intro: T.intro[2], s: Object.fromEntries((T.secs || []).map(x => [x[0], x[3]])),
+  const sampleDoc = T => ({ facts: { ...Object.fromEntries((T.facts || []).map(f => [f[0], f[2]])), whenStart: "2026-10-14", whenEnd: T.k === "announce" ? "" : "2026-10-18" }, intro: T.intro[2], s: Object.fromEntries((T.secs || []).map(x => [x[0], x[3]])),
     sections: [{ h: "What we learnt", t: "Teams compared how they listen to communities before a project starts." }], quote: T.quote ? "We left with ideas we can use next week." : "", by: "" });
   function formHtml(T) {
     const d = st.art.doc, ph = "Write here, or paste your text";
@@ -3979,7 +3998,12 @@ function updateEditor(u, redraw) {
       <select class="a-in a-fact a-pick-sel" data-pick="${k}" aria-label="${esc(l)}">${pickOpts()}</select></div>
       ${st.art.pickOther === k ? `<input class="a-in a-fact" data-pick-other="${k}" placeholder="Type a name and press Enter, e.g. ${esc(ex)}">` : ""}
       <small class="a-pk-h">${list.length ? "Add more to show a group of places." : "Choose a CWG, or one or more territories, regions or countries."}</small></dd></div>`; };
-  const factsForm = T => (T.facts || []).length ? `<div class="a-fxw">${T.k === "p2p" ? `<p class="a-hint a-p2pq"><b>Where was the visit?</b> Choose who visited (a whole CWG, or one or more territories, regions or countries) and who hosted; the same CWG or a different one both work. This box only makes the passport stamps: it doesn't show on the website.</p>` : ""}<dl class="a-facts is-form">${T.facts.map(([k, l, ex, req]) => T.k === "p2p" && (k === "from" || k === "to") ? pickField(k, l, ex) : `<div><dt>${esc(l)}${req ? "" : ` <em>optional</em>`}</dt><dd><input class="a-in a-fact" data-af="fact" data-k="${k}" value="${esc(((st.art.doc.facts || {})[k]) || "")}" placeholder="e.g. ${esc(ex)}" aria-label="${esc(l)}"></dd></div>`).join("")}</dl></div>` : "";
+  const dateField = (T, l) => { const F = st.art.doc.facts, ann = T.k === "announce";
+    return `<div class="a-dates"><dt>${esc(l)}</dt><dd><div class="a-dt"><label><span>${ann ? "Date" : "From"}</span><input type="date" class="a-in a-fact" data-af="fdate" data-p="whenStart" value="${esc(F.whenStart || "")}"></label>
+      ${ann ? `<label><span>Time <em>optional</em></span><input type="time" class="a-in a-fact" data-af="fdate" data-p="whenTime" value="${esc(F.whenTime || "")}"></label>`
+        : `<label><span>To <em>if more than one day</em></span><input type="date" class="a-in a-fact" data-af="fdate" data-p="whenEnd" value="${esc(F.whenEnd || "")}" min="${esc(F.whenStart || "")}"></label>`}</div>
+      ${F.when && !F.whenStart ? `<small class="a-pk-h">Was: ${esc(F.when)}. Pick the date on the calendar.</small>` : ""}</dd></div>`; };
+  const factsForm = T => (T.facts || []).length ? `<div class="a-fxw">${T.k === "p2p" ? `<p class="a-hint a-p2pq"><b>Where was the visit?</b> Choose who visited (a whole CWG, or one or more territories, regions or countries) and who hosted; the same CWG or a different one both work. This box only makes the passport stamps: it doesn't show on the website.</p>` : ""}<dl class="a-facts is-form">${T.facts.map(([k, l, ex, req]) => T.k === "p2p" && (k === "from" || k === "to") ? pickField(k, l, ex) : k === "when" ? dateField(T, l) : `<div><dt>${esc(l)}${req ? "" : ` <em>optional</em>`}</dt><dd><input class="a-in a-fact" data-af="fact" data-k="${k}" value="${esc(((st.art.doc.facts || {})[k]) || "")}" placeholder="e.g. ${esc(ex)}" aria-label="${esc(l)}"></dd></div>`).join("")}</dl></div>` : "";
   function drawArticle() {
     const P = artProps(), list = tplsFor(st.kind, P.src);
     if (!list.some(t => t.k === st.art.tpl)) st.art.tpl = list[0].k;
@@ -4000,9 +4024,14 @@ function updateEditor(u, redraw) {
     const f = e.target.closest("[data-af]"); if (!f || (st.kind !== "article" && st.kind !== "text")) return; grow(f);
     const k = f.dataset.af, d = st.art.doc, sec = f.closest("[data-si]");
     if (k === "title") $("ue-title").value = f.value.replace(/\s*\n\s*/g, " ");
+    else if (k === "fdate") { d.facts[f.dataset.p] = f.value;
+      if (d.facts.whenEnd && d.facts.whenStart && d.facts.whenEnd < d.facts.whenStart) d.facts.whenEnd = "";
+      d.facts.when = whenText(d.facts); const en = box.querySelector('.art-desk [data-p="whenEnd"]'); if (en) en.min = d.facts.whenStart || "";
+      if (st.art.tpl === "p2p") { const r = box.querySelector(".art-desk [data-stamp=round]"), v = box.querySelector(".art-desk [data-stamp=visa]");
+        if (r) r.innerHTML = stampRound(dShort(d.facts), d.facts.where); if (v) v.innerHTML = stampVisa(d.facts.from, d.facts.to, dLong(d.facts)); } }
     else if (k === "fact") { d.facts[f.dataset.k] = f.value;
       if (st.art.tpl === "p2p") { const r = box.querySelector(".art-desk [data-stamp=round]"), v = box.querySelector(".art-desk [data-stamp=visa]");
-        if (r) r.innerHTML = stampRound(d.facts.when, d.facts.where); if (v) v.innerHTML = stampVisa(d.facts.from, d.facts.to, d.facts.when); } }
+        if (r) r.innerHTML = stampRound(dShort(d.facts), d.facts.where); if (v) v.innerHTML = stampVisa(d.facts.from, d.facts.to, dLong(d.facts)); } }
     else if (k === "sec") d.s[f.dataset.k] = f.value;
     else if (sec) d.sections[+sec.dataset.si][k] = f.value; else d[k] = f.value;
     keep(); });
@@ -4062,7 +4091,7 @@ function updateEditor(u, redraw) {
   // ---- writing check ----
   const checkParts = () => { const parts = [{ type: "title", el: $("ue-title"), text: $("ue-title").value }];
     if (st.kind === "article" || st.kind === "text") { const tt = box.querySelector(".art-desk [data-af=title]"); if (tt) parts[0].el = tt;
-      box.querySelectorAll(".art-desk [data-af]:not([data-af=title])").forEach(el => parts.push({ type: "input", el, text: el.value })); }
+      box.querySelectorAll(".art-desk [data-af]:not([data-af=title]):not([data-af=fdate])").forEach(el => parts.push({ type: "input", el, text: el.value })); }
     else parts.push({ type: "input", el: $("ue-body"), text: $("ue-body").value });
     let off = 0; parts.forEach(p => { p.start = off; off += p.text.length + 2; }); return parts; };
   const checkText = parts => parts.map(p => p.text).join("\n\n");
@@ -4190,7 +4219,7 @@ function updateEditor(u, redraw) {
   $("ue-save").onclick = async () => {
     const isArt = st.kind === "article", isPost = st.kind === "text", comp = isArt || isPost, T = tplOf(st.art.tpl);
     const dd = comp ? st.art.doc : null, clean = x => String(x || "").trim();
-    const doc = comp ? { facts: { ...Object.fromEntries((T.facts || []).map(([k]) => [k, clean(dd.facts[k])]).filter(x => x[1])), ...(T.k === "p2p" ? { fromList: dd.facts.fromList || [], toList: dd.facts.toList || [] } : {}) }, intro: clean(dd.intro),
+    const doc = comp ? { facts: { ...Object.fromEntries((T.facts || []).map(([k]) => [k, clean(dd.facts[k])]).filter(x => x[1])), ...(T.k === "p2p" ? { fromList: dd.facts.fromList || [], toList: dd.facts.toList || [] } : {}), ...Object.fromEntries(["whenStart", "whenEnd", "whenTime"].filter(x => dd.facts[x]).map(x => [x, dd.facts[x]])) }, intro: clean(dd.intro),
       s: Object.fromEntries((T.secs || []).map(([k]) => [k, clean(dd.s[k])]).filter(x => x[1])), sections: T.free ? dd.sections.map(x => ({ h: clean(x.h), t: clean(x.t) })).filter(x => x.h || x.t) : [],
       quote: T.quote || T.free ? clean(dd.quote) : "", by: T.quote || T.free ? clean(dd.by) : "" } : null;
     const title = $("ue-title").value.trim(), body = isArt ? sanitizeArt(artDocHtml(doc, st.art.tpl)) : isPost ? postText(doc, st.art.tpl) : $("ue-body").value.trim();
