@@ -1248,35 +1248,60 @@
   .art .a-foot { display: flex; justify-content: space-between; gap: 6px 14px; flex-wrap: wrap; padding: 14px 8%; border-top: 1px solid #eee; font-size: 12px; color: #6b6b6b; margin-top: auto; }
   .art .a-lll b { font-weight: 900; text-transform: uppercase; letter-spacing: -.01em; } .art .a-lll b:nth-child(1) { color: #0a84ff; } .art .a-lll b:nth-child(2) { color: #e0a800; } .art .a-lll b:nth-child(3) { color: #e14b1e; }
   .art .a-grp { font-weight: 900; font-size: 22px; letter-spacing: -.02em; color: var(--cwg-a); }
-  /* 1 clean report */
-  .art.t1 .a-head { display: flex; justify-content: space-between; align-items: center; gap: 20px; padding: 6% 8% 3.5%; }
-  .art.t1 .a-lock { height: clamp(40px, 9.5cqi, 78px); width: auto; } .art.t1 .a-cwg { height: clamp(24px, 6cqi, 48px); width: auto; }
-  .art.t1 .a-tri { margin: 0 8% 5%; }
-  /* 2 bold cover */
-  .art.t2 .a-cover { position: relative; background: var(--cwg-a); color: #fff; padding: 6% 8% 7%; margin-bottom: 5%; overflow: hidden; }
-  .art.t2 .a-dd { position: absolute; right: -12%; top: -14%; width: 78%; opacity: .2; filter: brightness(0) invert(1); pointer-events: none; }
-  .art.t2 .a-top { position: relative; display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 16%; }
-  .art.t2 .a-chip { background: #fff; border-radius: 12px; padding: 8px 12px; display: flex; align-items: center; }
-  .art.t2 .a-chip img { height: clamp(20px, 4.8cqi, 38px); width: auto; } .art.t2 .a-chip .a-grp { font-size: 18px; }
-  .art.t2 .a-title { position: relative; color: #fff; font-size: clamp(28px, 6.6cqi, 56px); }
-  .art.t2 .a-title .a-ph { color: rgba(255,255,255,.7); }
-  .art.t2 .a-meta { position: relative; color: #fff; opacity: .92; margin: 0; }
-  /* 3 newsletter */
-  .art.t3 .a-mast { padding: 5% 8% 0; text-align: center; }
-  .art.t3 .a-full { width: 80%; max-width: 580px; height: auto; } .art.t3 .a-tri { margin-top: 14px; }
-  .art.t3 .a-band { display: flex; justify-content: space-between; gap: 12px; background: var(--cwg-a); color: #fff; font-weight: 800; font-size: 13px; padding: 8px 14px; margin-bottom: 5%; text-align: left; }
-  .art.t3 .a-title { text-align: center; margin-bottom: 5%; }
-  .art.t3 .a-body { column-count: 2; column-gap: 6%; column-rule: 1px solid #eee; } .art.t3 .a-body h2, .art.t3 .a-body blockquote { break-inside: avoid; }
-  @container (max-width: 560px) { .art.t3 .a-body { column-count: 1; } }
-  /* 4 field story */
-  .art.t4 .a-grid { display: grid; grid-template-columns: 29% 1fr; flex: 1; }
-  .art.t4 .a-side { position: relative; overflow: hidden; background: color-mix(in srgb, var(--cwg-a) 10%, #fff); padding: 12% 9% 40%; display: flex; flex-direction: column; gap: 4px; }
-  .art.t4 .a-cwgv { width: 88%; height: auto; margin-bottom: 14px; }
-  .art.t4 .a-k { font-size: 12px; font-weight: 700; color: #707070; margin-top: 12px; } .art.t4 .a-v { font-weight: 750; font-size: 14px; line-height: 1.3; }
-  .art.t4 .a-acr { width: 62%; height: auto; margin-top: 26px; }
-  .art.t4 .a-map { position: absolute; bottom: -4%; left: -30%; width: 200%; opacity: .55; pointer-events: none; }
-  .art.t4 .a-main { padding: 10% 8% 6%; } .art.t4 .a-kicker { color: var(--cwg-a); font-weight: 800; font-size: 13.5px; margin-bottom: 10px; }
-  @container (max-width: 540px) { .art.t4 .a-grid { grid-template-columns: 1fr; } .art.t4 .a-side { padding: 7% 8%; } .art.t4 .a-map, .art.t4 .a-acr { display: none; } .art.t4 .a-cwgv { width: 50%; } }
+  /* shared header */
+  .art .a-head { display: flex; justify-content: space-between; align-items: center; gap: 20px; padding: 6% 8% 3.5%; }
+  .art .a-lock { height: clamp(38px, 9cqi, 74px); width: auto; } .art .a-cwg { height: clamp(22px, 5.6cqi, 46px); width: auto; }
+  .art .a-head + .a-tri { margin: 0 8% 5%; }
+  .art .a-kicker { display: flex; align-items: center; gap: 8px; color: var(--cwg-a); font-weight: 800; font-size: 13.5px; margin-bottom: 10px; }
+  /* photo spaces */
+  .art .a-slot { margin: 0 0 1.2em; } .art .a-slot img { display: block; width: 100%; height: 100%; object-fit: cover; border-radius: 8px; }
+  .art .a-slot figcaption { font-size: 12.5px; color: #666; margin-top: 6px; line-height: 1.4; outline: none; }
+  .art .a-slot figcaption:empty::before { content: attr(data-ph); color: #aaa; }
+  .art .a-slot.hero { aspect-ratio: 16 / 9; } .art .a-slot.hero.wide { aspect-ratio: 21 / 9; } .art .a-slot.portrait { aspect-ratio: 3 / 4; } .art .a-slot.side { aspect-ratio: 4 / 3; margin: 14px 0 0; }
+  .art.is-edit .a-slot.hero, .art.is-edit .a-slot.portrait, .art.is-edit .a-slot.side, .art.is-edit .a-row .a-slot { display: grid; grid-template-rows: minmax(0, 1fr) auto; }
+  .art .a-slot, .art .a-row > * { min-width: 0; } .art .a-slot img { max-width: 100%; } .art:not(.is-edit) .a-slot { display: block; } .art:not(.is-edit) .a-slot-v img { height: 100%; }
+  .art .a-row { display: grid; gap: 12px; margin: 1.2em 0; } .art .a-row .a-slot { margin: 0; aspect-ratio: 4 / 3; }
+  .art .a-row.n2 { grid-template-columns: 1fr 1fr; } .art .a-row.n3 { grid-template-columns: repeat(3, 1fr); } .art .a-row.n4 { grid-template-columns: 1fr 1fr; }
+  .art .a-row.tall .a-slot { aspect-ratio: 3 / 4; }
+  .art .a-slot figcaption { min-height: 0; } .art:not(.is-edit) .a-slot { aspect-ratio: auto; } .art:not(.is-edit) .a-slot > button { aspect-ratio: 16 / 9; }
+  .art:not(.is-edit) .a-slot.wide > button { aspect-ratio: 21 / 9; } .art:not(.is-edit) .a-slot.portrait > button { aspect-ratio: 3 / 4; } .art:not(.is-edit) .a-slot.side > button, .art:not(.is-edit) .a-row .a-slot > button { aspect-ratio: 4 / 3; }
+  .art:not(.is-edit) .a-row.tall .a-slot > button { aspect-ratio: 3 / 4; }
+  .art .a-slot-v { display: block; width: 100%; padding: 0; border: 0; background: none; cursor: zoom-in; }
+  .art .a-slot-add, .art .a-slot-demo { display: grid; place-content: center; justify-items: center; gap: 4px; width: 100%; height: 100%; min-height: 60px; border: 2px dashed color-mix(in srgb, var(--cwg-a) 45%, #ccc); border-radius: 8px;
+    background: color-mix(in srgb, var(--cwg-a) 7%, #f4f4f4); color: color-mix(in srgb, var(--cwg-a) 70%, #333); font: inherit; font-size: 13px; font-weight: 700; cursor: pointer; }
+  .art .a-slot-add b { font-size: 26px; line-height: 1; } .art .a-slot-add:hover { background: color-mix(in srgb, var(--cwg-a) 14%, #f4f4f4); }
+  .art .a-slot-demo { cursor: default; border-style: solid; border-width: 0; background: color-mix(in srgb, var(--cwg-a) 16%, #ececec); }
+  .art .a-slot { position: relative; } .art .a-slot-x { position: absolute; top: 6px; right: 6px; width: 30px; height: 30px; border-radius: 50%; border: 0; background: #fff; color: #111; font-size: 18px; cursor: pointer; box-shadow: 0 1px 4px rgba(0,0,0,.25); }
+  /* cover (Skill Up, Activity) */
+  .art .a-cover { position: relative; background: var(--cwg-a); color: #fff; padding: 6% 8% 12%; overflow: hidden; }
+  .art .a-dd { position: absolute; right: -12%; top: -14%; width: 78%; opacity: .2; filter: brightness(0) invert(1); pointer-events: none; }
+  .art .a-top { position: relative; display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 11%; }
+  .art .a-chip { background: #fff; border-radius: 12px; padding: 8px 12px; display: flex; align-items: center; } .art .a-chip img { height: clamp(20px, 4.6cqi, 38px); width: auto; } .art .a-chip .a-grp { font-size: 18px; }
+  .art .a-badge { position: relative; display: inline-block; background: #f5c400; color: #111; font-weight: 900; font-size: 13px; padding: 5px 12px; border-radius: 999px; margin-bottom: 12px; }
+  .art .a-cover .a-title { position: relative; color: #fff; font-size: clamp(28px, 6.4cqi, 54px); } .art .a-cover .a-title .a-ph { color: rgba(255,255,255,.7); }
+  .art .a-cover .a-meta { position: relative; color: #fff; opacity: .92; margin: 0; }
+  .art .a-slot.lift { margin-top: -7%; position: relative; z-index: 1; } .art .a-cover + .a-main { padding-top: 0; }
+  /* Passport Stamp */
+  .art.tp-p2p .a-main { position: relative; }
+  .art .a-stamp { position: absolute; top: -2%; right: 7%; width: clamp(84px, 17cqi, 132px); aspect-ratio: 1; border: 3px solid var(--cwg-a); border-radius: 50%; transform: rotate(-12deg);
+    display: grid; place-content: center; text-align: center; color: var(--cwg-a); line-height: 1.05; box-shadow: inset 0 0 0 4px #fff, inset 0 0 0 6px var(--cwg-a); opacity: .9; }
+  .art .a-stamp span { font-size: clamp(8px, 1.5cqi, 11px); font-weight: 800; } .art .a-stamp b { font-size: clamp(11px, 2.3cqi, 17px); font-weight: 900; margin: 2px 0; }
+  .art.tp-p2p .a-title { padding-right: 20%; }
+  /* Round the Table */
+  .art .a-table i { width: 9px; height: 9px; border-radius: 50%; background: var(--cwg-a); margin-right: -4px; box-shadow: 0 0 0 2px #fff; } .art .a-table i:nth-child(2) { background: #f5c400; } .art .a-table i:nth-child(3) { background: #e14b1e; } .art .a-table i:nth-child(4) { margin-right: 6px; }
+  /* Boots on the Ground */
+  .art .a-grid { display: grid; grid-template-columns: 30% 1fr; flex: 1; }
+  .art .a-side { position: relative; overflow: hidden; background: color-mix(in srgb, var(--cwg-a) 10%, #fff); padding: 12% 9% 36%; display: flex; flex-direction: column; gap: 4px; }
+  .art .a-cwgv { width: 88%; height: auto; margin-bottom: 10px; }
+  .art .a-k { font-size: 12px; font-weight: 700; color: #707070; margin-top: 10px; } .art .a-v { font-weight: 750; font-size: 14px; line-height: 1.3; }
+  .art .a-acr { position: relative; z-index: 1; width: 62%; height: auto; margin-top: 22px; }
+  .art .a-map { position: absolute; bottom: -4%; left: -30%; width: 200%; opacity: .55; pointer-events: none; }
+  .art.tp-field .a-main { padding: 10% 8% 6%; }
+  /* In Their Words */
+  .art .a-story { display: grid; grid-template-columns: 38% 1fr; gap: 6%; align-items: end; margin-bottom: 1.4em; } .art .a-story .a-slot { margin: 0; }
+  .art.tp-story .a-body blockquote:first-child, .art.tp-story .a-body > h2:first-child + p + blockquote { font-size: 1.35em; }
+  @container (max-width: 560px) { .art .a-grid { grid-template-columns: 1fr; } .art .a-side { padding: 7% 8%; } .art .a-map, .art .a-acr { display: none; } .art .a-cwgv { width: 50%; }
+    .art .a-row.n3 { grid-template-columns: 1fr 1fr; } .art .a-story { grid-template-columns: 1fr; } .art .a-stamp { display: none; } .art.tp-p2p .a-title { padding-right: 0; } }
   /* article editor */
   .art-ed { display: grid; gap: var(--g4); }
   .art-tpls { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
@@ -3493,7 +3518,7 @@ function updatesConsole(sel) {
     const u = mine().find(x => x.id === del.dataset.ud); del.disabled = true; del.textContent = "Deleting…";
     const { error } = await db.rpc("aslp_delete_update", { p_id: u.id });
     if (error) { del.textContent = error.message || "Couldn't delete"; return; }
-    const ps = [u.file && u.file.url, ...(u.pages || []), ...(u.photos || []), ...(u.slides || []).flatMap(s => s.images || []), ...(u.sections || []).flatMap(s => s.images || []), ...artImgs(u.body)].map(pathOf).filter(Boolean);
+    const ps = [u.file && u.file.url, ...(u.pages || []), ...(u.photos || []), ...(u.slides || []).flatMap(s => s.images || []), ...(u.sections || []).flatMap(s => s.images || []), ...artImgs(u.body), ...Object.values((u.kind === "article" && u.file && u.file.photos) || {}).map(p => p && p.src)].map(pathOf).filter(Boolean);
     if (ps.length) UPB().remove(ps).catch(() => {});
     // the full file kept in the ASLP Google Drive goes too (and any leftovers no update uses)
     let driveNote = "";
@@ -3517,8 +3542,6 @@ function updatesConsole(sel) {
   }).catch(() => { list.innerHTML = `<p class="ed-msg err">Your updates couldn't load. Refresh the page to try again.</p>`; });
 }
 // ---- articles: an A4-style page in one of four ASLP templates, with the CWG's or group's branding ----
-const ART_TPLS = [[1, "Clean report", "ASLP and CWG logos across the top, one clear column"], [2, "Bold cover", "A colour cover with the title, in the CWG's colours"],
-  [3, "Newsletter", "ASLP masthead and two columns, like the newsletter"], [4, "Field story", "A side panel with the CWG logo and details, for stories from the field"]];
 const artBrand = src => { const [t, x] = String(src || "").split("|");
   if (t === "group") { const g = grpOf(x), c = PGROUPS[x] || PGROUPS.asc; return { name: g.short, full: g.name || g.short, vars: `--cwg-a:${c.c};--cwg-b:${c.b};`, h: "", v: "", doodles: "brand/doodles-3.webp", map: "" }; }
   const k = cwgKey(x), a = ART(x);
@@ -3545,19 +3568,47 @@ function sanitizeArt(html) {
 }
 const artText = html => { const d = document.createElement("div"); d.innerHTML = String(html || "").replace(/<\/(p|h2|h3|li|blockquote|figcaption)>/g, "$& "); return d.textContent.replace(/\s+/g, " ").trim(); };
 const artImgs = html => [...String(html || "").matchAll(/<img[^>]+src="([^"]+)"/g)].map(m => m[1].replace(/&amp;/g, "&"));
-function artPage({ tpl, title, date, src, html, edit }) {
-  const b = artBrand(src), tt = esc(title || "") || (edit ? `<span class="a-ph">Your title (type it in the Title box above)</span>` : "");
+// templates: [key, name, what it's for, photo spaces, starter headings, for groups (ASC/APSG) too]
+const ART_TPLS = [
+  ["general", "General article", "Any news or update", ["hero", "g1", "g2"], [], true],
+  ["p2p", "Passport Stamp", "Peer-to-peer learning visits", ["a", "b", "g1", "g2", "g3"], ["Who visited whom, and why", "What we saw", "What we'll take home"], false],
+  ["training", "Skill Up", "Development trainings and workshops", ["hero", "g1", "g2", "g3", "g4"], ["About the training", "What participants learnt", "What changes next"], false],
+  ["meeting", "Round the Table", "CWG meetings", ["hero", "g1", "g2", "g3"], ["Who met", "What we discussed", "What we agreed"], false],
+  ["field", "Boots on the Ground", "Field visits", ["hero", "s1", "s2"], ["Where we went", "What we saw", "What happens next"], false],
+  ["story", "In Their Words", "Focus stories and testimonies", ["portrait", "g1"], ["Their story", "What changed", "Looking ahead"], false],
+  ["activity", "Activity article", "An ASC or APSG activity", ["hero", "g1", "g2", "g3"], ["About the activity", "What happened", "What's next"], true]];
+const tplOf = k => ART_TPLS.find(t => t[0] === k) || ART_TPLS[0];
+const tplsFor = src => ART_TPLS.filter(t => String(src || "").startsWith("group|") ? t[5] : t[0] !== "activity");
+const tplKey = v => ({ 1: "general", 2: "training", 3: "general", 4: "field" })[v] || (ART_TPLS.some(t => t[0] === v) ? v : "general");
+function artPage({ tpl, title, date, src, html, edit, demo, photos, gal }) {
+  const T = tplOf(tplKey(tpl)), k = T[0], b = artBrand(src), P = photos || {}, tt = esc(title || "") || (edit ? `<span class="a-ph">Your title (type it in the Title box above)</span>` : "");
+  const filled = T[3].filter(x => P[x] && P[x].src);
+  const slot = (key, cls) => { const ph = P[key];
+    if (edit) return `<figure class="a-slot ${cls}" data-slot="${key}">${ph && ph.src ? `<img src="${esc(ph.src)}" alt=""><button type="button" class="a-slot-x" data-slot-x="${key}" aria-label="Remove this photo">×</button>`
+        : `<button type="button" class="a-slot-add" data-slot-add="${key}"><b>+</b>Add a photo</button>`}<figcaption contenteditable="true" data-cap="${key}" data-ph="Caption: who, what and where">${esc((ph && ph.cap) || "")}</figcaption></figure>`;
+    if (demo) return `<figure class="a-slot ${cls}"><span class="a-slot-demo"></span></figure>`;
+    if (!ph || !ph.src) return "";
+    return `<figure class="a-slot ${cls}"><button type="button" class="a-slot-v" data-gal="${esc(gal || "")}" data-k="${filled.indexOf(key)}" aria-label="Open photo"><img src="${esc(ph.src)}" alt="${esc(ph.cap || "")}" loading="lazy"></button>${ph.cap ? `<figcaption>${esc(ph.cap)}</figcaption>` : ""}</figure>`; };
+  const row = (keys, cls) => { const xs = keys.map(x => slot(x, "")).filter(Boolean); return xs.length ? `<div class="a-row ${cls} n${xs.length}">${xs.join("")}</div>` : ""; };
   const cwgLogo = b.h ? `<img class="a-cwg" src="${b.h}" alt="${esc(b.full)}">` : `<span class="a-grp">${esc(b.name)}</span>`;
   const meta = `<div class="a-meta"><span>${esc(b.full || b.name)}</span>${date ? `<span>${esc(fmtDate(date))}</span>` : ""}</div>`;
-  const body = `<div class="a-body"${edit ? ` id="art-body" contenteditable="true" spellcheck="true" aria-label="Article text" data-ph="Start writing your article here. Use the toolbar for headings, lists, quotes and pictures."` : ""}>${html || ""}</div>`;
+  const h1 = `<h1 class="a-title">${tt}</h1>`;
+  const body = `<div class="a-body"${edit ? ` id="art-body" contenteditable="true" spellcheck="true" aria-label="Article text" data-ph="Start writing here. Mark each part as a heading, text, bullets or a quote using the bar above."` : ""}>${html || ""}</div>`;
   const tri = `<div class="a-tri"><i></i><i></i><i></i></div>`;
+  const head = `<header class="a-head"><img class="a-lock" src="brand/lockup-v1.webp" alt="Asia-Pacific Sharing & Learning Programme">${cwgLogo}</header>${tri}`;
+  const cover = badge => `<header class="a-cover"><img class="a-dd" src="${b.doodles}" alt="" aria-hidden="true"><div class="a-top"><span class="a-chip"><img src="brand/aslp-acronym.webp" alt="ASLP"></span><span class="a-chip">${cwgLogo}</span></div><span class="a-badge">${badge}</span>${h1}${meta}</header>`;
   const foot = `<div class="a-foot"><span class="a-lll"><b>Listen.</b> <b>Learn.</b> <b>Lead.</b></span><span>${esc(b.name)} · Asia-Pacific Sharing &amp; Learning Programme</span></div>`;
-  const inner = tpl === 2 ? `<header class="a-cover"><img class="a-dd" src="${b.doodles}" alt="" aria-hidden="true"><div class="a-top"><span class="a-chip"><img src="brand/aslp-acronym.webp" alt="ASLP"></span><span class="a-chip">${cwgLogo}</span></div><h1 class="a-title">${tt}</h1>${meta}</header><div class="a-main">${body}</div>${foot}`
-    : tpl === 3 ? `<header class="a-mast"><img class="a-full" src="brand/fullname-h.webp" alt="Asia-Pacific Sharing & Learning Programme">${tri}<div class="a-band"><span>${esc(b.full || b.name)}</span><span>${date ? esc(fmtDate(date)) : ""}</span></div></header><div class="a-main"><h1 class="a-title">${tt}</h1>${body}</div>${foot}`
-    : tpl === 4 ? `<div class="a-grid"><aside class="a-side">${b.v ? `<img class="a-cwgv" src="${b.v}" alt="${esc(b.full)}">` : `<span class="a-grp">${esc(b.name)}</span>`}<div class="a-k">From</div><div class="a-v">${esc(b.full || b.name)}</div>${date ? `<div class="a-k">Date</div><div class="a-v">${esc(fmtDate(date))}</div>` : ""}<img class="a-acr" src="brand/aslp-acronym.webp" alt="ASLP">${b.map ? `<img class="a-map" src="${b.map}" alt="" aria-hidden="true">` : ""}</aside>
-        <div class="a-main"><div class="a-kicker">Story from the field</div><h1 class="a-title">${tt}</h1>${body}</div></div>${foot}`
-    : `<header class="a-head"><img class="a-lock" src="brand/lockup-v1.webp" alt="Asia-Pacific Sharing & Learning Programme">${cwgLogo}</header>${tri}<div class="a-main"><h1 class="a-title">${tt}</h1>${meta}${body}</div>${foot}`;
-  return `<article class="art t${tpl || 1}" style="${b.vars}">${inner}</article>`;
+  const inner = {
+    general: () => `${head}<div class="a-main">${slot("hero", "hero")}${h1}${meta}${body}${row(["g1", "g2"], "duo")}</div>`,
+    p2p: () => `${head}<div class="a-main"><div class="a-stamp" aria-hidden="true"><span>Peer to peer</span><b>Learning visit</b><span>${esc(b.name)}</span></div><div class="a-kicker">Learning visit</div>${h1}${meta}${row(["a", "b"], "duo tall")}${body}${row(["g1", "g2", "g3"], "trio")}</div>`,
+    training: () => `${cover("Training")}<div class="a-main">${slot("hero", "hero lift")}${body}${row(["g1", "g2", "g3", "g4"], "quad")}</div>`,
+    meeting: () => `${head}<div class="a-main"><div class="a-kicker a-table"><i></i><i></i><i></i><i></i>CWG meeting</div>${h1}${meta}${slot("hero", "hero wide")}${body}${row(["g1", "g2", "g3"], "trio")}</div>`,
+    field: () => `<div class="a-grid"><aside class="a-side">${b.v ? `<img class="a-cwgv" src="${b.v}" alt="${esc(b.full)}">` : `<span class="a-grp">${esc(b.name)}</span>`}<div class="a-k">From</div><div class="a-v">${esc(b.full || b.name)}</div>${date ? `<div class="a-k">Date</div><div class="a-v">${esc(fmtDate(date))}</div>` : ""}
+        ${slot("s1", "side")}${slot("s2", "side")}<img class="a-acr" src="brand/aslp-acronym.webp" alt="ASLP">${b.map ? `<img class="a-map" src="${b.map}" alt="" aria-hidden="true">` : ""}</aside>
+        <div class="a-main"><div class="a-kicker">From the field</div>${h1}${slot("hero", "hero")}${body}</div></div>`,
+    story: () => `${head}<div class="a-main"><div class="a-kicker">In their words</div><div class="a-story">${slot("portrait", "portrait")}<div>${h1}${meta}</div></div>${body}${slot("g1", "hero")}</div>`,
+    activity: () => `${cover("Activity")}<div class="a-main">${slot("hero", "hero lift")}${body}${row(["g1", "g2", "g3"], "trio")}</div>` }[k]();
+  return `<article class="art tp-${k}${edit || demo ? " is-edit" : ""}" style="${b.vars}">${inner}${foot}</article>`;
 }
 // ---- writing check: grammar and spelling (LanguageTool, British English) plus ASLP writing tips ----
 const KNOWN_ACR = new Set("ASLP ASLF CWG CWGS SPEA SASIA TSA ASC APSG SOG FCG NGO NGOS MEAL WASH DRR SHG SHGS AHT MSHTR CD ICD FCD SWI SDC DEZA HQ THQ RHQ DHQ UN CSR PDF ICT IT OK USA UK EU HIV AIDS TB COVID".split(" "));
@@ -3600,11 +3651,11 @@ function updateEditor(u, redraw) {
   const st = { id: u.id || null, src: fixSrc(u.src) || (u.cwg ? (isGrp(u) ? "group|" : "cwg|") + u.cwg : "") || srcs[0], kind: u.kind || "text", file: u.file || null, pages: u.pages || [], slides: u.slides || [], photos: [...(u.photos || [])], busy: false,
     sections: Array.isArray(u.sections) ? JSON.parse(JSON.stringify(u.sections)) : (u.kind === "pptx" && (u.slides || []).length ? slidesToSections(u.slides).sections : []),
     folder: (u.file && pathOf(u.file.url).replace(/\/[^/]+$/, "")) || "",
-    art: { tpl: (u.kind === "article" && u.file && u.file.template) || 1, html: u.kind === "article" ? sanitizeArt(u.body || "") : "" } };
+    art: { tpl: tplKey(u.kind === "article" && u.file && u.file.template), html: u.kind === "article" ? sanitizeArt(u.body || "") : "", photos: JSON.parse(JSON.stringify((u.kind === "article" && u.file && u.file.photos) || {})) } };
   const srcSlugOf = v => { const [t, x] = v.split("|"); return t === "group" ? x : cwgSlug(x); };
   const folder = () => st.folder || (st.folder = `${srcSlugOf($("ue-cwg").value)}/${newId()}`);
   // everything uploaded while this editor is open, so Cancel can remove it; what the saved update already uses is kept
-  const urlsOf = x => [x.file && x.file.url, ...(x.pages || []), ...(x.photos || []), ...(x.slides || []).flatMap(s => s.images || []), ...(x.sections || []).flatMap(s => s.images || []), ...artImgs(x.body || ""), ...artImgs((x.art && x.art.html) || "")];
+  const urlsOf = x => [x.file && x.file.url, ...(x.pages || []), ...(x.photos || []), ...(x.slides || []).flatMap(s => s.images || []), ...(x.sections || []).flatMap(s => s.images || []), ...artImgs(x.body || ""), ...artImgs((x.art && x.art.html) || ""), ...Object.values((x.art && x.art.photos) || (x.kind === "article" && x.file && x.file.photos) || {}).map(p => p && p.src)];
   const keepPaths = new Set(u.id ? urlsOf(u).map(pathOf) : []), keepDrive = u.id && u.file && u.file.drive;
   const sess = { paths: [], drive: [] };
   const stopBtn = on => { const b = $("ue-stop"); if (b) b.hidden = !on; };
@@ -3673,13 +3724,18 @@ function updateEditor(u, redraw) {
   const artSync = () => { const b = artBody(); if (b) { st.art.html = b.innerHTML; keep(); } };
   const artProps = () => ({ title: $("ue-title").value.trim(), date: $("ue-date").value, src: $("ue-cwg").value });
   const fitThumbs = () => box.querySelectorAll(".art-thumb").forEach(t => { const w = t.clientWidth; if (w) t.style.setProperty("--s", (w / 820).toFixed(4)); });
+  const starterHtml = k => tplOf(k)[4].map(h => `<h2>${esc(h)}</h2><p><br></p>`).join("");
+  const isStarter = h => !artText(h) || ART_TPLS.some(t => t[4].length && artText(h) === artText(starterHtml(t[0])));
   function drawArticle() {
     const b = artBody(); if (b) st.art.html = b.innerHTML;
-    const P = artProps();
+    const P = artProps(), list = tplsFor(P.src);
+    if (!list.some(t => t[0] === st.art.tpl)) st.art.tpl = list[0][0];
+    if (!st.art.photos) st.art.photos = {};
+    if (!artText(st.art.html) && !/<img/.test(st.art.html)) st.art.html = starterHtml(st.art.tpl);
     $("ue-file").innerHTML = `<div class="art-ed">
-      <div class="ed-field"><span>Template <span class="ed-hint">How the article will look on the website, with the ASLP logo and ${esc(artBrand(P.src).name)}'s branding. You can switch any time; your text stays.</span></span>
-        <div class="art-tpls" role="radiogroup" aria-label="Template">${ART_TPLS.map(([n, l, d]) => `<button type="button" class="art-tpl${st.art.tpl === n ? " on" : ""}" role="radio" aria-checked="${st.art.tpl === n}" data-tpl="${n}">
-          <span class="art-thumb" aria-hidden="true"><span class="art-thumb-in">${artPage({ tpl: n, title: P.title || "Your article title", date: P.date, src: P.src, html: ART_SAMPLE })}</span></span><b>${l}</b><small>${d}</small></button>`).join("")}</div></div>
+      <div class="ed-field"><span>Template <span class="ed-hint">Pick the one that fits what you're writing about. Each has the ASLP and ${esc(artBrand(P.src).name)} branding and its own spaces for photos. You can switch any time; your text and photos stay.</span></span>
+        <div class="art-tpls" role="radiogroup" aria-label="Template">${list.map(([n, l, d]) => `<button type="button" class="art-tpl${st.art.tpl === n ? " on" : ""}" role="radio" aria-checked="${st.art.tpl === n}" data-tpl="${n}">
+          <span class="art-thumb" aria-hidden="true"><span class="art-thumb-in">${artPage({ tpl: n, title: P.title || "Your article title", date: P.date, src: P.src, html: ART_SAMPLE, demo: true })}</span></span><b>${l}</b><small>${d}</small></button>`).join("")}</div></div>
       <div class="ed-field"><span>Your article <span class="ed-hint">Type straight onto the page and mark each part as a heading, text, bullets, a quote or a picture. Fonts, sizes and colours are set by the ASLP branding, so every article looks the same. The title comes from the Title box above. Pasting from Word keeps the headings, lists and links only.</span></span>
         <div class="art-bar" role="toolbar" aria-label="Parts of the article">
           <button type="button" data-ac="h2" title="A section heading">Heading</button><button type="button" data-ac="h3" title="A smaller heading inside a section">Subheading</button><button type="button" data-ac="p" title="Normal paragraph">Text</button><i class="sep"></i>
@@ -3687,8 +3743,9 @@ function updateEditor(u, redraw) {
           <button type="button" data-ac="img" title="Add a picture with a caption">Picture</button><button type="button" data-ac="link" title="Link the selected words to a web page">Link</button><i class="sep"></i>
           <button type="button" data-ac="undo" title="Undo">Undo</button><button type="button" data-ac="redo" title="Redo">Redo</button></div>
         <div class="art-link" id="art-link" hidden><input type="url" id="art-url" placeholder="https://…" aria-label="Link address"><button type="button" class="btn fill sm" id="art-url-ok">Add link</button><button type="button" class="btn sm" id="art-url-x">Cancel</button></div>
-        <div class="art-desk">${artPage({ tpl: st.art.tpl, ...P, html: st.art.html, edit: true })}</div>
-        <input type="file" id="art-img-in" accept="image/*" hidden></div></div>`;
+        <p class="small" style="margin:8px 0 0">The grey boxes are spaces for photos: select one to add a photo, then write its caption underneath. Boxes you leave empty don't show on the website.</p>
+        <div class="art-desk">${artPage({ tpl: st.art.tpl, ...P, html: st.art.html, edit: true, photos: st.art.photos })}</div>
+        <input type="file" id="art-img-in" accept="image/*" hidden><input type="file" id="art-slot-in" accept="image/*" hidden></div></div>`;
     requestAnimationFrame(fitThumbs);
     const ed = artBody();
     try { document.execCommand("defaultParagraphSeparator", false, "p"); } catch (e) {}
@@ -3705,7 +3762,10 @@ function updateEditor(u, redraw) {
   const artRestore = () => { const ed = artBody(); if (!ed) return; ed.focus(); if (artRange) { const sel = getSelection(); sel.removeAllRanges(); sel.addRange(artRange); } };
   $("ue-file").addEventListener("mousedown", e => { if (e.target.closest("[data-ac]")) e.preventDefault(); });
   $("ue-file").addEventListener("click", async e => {
-    const t = e.target.closest("[data-tpl]"); if (t) { st.art.tpl = +t.dataset.tpl; drawArticle(); keep(); return; }
+    const t = e.target.closest("[data-tpl]"); if (t) { const ab = artBody(); if (ab) st.art.html = ab.innerHTML;
+      if (isStarter(st.art.html)) st.art.html = ""; st.art.tpl = t.dataset.tpl; drawArticle(); keep(); return; }
+    const sa = e.target.closest("[data-slot-add]"); if (sa) { if (st.busy) return; st.slotKey = sa.dataset.slotAdd; $("art-slot-in").click(); return; }
+    const sx = e.target.closest("[data-slot-x]"); if (sx) { const ph = st.art.photos[sx.dataset.slotX]; st.art.photos[sx.dataset.slotX] = { src: "", cap: (ph && ph.cap) || "" }; drawArticle(); keep(); return; }
     if (e.target.id === "art-url-x") { $("art-link").hidden = true; return; }
     if (e.target.id === "art-url-ok") { const v = $("art-url").value.trim(); $("art-link").hidden = true;
       if (!/^(https?:\/\/|mailto:)/i.test(v)) return msg("A link should start with https://", "err"); artRestore(); document.execCommand("createLink", false, v); artSync(); return; }
@@ -3719,6 +3779,12 @@ function updateEditor(u, redraw) {
     artSync();
   });
   $("ue-file").addEventListener("change", async e => {
+    if (e.target.id === "art-slot-in") { e.stopPropagation(); const fl = e.target.files[0], key = st.slotKey; e.target.value = ""; if (!fl || !key || st.busy) return;
+      await op(async () => { msg(loader("Uploading the photo…", "sm inline"));
+        const im = await shrinkImage(fl, 1800); upCheck(); const url = await upPut(`${folder()}/art-${key}-${newId().slice(0, 8)}.${im.ext}`, im.blob, im.blob.type);
+        st.art.photos[key] = { src: url, cap: (st.art.photos[key] && st.art.photos[key].cap) || "" }; drawArticle(); keep(); msg("Photo added. Write its caption underneath.", "ok");
+        const c = box.querySelector(`[data-cap="${key}"]`); if (c) c.focus(); }, () => msg("Upload stopped. The photo was removed."));
+      return; }
     if (e.target.id !== "art-img-in") return; e.stopPropagation();
     const fl = e.target.files[0]; e.target.value = ""; if (!fl || st.busy) return;
     await op(async () => { msg(loader("Uploading the picture…", "sm inline"));
@@ -3785,6 +3851,10 @@ function updateEditor(u, redraw) {
         <label class="sec-ed-addimg">+ Pictures<input type="file" accept="image/*" multiple hidden data-sadd></label></div></div>`).join("")
       : `<p class="small">No sections yet. Add one below.</p>`;
   }
+  $("ue-file").addEventListener("input", e => { const cp = e.target.closest("[data-cap]");
+    if (cp) { const k = cp.dataset.cap; st.art.photos[k] = { src: (st.art.photos[k] && st.art.photos[k].src) || "", cap: cp.textContent.replace(/\s+/g, " ").trim().slice(0, 240) }; keep(); return; } });
+  $("ue-file").addEventListener("keydown", e => { if (e.target.closest("[data-cap]") && e.key === "Enter") e.preventDefault(); });
+  $("ue-file").addEventListener("paste", e => { const cp = e.target.closest("[data-cap]"); if (!cp) return; e.preventDefault(); document.execCommand("insertText", false, (e.clipboardData.getData("text/plain") || "").replace(/\s+/g, " ")); }, true);
   $("ue-file").addEventListener("input", e => { const f = e.target.closest("[data-sf]"); if (!f) return; const i = +f.closest("[data-si]").dataset.si; st.sections[i][f.dataset.sf] = f.value; keep(); });
   $("ue-file").addEventListener("click", e => {
     if (e.target.id === "ue-sec-add") { st.sections.push({ h: "", t: "", images: [] }); drawSections(); keep(); const l = $("ue-secs").lastElementChild; l && l.querySelector("input").focus(); return; }
@@ -3859,7 +3929,9 @@ function updateEditor(u, redraw) {
     const title = $("ue-title").value.trim(), body = isArt ? sanitizeArt(st.art.html) : $("ue-body").value.trim();
     if (!title) return msg("Give the update a title.", "err");
     if (st.kind === "text" && !body && !st.photos.length) return msg("Write your post, or add some photos.", "err");
-    if (isArt && !artText(body)) return msg("Write your article on the page first.", "err");
+    if (isArt && (!artText(body) || isStarter(body))) return msg("Write your article on the page first.", "err");
+    if (isArt) { const d = document.createElement("div"); d.innerHTML = body; const hs = [...d.querySelectorAll("h2,h3")].filter(h => { const n = h.nextElementSibling; return !n || /^H[23]$/.test(n.tagName); });
+      if (hs.length) return msg(`The heading "${esc(hs[0].textContent.trim())}" has nothing under it. Write something under it, or delete the heading.`, "err"); }
     if (!isArt && st.kind !== "text" && !(st.file && st.file.type === st.kind)) return msg(`Upload the ${st.kind === "pdf" ? "PDF" : "PowerPoint"} first.`, "err");
     // check the writing before it goes out; a second select publishes once the suggestions have been seen
     if (checkText(checkParts()) !== st.checkedText) { $("ue-save").disabled = true; msg(loader("Checking your writing before it's published…", "sm inline"));
@@ -3869,7 +3941,7 @@ function updateEditor(u, redraw) {
     const keep = st.kind === "pdf" || st.kind === "pptx";
     const [ptype, psrc] = $("ue-cwg").value.split("|");
     const p = { type: ptype === "group" ? "group" : "cwg", cwg: psrc, title, date: $("ue-date").value, kind: st.kind, body, photos: st.photos,
-      file: isArt ? { type: "article", template: st.art.tpl } : keep ? st.file : null, pages: st.kind === "pdf" ? st.pages : [], slides: st.kind === "pptx" ? st.slides : [],
+      file: isArt ? { type: "article", template: st.art.tpl, photos: Object.fromEntries(Object.entries(st.art.photos || {}).filter(([k, v]) => v && v.src && tplOf(st.art.tpl)[3].includes(k))) } : keep ? st.file : null, pages: st.kind === "pdf" ? st.pages : [], slides: st.kind === "pptx" ? st.slides : [],
       sections: st.kind === "pptx" ? st.sections.map(x => ({ h: (x.h || "").trim(), t: (x.t || "").trim(), images: x.images || [] })).filter(x => x.h || x.t || x.images.length) : null };
     $("ue-save").disabled = true; msg(loader("Saving…", "sm inline"));
     const { data: id, error } = await db.rpc("aslp_save_update", { p_id: st.id, p_update: p });
@@ -4620,7 +4692,7 @@ function needUpdates() {
 }
 const UKIND = { pdf: "PDF", pptx: "Article", article: "Article" };
 const fmtDate = d => { if (!d) return ""; const x = new Date(String(d).slice(0, 10) + "T00:00:00"); return isNaN(x) ? "" : x.toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" }); };
-const upCover = u => u.cover || (u.photos || [])[0] || (u.kind === "article" ? artImgs(u.body)[0] : "") || ((u.sections || []).find(s => (s.images || []).length) || { images: [] }).images[0] || (u.pages || [])[0] || ((u.slides || []).find(s => (s.images || []).length) || { images: [] }).images[0] || "";
+const upCover = u => u.cover || (u.kind === "article" && u.file && u.file.photos ? (tplOf(tplKey(u.file.template))[3].map(k => u.file.photos[k] && u.file.photos[k].src).find(Boolean) || "") : "") || (u.photos || [])[0] || (u.kind === "article" ? artImgs(u.body)[0] : "") || ((u.sections || []).find(s => (s.images || []).length) || { images: [] }).images[0] || (u.pages || [])[0] || ((u.slides || []).find(s => (s.images || []).length) || { images: [] }).images[0] || "";
 const upExcerpt = u => { const t = (u.kind === "article" ? artText(u.body) : (u.body || "")).trim() || (Array.isArray(u.sections) ? u.sections.map(x => x.t || "").filter(Boolean).join(" ") : (u.slides || []).flatMap(s => s.paras || []).map(p => p.t || p).slice(0, 4).join(" · ")); return t.replace(/^[-•]\s*/gm, "").replace(/\s+/g, " ").slice(0, 220); };
 const linkify = t => esc(t).replace(/(https?:\/\/[^\s<]+[^\s<.,;:)])/g, '<a class="textlink" href="$1" target="_blank" rel="noopener noreferrer">$1</a>');
 // typed text: a blank line starts a new paragraph; lines starting with "-" or "•" become a list
@@ -4712,6 +4784,7 @@ function pageUpdate(id) {
   const pics = list => list.map(s => ({ src: s, cap: u.title }));
   galleries[u.id + ":photos"] = pics(photos);
   galleries[u.id + ":slides"] = pics(slides.flatMap(s => s.images || []));
+  if (u.kind === "article" && f && f.photos) galleries[u.id + ":art"] = tplOf(tplKey(f.template))[3].filter(k => f.photos[k] && f.photos[k].src).map(k => ({ src: f.photos[k].src, cap: f.photos[k].cap || u.title }));
   const secs = u.kind === "pptx" && Array.isArray(u.sections) ? u.sections : null;
   if (secs) galleries[u.id + ":sec"] = pics(secs.flatMap(s => s.images || []));
   let gi = 0;
@@ -4721,7 +4794,7 @@ function pageUpdate(id) {
       <h1 class="h1">${esc(u.title)}</h1></div>`}
     <div class="wrap page-body">
       ${isPending(u) ? `<div class="wait-note"><b>Waiting for approval.</b> Only you${V().can_approve ? " and other approvers" : " and the ASC members and admins who approve updates"} can see this. ${V().can_approve ? `<button type="button" class="btn fill sm" data-uap-page="${esc(u.id)}">Approve and publish</button>` : ""}</div>` : ""}
-      ${u.kind === "article" ? `<div class="art-wrap">${artPage({ tpl: (f && f.template) || 1, title: u.title, date: u.date, src: (isGrp(u) ? "group|" : "cwg|") + u.cwg, html: sanitizeArt(u.body) })}</div>` : u.body ? `<div class="ud-body">${fmtBody(u.body)}</div>` : ""}
+      ${u.kind === "article" ? `<div class="art-wrap">${artPage({ tpl: f && f.template, photos: f && f.photos, gal: u.id + ":art", title: u.title, date: u.date, src: (isGrp(u) ? "group|" : "cwg|") + u.cwg, html: sanitizeArt(u.body) })}</div>` : u.body ? `<div class="ud-body">${fmtBody(u.body)}</div>` : ""}
       ${photos.length ? `<div class="ud-photos">${photos.map((p, k) => `<button type="button" data-gal="${esc(u.id)}:photos" data-k="${k}" aria-label="Open photo ${k + 1}"><img src="${esc(p)}" alt="" loading="lazy"></button>`).join("")}</div>` : ""}
       ${pages.length ? `<div class="reader" id="reader"></div>` : ""}
       ${secs ? `<div class="ua">${secs.map(x => { const im = x.images || [];
