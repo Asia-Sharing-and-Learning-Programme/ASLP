@@ -2120,12 +2120,36 @@ const unitContacts = u => { const seen = new Set(), out = [];
   (u.contacts || []).forEach(c => { const k = (c.email || c.name || "").toLowerCase(); if (k && !seen.has(k)) { seen.add(k); out.push(c); } });
   (data.cwgMembers || []).filter(m => m.territory === u.parent && m.unit === u.name).forEach(m => { const k = (m.email || m.name || "").toLowerCase(); if (!seen.has(k)) { seen.add(k); out.push({ ...m, role: [m.role, `${m.cwg} CWG member`].filter(Boolean).join(", ") }); } });
   return out; };
+// ASLP group members from a territory: matched from their office or territory ("BAN Territory", "HKM", "Bangladesh Territory")
+const TERR_CODE = { SMMT: "smmt", HKM: "hkm", TAI: "taiwan", TWN: "taiwan", JPN: "japan", KOR: "korea", PHL: "philippines", PHI: "philippines", INS: "indonesia", IDN: "indonesia",
+  PNG: "png", AUS: "australia", NZ: "new-zealand", NZFT: "new-zealand", NZFTS: "new-zealand", ICT: "india-central", IET: "india-eastern", INT: "india-northern", ISE: "india-south-eastern",
+  ISW: "india-south-western", IWT: "india-western", MER: "middle-east", MEA: "middle-east", PAK: "pakistan", BAN: "bangladesh", BGD: "bangladesh", SLK: "sri-lanka", LKA: "sri-lanka" };
+const nameKey = n => (n || "").trim().replace(/\s+/g, " ").toLowerCase();
+function terrFromText(x) { const raw = (x || "").trim(); if (!raw) return null; const code = raw.replace(/\s+(Territory|Region|Command)\s*$/i, "").toUpperCase();
+  if (TERR_CODE[code]) return TERR_CODE[code];
+  const t = terrs().find(t => [t.name, t.name.replace(/\s+(Territory|Region)$/i, "")].some(n => n.toLowerCase() === raw.toLowerCase())); return t ? t.id : null; }
+// one entry per person, with every group they're in and their roles there (no repeats)
+function groupPeopleOf(tid) {
+  const by = new Map();
+  (data.groups || []).forEach(g => (g.members || []).forEach(m => { const k = nameKey(m.name); if (!k || (terrFromText(m.territory) !== tid && terrFromText(m.office) !== tid)) return;
+    const p = by.get(k) || { rank: m.rank, name: m.name, role: m.role, tags: [] }; by.set(k, p);
+    const segs = (m.groupRole || "").split(/[;\/]/).map(x => x.trim()).filter(Boolean);
+    if (!segs.some(x => new RegExp(`(^|[^A-Za-z])${g.short}([^A-Za-z]|$)`, "i").test(x))) segs.unshift(`${g.short} member`);
+    segs.forEach(x => { if (!p.tags.some(y => y.toLowerCase() === x.toLowerCase())) p.tags.push(x); }); }));
+  return [...by.values()];
+}
 // a territory's contact persons: its headquarters first, then each of its regions, divisions, districts and countries under their own name
 function terrContactsBox(t) {
-  const hq = terrContacts(t), subs = allUnits().filter(u => u.parent === t.id).map(u => [u, unitContacts(u)]).filter(([, cs]) => cs.length);
+  const gp = groupPeopleOf(t.id), seen = new Set();
+  // contact persons who are also in an ASLP group show their group roles on the same line
+  const hq = terrContacts(t).map(c => { const g = gp.find(p => nameKey(p.name) === nameKey(c.name)); if (g) seen.add(nameKey(g.name)); return g ? { ...c, groupRole: g.tags.join(" · ") } : c; });
+  const subs = allUnits().filter(u => u.parent === t.id).map(u => [u, unitContacts(u).map(c => { const g = gp.find(p => nameKey(p.name) === nameKey(c.name)); if (g) seen.add(nameKey(g.name)); return g ? { ...c, groupRole: g.tags.join(" · ") } : c; })]).filter(([, cs]) => cs.length);
+  const others = gp.filter(p => !seen.has(nameKey(p.name)));
   const list = cs => `<div>${cs.map(c => contactHtml({ ...c, email: "" })).join("")}</div>`;
-  if (!subs.length) return hq.length ? list(hq) : `<p class="empty">Contacts will be listed here. Until then, reach the territory through its CWG lead.</p>`;
-  return `<div class="con-grp"><h3 class="con-k">Territorial headquarters</h3>${hq.length ? list(hq) : `<p class="empty">No contact persons yet.</p>`}</div>`
+  const grpBlock = others.length ? `<div class="con-grp"><h3 class="con-k">In the ASLP groups</h3>${list(others.map(p => ({ rank: p.rank, name: p.name, role: p.role, groupRole: p.tags.join(" · ") })))}</div>` : "";
+  if (!subs.length && !others.length) return hq.length ? list(hq) : `<p class="empty">Contacts will be listed here. Until then, reach the territory through its CWG lead.</p>`;
+  if (!subs.length) return `<div class="con-grp">${hq.length ? list(hq) : `<p class="empty">No contact persons yet.</p>`}</div>` + grpBlock;
+  return `<div class="con-grp"><h3 class="con-k">Territorial headquarters</h3>${hq.length ? list(hq) : `<p class="empty">No contact persons yet.</p>`}</div>` + grpBlock
     + subs.map(([u, cs]) => `<div class="con-grp"><h3 class="con-k">${u.enabled ? `<a href="#/territory/${esc(u.id)}">${esc(u.name)}</a>` : esc(u.name)}<span>${esc(u.kind || "")}</span></h3>${list(cs)}</div>`).join("");
 }
 function pageUnit(u) {
